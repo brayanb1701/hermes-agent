@@ -40,6 +40,13 @@ from typing import Dict, Optional, Any, List, Union
 # preserving the established test-patch surface.
 from agent.account_usage import fetch_account_usage, render_account_usage_lines
 from hermes_cli.config import cfg_get
+from gateway.notes_intake import (
+    enrich_anything_inbox_image,
+    is_anything_inbox_source,
+    load_notes_intake_settings,
+    persist_audio_transcript,
+    should_auto_new_session_for_capture,
+)
 
 # --- Agent cache tuning ---------------------------------------------------
 # Bounds the per-session AIAgent cache to prevent unbounded growth in
@@ -5630,34 +5637,67 @@ class GatewayRunner:
                     audio_paths.append(path)
 
             if image_paths:
-                # Decide routing: native (attach pixels) vs text (vision_analyze
-                # pre-run + prepend description).  See agent/image_routing.py.
-                _img_mode = self._decide_image_input_mode()
-                if _img_mode == "native":
-                    # Defer attachment to the run_conversation call site.
-                    pending_native = getattr(self, "_pending_native_image_paths_by_session", None)
-                    if pending_native is None:
-                        pending_native = {}
-                        self._pending_native_image_paths_by_session = pending_native
-                    pending_native[session_key] = list(image_paths)
-                    logger.info(
-                        "Image routing: native (model supports vision). %d image(s) will be attached inline.",
-                        len(image_paths),
-                    )
+                if is_anything_inbox_source(source) and load_notes_intake_settings().enabled:
+                    enriched_parts = []
+                    for path in image_paths:
+                        try:
+                            result = await enrich_anything_inbox_image(path, message_text)
+                            enriched_parts.append(result.context_block)
+                        except Exception as exc:
+                            logger.error("Anything Inbox image enrichment error for %s: %s", path, exc)
+                            try:
+                                fallback_text = await self._enrich_message_with_vision("", [path])
+                                enriched_parts.append(
+                                    f"[NOTES INBOX MEDIA ANALYSIS]\n"
+                                    f"capture_modality: image\n"
+                                    f"saved_media_path: {path}\n"
+                                    f"error: intake image preprocessing failed ({exc})\n"
+                                    f"fallback_vision_summary:\n{fallback_text}\n"
+                                    f"[END NOTES INBOX MEDIA ANALYSIS]"
+                                )
+                            except Exception as fallback_exc:
+                                logger.error("Anything Inbox generic vision fallback failed for %s: %s", path, fallback_exc)
+                                enriched_parts.append(
+                                    f"[NOTES INBOX MEDIA ANALYSIS]\n"
+                                    f"capture_modality: image\n"
+                                    f"saved_media_path: {path}\n"
+                                    f"error: intake image preprocessing failed ({exc})\n"
+                                    f"fallback_error: generic vision enrichment also failed ({fallback_exc})\n"
+                                    f"[END NOTES INBOX MEDIA ANALYSIS]"
+                                )
+                    if enriched_parts:
+                        prefix = "\n\n".join(enriched_parts)
+                        message_text = f"{prefix}\n\n{message_text}" if message_text else prefix
                 else:
-                    logger.info(
-                        "Image routing: text (mode=%s). Pre-analyzing %d image(s) via vision_analyze.",
-                        _img_mode, len(image_paths),
-                    )
-                    message_text = await self._enrich_message_with_vision(
-                        message_text,
-                        image_paths,
-                    )
+                    # Decide routing: native (attach pixels) vs text (vision_analyze
+                    # pre-run + prepend description).  See agent/image_routing.py.
+                    _img_mode = self._decide_image_input_mode()
+                    if _img_mode == "native":
+                        # Defer attachment to the run_conversation call site.
+                        pending_native = getattr(self, "_pending_native_image_paths_by_session", None)
+                        if pending_native is None:
+                            pending_native = {}
+                            self._pending_native_image_paths_by_session = pending_native
+                        pending_native[session_key] = list(image_paths)
+                        logger.info(
+                            "Image routing: native (model supports vision). %d image(s) will be attached inline.",
+                            len(image_paths),
+                        )
+                    else:
+                        logger.info(
+                            "Image routing: text (mode=%s). Pre-analyzing %d image(s) via vision_analyze.",
+                            _img_mode, len(image_paths),
+                        )
+                        message_text = await self._enrich_message_with_vision(
+                            message_text,
+                            image_paths,
+                        )
 
             if audio_paths:
                 message_text = await self._enrich_message_with_transcription(
                     message_text,
                     audio_paths,
+                    source=source,
                 )
                 _stt_fail_markers = (
                     "No STT provider",
@@ -5795,8 +5835,18 @@ class GatewayRunner:
             source.chat_id or "unknown", _msg_preview,
         )
 
-        # Get or create session
-        session_entry = self.session_store.get_or_create_session(source)
+        # Get or create session. Anything Inbox is a capture surface rather
+        # than a conversational lane, so each new capture can be isolated in a
+        # fresh session to avoid unrelated notes contaminating routing/writing.
+        # Related URLs/notes should be sent in the same Telegram message; that
+        # single message still gets one agent with all bundled context.
+        if should_auto_new_session_for_capture(source):
+            _capture_session_key = self._session_key_for_source(source)
+            session_entry = self.session_store.reset_session(_capture_session_key)
+            if session_entry is None:
+                session_entry = self.session_store.get_or_create_session(source, force_new=True)
+        else:
+            session_entry = self.session_store.get_or_create_session(source)
         session_key = session_entry.session_key
         if getattr(session_entry, "was_auto_reset", False):
             # Treat auto-reset as a full conversation boundary — drop every
@@ -11027,6 +11077,8 @@ class GatewayRunner:
         self,
         user_text: str,
         audio_paths: List[str],
+        *,
+        source: Optional[SessionSource] = None,
     ) -> str:
         """
         Auto-transcribe user voice/audio messages using the configured STT provider
@@ -11060,10 +11112,19 @@ class GatewayRunner:
                 result = await asyncio.to_thread(transcribe_audio, path)
                 if result["success"]:
                     transcript = result["transcript"]
-                    enriched_parts.append(
-                        f'[The user sent a voice message~ '
-                        f'Here\'s what they said: "{transcript}"]'
-                    )
+                    if source and is_anything_inbox_source(source) and load_notes_intake_settings().enabled:
+                        persisted = persist_audio_transcript(
+                            user_text,
+                            path,
+                            transcript,
+                            provider=result.get("provider"),
+                        )
+                        enriched_parts.append(persisted.context_block)
+                    else:
+                        enriched_parts.append(
+                            f'[The user sent a voice message~ '
+                            f'Here\'s what they said: "{transcript}"]'
+                        )
                 else:
                     error = result.get("error", "unknown error")
                     if (

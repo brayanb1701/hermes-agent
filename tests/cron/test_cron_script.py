@@ -175,6 +175,47 @@ class TestRunJobScript:
         assert parsed["new_prs"][0]["number"] == 42
 
 
+class TestScriptWakeGate:
+    """Test script-output gates that can skip model invocation."""
+
+    def test_ready_count_zero_skips_agent_for_pretty_json(self, cron_env):
+        from cron.scheduler import _parse_wake_gate
+
+        script_output = json.dumps({"ready_count": 0, "ready_jobs": []}, indent=2)
+        assert _parse_wake_gate(script_output) is False
+
+    def test_ready_count_positive_wakes_agent(self, cron_env):
+        from cron.scheduler import _parse_wake_gate
+
+        script_output = json.dumps({"ready_count": 1, "ready_jobs": [{"path": "job.md"}]}, indent=2)
+        assert _parse_wake_gate(script_output) is True
+
+    def test_run_job_ready_count_zero_does_not_instantiate_agent(self, cron_env, monkeypatch):
+        script = cron_env / "scripts" / "no_ready_jobs.py"
+        script.write_text('import json; print(json.dumps({"ready_count": 0, "ready_jobs": []}, indent=2))\n')
+
+        from cron.scheduler import run_job
+
+        class ExplodingAgent:
+            def __init__(self, *args, **kwargs):
+                raise AssertionError("AIAgent should not be instantiated when ready_count is 0")
+
+        monkeypatch.setattr("run_agent.AIAgent", ExplodingAgent)
+        success, output, final_response, error = run_job({
+            "id": "skip-ready-zero",
+            "name": "skip-ready-zero",
+            "prompt": "This should not reach the model.",
+            "script": "no_ready_jobs.py",
+            "schedule_display": "every 1h",
+        })
+
+        assert success is True
+        assert error is None
+        assert final_response == "[SILENT]"
+        assert "ready_count=0" in output
+        assert "agent skipped" in output.lower()
+
+
 class TestBuildJobPromptWithScript:
     """Test that script output is injected into the prompt."""
 

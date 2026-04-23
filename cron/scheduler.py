@@ -650,29 +650,54 @@ def _run_job_script(script_path: str) -> tuple[bool, str]:
 
 
 def _parse_wake_gate(script_output: str) -> bool:
-    """Parse the last non-empty stdout line of a cron job's pre-check script
-    as a wake gate.
+    """Return whether a cron job's pre-check script should wake the agent.
 
-    The convention (ported from nanoclaw #1232): if the last stdout line is
-    JSON like ``{"wakeAgent": false}``, the agent is skipped entirely — no
-    LLM run, no delivery. Any other output (non-JSON, missing flag, gate
-    absent, or ``wakeAgent: true``) means wake the agent normally.
+    Supported gate conventions:
+    - Full stdout (preferred) or the last non-empty stdout line may be JSON
+      containing ``{"wakeAgent": false}`` to skip the LLM run.
+    - Full stdout JSON containing ``{"ready_count": 0}`` also skips the LLM
+      run. This is a common scanner-script pattern for idempotent jobs where
+      no ready work means there is nothing useful for the model to do.
 
-    Returns True if the agent should wake, False to skip.
+    Any non-JSON output, missing gate fields, or positive/unknown counts wakes
+    the agent normally.
     """
     if not script_output:
         return True
+
+    def _gate_allows_wake(gate: object) -> Optional[bool]:
+        if not isinstance(gate, dict):
+            return None
+        if gate.get("wakeAgent", True) is False:
+            return False
+        if "ready_count" in gate:
+            try:
+                if int(gate.get("ready_count") or 0) == 0:
+                    return False
+            except (TypeError, ValueError):
+                return True
+        return True
+
+    # Prefer parsing full stdout so pretty-printed JSON scanner output works.
+    try:
+        decision = _gate_allows_wake(json.loads(script_output.strip()))
+        if decision is not None:
+            return decision
+    except (json.JSONDecodeError, ValueError):
+        pass
+
+    # Backward-compatible nanoclaw convention: last line may be compact JSON.
     stripped_lines = [line for line in script_output.splitlines() if line.strip()]
     if not stripped_lines:
         return True
     last_line = stripped_lines[-1].strip()
     try:
-        gate = json.loads(last_line)
+        decision = _gate_allows_wake(json.loads(last_line))
+        if decision is not None:
+            return decision
     except (json.JSONDecodeError, ValueError):
         return True
-    if not isinstance(gate, dict):
-        return True
-    return gate.get("wakeAgent", True) is not False
+    return True
 
 
 def _build_job_prompt(job: dict, prerun_script: Optional[tuple] = None) -> str:
@@ -862,7 +887,7 @@ def run_job(job: dict) -> tuple[bool, str, str, Optional[str]]:
                 f"# Cron Job: {job_name}\n\n"
                 f"**Job ID:** {job_id}\n"
                 f"**Run Time:** {_hermes_now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-                "Script gate returned `wakeAgent=false` — agent skipped.\n"
+                "Script gate returned `wakeAgent=false` or `ready_count=0` — agent skipped.\n"
             )
             return True, silent_doc, SILENT_MARKER, None
 
