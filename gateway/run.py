@@ -31,6 +31,13 @@ from datetime import datetime
 from typing import Dict, Optional, Any, List
 
 from agent.account_usage import fetch_account_usage, render_account_usage_lines
+from gateway.notes_intake import (
+    enrich_anything_inbox_image,
+    is_anything_inbox_source,
+    load_notes_intake_settings,
+    persist_audio_transcript,
+    should_auto_new_session_for_capture,
+)
 
 # --- Agent cache tuning ---------------------------------------------------
 # Bounds the per-session AIAgent cache to prevent unbounded growth in
@@ -3918,15 +3925,48 @@ class GatewayRunner:
                     audio_paths.append(path)
 
             if image_paths:
-                message_text = await self._enrich_message_with_vision(
-                    message_text,
-                    image_paths,
-                )
+                if is_anything_inbox_source(source) and load_notes_intake_settings().enabled:
+                    enriched_parts = []
+                    for path in image_paths:
+                        try:
+                            result = await enrich_anything_inbox_image(path, message_text)
+                            enriched_parts.append(result.context_block)
+                        except Exception as exc:
+                            logger.error("Anything Inbox image enrichment error for %s: %s", path, exc)
+                            try:
+                                fallback_text = await self._enrich_message_with_vision("", [path])
+                                enriched_parts.append(
+                                    f"[NOTES INBOX MEDIA ANALYSIS]\n"
+                                    f"capture_modality: image\n"
+                                    f"saved_media_path: {path}\n"
+                                    f"error: intake image preprocessing failed ({exc})\n"
+                                    f"fallback_vision_summary:\n{fallback_text}\n"
+                                    f"[END NOTES INBOX MEDIA ANALYSIS]"
+                                )
+                            except Exception as fallback_exc:
+                                logger.error("Anything Inbox generic vision fallback failed for %s: %s", path, fallback_exc)
+                                enriched_parts.append(
+                                    f"[NOTES INBOX MEDIA ANALYSIS]\n"
+                                    f"capture_modality: image\n"
+                                    f"saved_media_path: {path}\n"
+                                    f"error: intake image preprocessing failed ({exc})\n"
+                                    f"fallback_error: generic vision enrichment also failed ({fallback_exc})\n"
+                                    f"[END NOTES INBOX MEDIA ANALYSIS]"
+                                )
+                    if enriched_parts:
+                        prefix = "\n\n".join(enriched_parts)
+                        message_text = f"{prefix}\n\n{message_text}" if message_text else prefix
+                else:
+                    message_text = await self._enrich_message_with_vision(
+                        message_text,
+                        image_paths,
+                    )
 
             if audio_paths:
                 message_text = await self._enrich_message_with_transcription(
                     message_text,
                     audio_paths,
+                    source=source,
                 )
                 _stt_fail_markers = (
                     "No STT provider",
@@ -4047,8 +4087,18 @@ class GatewayRunner:
             source.chat_id or "unknown", _msg_preview,
         )
 
-        # Get or create session
-        session_entry = self.session_store.get_or_create_session(source)
+        # Get or create session. Anything Inbox is a capture surface rather
+        # than a conversational lane, so each new capture can be isolated in a
+        # fresh session to avoid unrelated notes contaminating routing/writing.
+        # Related URLs/notes should be sent in the same Telegram message; that
+        # single message still gets one agent with all bundled context.
+        if should_auto_new_session_for_capture(source):
+            _capture_session_key = self._session_key_for_source(source)
+            session_entry = self.session_store.reset_session(_capture_session_key)
+            if session_entry is None:
+                session_entry = self.session_store.get_or_create_session(source, force_new=True)
+        else:
+            session_entry = self.session_store.get_or_create_session(source)
         session_key = session_entry.session_key
         
         # Emit session:start for new or auto-reset sessions
@@ -8305,6 +8355,8 @@ class GatewayRunner:
         self,
         user_text: str,
         audio_paths: List[str],
+        *,
+        source: Optional[SessionSource] = None,
     ) -> str:
         """
         Auto-transcribe user voice/audio messages using the configured STT provider
@@ -8338,10 +8390,19 @@ class GatewayRunner:
                 result = await asyncio.to_thread(transcribe_audio, path)
                 if result["success"]:
                     transcript = result["transcript"]
-                    enriched_parts.append(
-                        f'[The user sent a voice message~ '
-                        f'Here\'s what they said: "{transcript}"]'
-                    )
+                    if source and is_anything_inbox_source(source) and load_notes_intake_settings().enabled:
+                        persisted = persist_audio_transcript(
+                            user_text,
+                            path,
+                            transcript,
+                            provider=result.get("provider"),
+                        )
+                        enriched_parts.append(persisted.context_block)
+                    else:
+                        enriched_parts.append(
+                            f'[The user sent a voice message~ '
+                            f'Here\'s what they said: "{transcript}"]'
+                        )
                 else:
                     error = result.get("error", "unknown error")
                     if (
