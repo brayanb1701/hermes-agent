@@ -18,20 +18,40 @@ logger = logging.getLogger("cron.scheduler")
 
 
 def _parse_wake_gate(script_output: str) -> bool:
-    """Wake gate: False only if the last non-empty stdout line is JSON ``{"wakeAgent": false}``
-    (agent skipped entirely — no LLM run, no delivery); anything else wakes normally.
+    """Return whether a cron pre-check should wake the agent.
 
-    Any other output (non-JSON, missing flag, gate absent, or ``wakeAgent: true``) means wake the agent
-    normally. See #1232.
+    Full stdout (preferred) or its last non-empty line may contain JSON with
+    ``wakeAgent: false``. Pretty-printed scanner output with ``ready_count: 0``
+    is also a skip signal. Invalid or missing gate data fails open and wakes.
     """
+    def _gate_allows_wake(gate: object) -> Optional[bool]:
+        if not isinstance(gate, dict):
+            return None
+        if gate.get("wakeAgent", True) is False:
+            return False
+        if "ready_count" in gate:
+            try:
+                return int(gate.get("ready_count") or 0) != 0
+            except (TypeError, ValueError):
+                return True
+        return True
+
+    if not script_output:
+        return True
+    try:
+        decision = _gate_allows_wake(json.loads(script_output.strip()))
+        if decision is not None:
+            return decision
+    except (json.JSONDecodeError, ValueError):
+        pass
     stripped_lines = [line for line in (script_output or "").splitlines() if line.strip()]
     if not stripped_lines:
         return True
     try:
-        gate = json.loads(stripped_lines[-1].strip())
+        decision = _gate_allows_wake(json.loads(stripped_lines[-1].strip()))
+        return True if decision is None else decision
     except (json.JSONDecodeError, ValueError):
         return True
-    return not isinstance(gate, dict) or gate.get("wakeAgent", True) is not False
 
 
 def _prepend_context_block(prompt: str, heading: str, intro: str, body: str) -> str:
