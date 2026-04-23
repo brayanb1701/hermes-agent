@@ -1356,6 +1356,43 @@ class GatewayInboundMixin:
         self, source: SessionSource, session_key: str, message_text: str, image_paths: list[str]
     ) -> str:
         """Route images natively (attach pixels at run_conversation) or pre-analyze them into text."""
+        from gateway.run import (
+            enrich_anything_inbox_image, is_anything_inbox_source, load_notes_intake_settings,
+        )
+        if is_anything_inbox_source(source) and load_notes_intake_settings().enabled:
+            enriched_parts = []
+            for path in image_paths:
+                try:
+                    result = await enrich_anything_inbox_image(path, message_text)
+                    enriched_parts.append(result.context_block)
+                except Exception as exc:
+                    logger.error("Anything Inbox image enrichment error for %s: %s", path, exc)
+                    try:
+                        fallback_text = await self._enrich_message_with_vision("", [path])
+                        enriched_parts.append(
+                            "[NOTES INBOX MEDIA ANALYSIS]\n"
+                            "capture_modality: image\n"
+                            f"saved_media_path: {path}\n"
+                            f"error: intake image preprocessing failed ({exc})\n"
+                            f"fallback_vision_summary:\n{fallback_text}\n"
+                            "[END NOTES INBOX MEDIA ANALYSIS]"
+                        )
+                    except Exception as fallback_exc:
+                        logger.error(
+                            "Anything Inbox generic vision fallback failed for %s: %s",
+                            path, fallback_exc,
+                        )
+                        enriched_parts.append(
+                            "[NOTES INBOX MEDIA ANALYSIS]\n"
+                            "capture_modality: image\n"
+                            f"saved_media_path: {path}\n"
+                            f"error: intake image preprocessing failed ({exc})\n"
+                            f"fallback_error: generic vision enrichment also failed ({fallback_exc})\n"
+                            "[END NOTES INBOX MEDIA ANALYSIS]"
+                        )
+            prefix = "\n\n".join(enriched_parts)
+            return self._prepend_media_prefix(prefix, message_text) if prefix else message_text
+
         # See agent/image_routing.py. Offloaded to a thread: the decision does blocking network I/O
         # (models.dev fetch on cache miss, Ollama /api/show probe) that would stall the event loop.
         _img_mode = await asyncio.to_thread(
@@ -1402,7 +1439,7 @@ class GatewayInboundMixin:
         self, event: MessageEvent, source: SessionSource, message_text: str, audio_paths: list[str]
     ) -> str:
         message_text, _successful_transcripts = await self._enrich_message_with_transcription(
-            message_text, audio_paths,
+            message_text, audio_paths, source=source,
         )
         # Echo each successful transcript back immediately when configured so users can verify STT
         # quality in real time. On transcription failure do NOT send a hardcoded notice: that
@@ -1914,8 +1951,8 @@ class GatewayInboundMixin:
         agent_path = to_agent_visible_cache_path(os.path.abspath(path))
         return f"[voice message could not be transcribed automatically; the audio is available at: {agent_path}]"
 
-    async def _transcribe_one_clip(self, path: str, transcribe_audio, transcribe_audio_local_fallback) -> Tuple[Optional[str], str]:
-        """``(transcript_or_None, note)`` for one clip via configured STT with local fallback."""
+    async def _transcribe_one_clip(self, path: str, transcribe_audio, transcribe_audio_local_fallback) -> Tuple[Optional[str], str, dict]:
+        """``(transcript_or_None, note, provider_result)`` for one clip with local fallback."""
         result = await asyncio.to_thread(transcribe_audio, path, None, "gateway")
         if not result.get("success"):
             fallback = await asyncio.to_thread(transcribe_audio_local_fallback, path)
@@ -1924,7 +1961,7 @@ class GatewayInboundMixin:
                 result = fallback
         if not result["success"]:
             logger.info("Voice transcription failed for %s: %s", path, result.get("error", "unknown error"))
-            return None, self._untranscribed_audio_note(path)
+            return None, self._untranscribed_audio_note(path), result
         transcript = result["transcript"]
         # STT may return success=True with an empty/whitespace transcript (silence, cut-off);
         # empty quotes make the agent reply to nothing and can loop, so emit a sentinel note.
@@ -1935,13 +1972,13 @@ class GatewayInboundMixin:
                 "empty or inaudible — speech-to-text returned no "
                 "words. Do not guess at the content; ask the user "
                 "to resend or type it out.]"
-            )
+            ), result
         # Plain quoted line: a "The user sent a voice message..." wrapper read as a meta-instruction
         # and made the LLM comment on voice mode instead.
-        return transcript, f'"{transcript}"'
+        return transcript, f'"{transcript}"', result
 
     async def _enrich_message_with_transcription(
-        self, user_text: str, audio_paths: List[str]
+        self, user_text: str, audio_paths: List[str], *, source: Optional[SessionSource] = None,
     ) -> tuple[str, List[str]]:
         """Transcribe voice clips with the configured STT provider and prepend the transcripts →
         ``(enriched_text, successful_transcripts)``; the transcripts (input order; empty if every clip
@@ -1970,11 +2007,22 @@ class GatewayInboundMixin:
         for path in audio_paths:
             try:
                 logger.debug("Transcribing user voice: %s", path)
-                transcript, note = await self._transcribe_one_clip(
+                transcript, note, provider_result = await self._transcribe_one_clip(
                     path, transcribe_audio, transcribe_audio_local_fallback,
                 )
                 if transcript is not None:
                     successful_transcripts.append(transcript)
+                    from gateway.run import (
+                        is_anything_inbox_source, load_notes_intake_settings, persist_audio_transcript,
+                    )
+                    if (
+                        source is not None
+                        and is_anything_inbox_source(source)
+                        and load_notes_intake_settings().enabled
+                    ):
+                        note = persist_audio_transcript(
+                            user_text, path, transcript, provider=provider_result.get("provider"),
+                        ).context_block
                 enriched_parts.append(note)
             except Exception as e:
                 logger.error("Transcription error: %s", e)

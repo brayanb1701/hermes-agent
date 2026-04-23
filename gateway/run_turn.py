@@ -290,11 +290,22 @@ class GatewayTurnMixin:
                 )
                 return
         else:
-            # Internal wakes observe reset policy without counting as user activity, or periodic
-            # notifications keep the routing key alive across every daily/idle boundary.
-            session_entry = await self.async_session_store.get_or_create_session(
-                source, touch_activity=not bool(getattr(event, "internal", False)),
-            )
+            from gateway.run import should_auto_new_session_for_capture
+            # Anything Inbox is a capture surface, not a conversational lane. Strict internal/plugin
+            # events are pinned above and must never reset the session they were explicitly routed into.
+            if should_auto_new_session_for_capture(source):
+                capture_session_key = self._session_key_for_source(source)
+                session_entry = await self.async_session_store.reset_session(capture_session_key)
+                if session_entry is None:
+                    session_entry = await self.async_session_store.get_or_create_session(
+                        source, force_new=True,
+                    )
+            else:
+                # Internal wakes observe reset policy without counting as user activity, or periodic
+                # notifications keep the routing key alive across every daily/idle boundary.
+                session_entry = await self.async_session_store.get_or_create_session(
+                    source, touch_activity=not bool(getattr(event, "internal", False)),
+                )
         session_key = session_entry.session_key
         if not strict_session and pinned_session_id:
             resolved_entry = await self._resolve_async_delegation_session(session_entry, pinned_session_id)
