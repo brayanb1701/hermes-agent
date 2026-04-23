@@ -2051,7 +2051,7 @@ def _prepare_job_prompt(
                 f"# Cron Job: {job_name}\n\n"
                 f"**Job ID:** {job_id}\n"
                 f"**Run Time:** {_hermes_now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-                "Script gate returned `wakeAgent=false` — agent skipped.\n"
+                "Script gate returned `wakeAgent=false` or `ready_count=0` — agent skipped.\n"
             )
             return (True, silent_doc, SILENT_MARKER, None), None
 

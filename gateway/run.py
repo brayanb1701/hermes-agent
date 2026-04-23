@@ -40,6 +40,13 @@ from agent.interrupt_compat import request_hard_interrupt
 from agent.turn_context import compression_made_progress
 from hermes_cli.config import _is_ssh_remote_tilde_cwd, cfg_get
 from hermes_cli.fallback_config import get_fallback_chain
+from gateway.notes_intake import (
+    enrich_anything_inbox_image,
+    is_anything_inbox_source,
+    load_notes_intake_settings,
+    persist_audio_transcript,
+    should_auto_new_session_for_capture,
+)
 
 # Per-session AIAgent cache bounds (agents are heavy); see _enforce_agent_cache_cap/_session_expiry_watcher.
 _AGENT_CACHE_MAX_SIZE = 128
