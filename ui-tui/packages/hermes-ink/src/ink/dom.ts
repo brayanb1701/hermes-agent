@@ -83,6 +83,10 @@ export type DOMElement = {
   // Only set on ink-root. The document owns focus — any node can
   // reach it by walking parentNode, like browser getRootNode().
   focusManager?: FocusManager
+  // Measurement cache for ink-text nodes: avoids re-squashing and re-wrapping
+  // text when yoga calls measureFunc multiple times per frame with different
+  // widths during flex re-pass. Keyed by `${width}|${widthMode}`.
+  _textMeasureCache?: { gen: number; entries: Map<string, { _gen: number; result: { width: number; height: number } }> }
 } & InkNode
 
 export type TextNode = {
@@ -316,6 +320,30 @@ const measureTextNode = function (
   width: number,
   widthMode: LayoutMeasureMode
 ): { width: number; height: number } {
+  const elem = node.nodeName !== '#text' ? (node as DOMElement) : node.parentNode
+  if (elem && elem.nodeName === 'ink-text') {
+    let cache = elem._textMeasureCache
+    if (!cache) {
+      cache = { gen: 0, entries: new Map() }
+      elem._textMeasureCache = cache
+    }
+    const key = `${width}|${widthMode}`
+    const hit = cache.entries.get(key)
+    if (hit && hit._gen === cache.gen) {
+      return hit.result
+    }
+    const result = computeTextMeasure(node, width, widthMode)
+    cache.entries.set(key, { _gen: cache.gen, result })
+    return result
+  }
+  return computeTextMeasure(node, width, widthMode)
+}
+
+const computeTextMeasure = function (
+  node: DOMNode,
+  width: number,
+  widthMode: LayoutMeasureMode
+): { width: number; height: number } {
   const rawText = node.nodeName === '#text' ? node.nodeValue : squashTextNodes(node)
 
   // Expand tabs for measurement (worst case: 8 spaces each).
@@ -378,12 +406,22 @@ export const markDirty = (node?: DOMNode): void => {
 
   while (current) {
     if (current.nodeName !== '#text') {
-      ;(current as DOMElement).dirty = true
+      const elem = current as DOMElement
+      elem.dirty = true
 
       // Only mark yoga dirty on leaf nodes that have measure functions
-      if (!markedYoga && (current.nodeName === 'ink-text' || current.nodeName === 'ink-raw-ansi') && current.yogaNode) {
-        current.yogaNode.markDirty()
+      if (!markedYoga && (elem.nodeName === 'ink-text' || elem.nodeName === 'ink-raw-ansi') && elem.yogaNode) {
+        elem.yogaNode.markDirty()
         markedYoga = true
+      }
+
+      // Invalidate text measurement cache — child text or style changed.
+      if (elem._textMeasureCache) {
+        elem._textMeasureCache.gen++
+        // Cap entries to prevent unbounded growth during pathological frames.
+        if (elem._textMeasureCache.entries.size > 64) {
+          elem._textMeasureCache.entries.clear()
+        }
       }
     }
 
@@ -433,6 +471,7 @@ export const clearYogaNodeReferences = (node: DOMElement | TextNode): void => {
     for (const child of node.childNodes) {
       clearYogaNodeReferences(child)
     }
+    node._textMeasureCache = undefined
   }
 
   node.yogaNode = undefined
