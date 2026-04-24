@@ -14,7 +14,9 @@ Instructions for AI coding assistants and developers working on the hermes-agent
   ```
 - The `main` branch should stay a clean source-code baseline for Brayan's fork and upstream tracking.
 - Personalization sync/CI jobs must push to `origin/brayan/personal-hermes-customizations`, not `origin/main`.
+- Daily CI order: fetch official `upstream/main`, fetch the fork personalization branch, sync/commit local runtime personalization on that branch, rebase that branch onto `upstream/main`, test, then push only `HEAD:brayan/personal-hermes-customizations`.
 - If personalization accidentally lands on `main`, immediately move/save the commit to `brayan/personal-hermes-customizations`, then reset `main` back and push with `--force-with-lease`.
+- Full workflow doc: `docs/brayan-personalization-branch-workflow.md`.
 
 ## Development Environment
 

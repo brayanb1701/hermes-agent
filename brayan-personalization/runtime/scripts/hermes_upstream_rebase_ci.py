@@ -4,14 +4,15 @@
 This script is intended to run as a Hermes cron pre-run script. It performs a
 safe upstream update check for /home/brayan/.hermes/hermes-agent:
 
-- Sync Brayan's local Hermes personalization bundle into the fork checkout
+- Fetch official upstream updates and the fork's personalization branch.
+- Fast-forward the local personalization branch from origin if needed.
+- Sync Brayan's current local Hermes personalization bundle into the fork checkout
   (config template, agents, skills, plugins, scripts, cron definitions), omitting
   secrets and volatile runtime state.
-- If official upstream has no commits missing from the local fork and the
-  personalization snapshot did not change, emit wakeAgent=false and do nothing.
-- If personalization changed, commit and push that snapshot to Brayan's fork.
-- If upstream has updates, rebase Brayan's personalization branch onto upstream/main,
-  run focused regression tests, and push the target personalization branch to Brayan's fork.
+- If the personalization snapshot changed, commit it on the personalization branch.
+- Rebase Brayan's personalization branch onto upstream/main so the branch becomes:
+  latest official Hermes + Brayan source changes + latest local personalization snapshot.
+- Run focused regression tests and push only the target personalization branch.
 - If anything needs human/agent repair, emit wakeAgent=true with diagnostic
   context so the cron job wakes Darwin to investigate.
 
