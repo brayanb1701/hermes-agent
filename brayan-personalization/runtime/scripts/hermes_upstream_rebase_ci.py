@@ -10,8 +10,8 @@ safe upstream update check for /home/brayan/.hermes/hermes-agent:
 - If official upstream has no commits missing from the local fork and the
   personalization snapshot did not change, emit wakeAgent=false and do nothing.
 - If personalization changed, commit and push that snapshot to Brayan's fork.
-- If upstream has updates, rebase Brayan's fork commit(s) onto upstream/main,
-  run focused regression tests, and push the rebased main to Brayan's fork.
+- If upstream has updates, rebase Brayan's personalization branch onto upstream/main,
+  run focused regression tests, and push the target personalization branch to Brayan's fork.
 - If anything needs human/agent repair, emit wakeAgent=true with diagnostic
   context so the cron job wakes Darwin to investigate.
 
@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import Any
 
 REPO = Path("/home/brayan/.hermes/hermes-agent")
+TARGET_BRANCH = "brayan/personal-hermes-customizations"
 PYTHON = REPO / "venv/bin/python"
 LOG_DIR = Path("/home/brayan/.hermes/logs/hermes-upstream-ci")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -190,21 +191,21 @@ def push_origin(commands: list[dict[str, Any]], *, force_with_lease: bool = Fals
     args = ["push"]
     if force_with_lease:
         args.append("--force-with-lease")
-    args.extend(["origin", "main"])
+    args.extend(["origin", f"HEAD:{TARGET_BRANCH}"])
     push = git(*args, timeout=180)
     commands.append(push)
     if push["returncode"] != 0:
-        fail("push", "Push to origin main failed.", commands=commands)
+        fail("push", f"Push to origin/{TARGET_BRANCH} failed.", commands=commands)
         return False
     if git("remote", "get-url", "brayan")["returncode"] == 0:
         brayan_args = ["push"]
         if force_with_lease:
             brayan_args.append("--force-with-lease")
-        brayan_args.extend(["brayan", "main"])
+        brayan_args.extend(["brayan", f"HEAD:{TARGET_BRANCH}"])
         push_brayan = git(*brayan_args, timeout=180)
         commands.append(push_brayan)
         if push_brayan["returncode"] != 0:
-            fail("push_brayan", "Push to origin succeeded but push to brayan alias failed.", commands=commands)
+            fail("push_brayan", f"Push to origin/{TARGET_BRANCH} succeeded but push to brayan alias failed.", commands=commands)
             return False
     return True
 
@@ -240,7 +241,7 @@ def fail(stage: str, message: str, *, commands: list[dict[str, Any]] | None = No
             "recommended_agent_action": (
                 "Investigate systematically, preserve Brayan's source customizations, "
                 "prefer plugin/config solutions over base-code changes where possible, "
-                "resolve conflicts or failures, rerun focused tests, and push to origin/main only after verification."
+                f"resolve conflicts or failures, rerun focused tests, and push only to origin/{TARGET_BRANCH} after verification."
             ),
         }
     )
@@ -260,8 +261,8 @@ def main() -> None:
             return
 
     branch = stdout(git("branch", "--show-current"))
-    if branch != "main":
-        fail("preflight", f"Expected branch main, found {branch or '[detached]'}")
+    if branch != TARGET_BRANCH:
+        fail("preflight", f"Expected branch {TARGET_BRANCH}, found {branch or '[detached]'}")
         return
 
     non_allowed_dirty = non_personalization_dirty_paths()
@@ -281,17 +282,18 @@ def main() -> None:
         fail("fetch_upstream", "Failed to fetch official upstream/main.", commands=commands)
         return
 
-    fetch_origin = git("fetch", "origin", "main", "--quiet", timeout=120)
+    fetch_origin = git("fetch", "origin", TARGET_BRANCH, "--quiet", timeout=120)
     commands.append(fetch_origin)
     if fetch_origin["returncode"] != 0:
-        fail("fetch_origin", "Failed to fetch fork origin/main.", commands=commands)
+        fail("fetch_origin", f"Failed to fetch fork origin/{TARGET_BRANCH}.", commands=commands)
         return
 
-    if is_ancestor("HEAD", "origin/main") and stdout(git("rev-parse", "HEAD")) != stdout(git("rev-parse", "origin/main")):
-        ff = git("merge", "--ff-only", "origin/main")
+    remote_target = f"origin/{TARGET_BRANCH}"
+    if is_ancestor("HEAD", remote_target) and stdout(git("rev-parse", "HEAD")) != stdout(git("rev-parse", remote_target)):
+        ff = git("merge", "--ff-only", remote_target)
         commands.append(ff)
         if ff["returncode"] != 0:
-            fail("sync_origin", "origin/main is ahead but local main could not fast-forward.", commands=commands)
+            fail("sync_origin", f"origin/{TARGET_BRANCH} is ahead but local branch could not fast-forward.", commands=commands)
             return
 
     if not sync_personalization(commands):
@@ -306,7 +308,7 @@ def main() -> None:
                 test = run(test_cmd, timeout=600)
                 commands.append(test)
                 if test["returncode"] != 0:
-                    fail("tests", "Personalization sync verification failed; not pushing main.", commands=commands)
+                    fail("tests", f"Personalization sync verification failed; not pushing {TARGET_BRANCH}.", commands=commands)
                     return
             if not push_origin(commands):
                 return
@@ -317,7 +319,7 @@ def main() -> None:
                 "message": (
                     "Synced and pushed Brayan's Hermes personalization snapshot."
                     if personalization_changed
-                    else "Local/fork main already contains upstream/main and personalization snapshot is unchanged; no agent needed."
+                    else f"Local/fork {TARGET_BRANCH} already contains upstream/main and personalization snapshot is unchanged; no agent needed."
                 ),
                 "repo": str(REPO),
                 "snapshot": status_snapshot(),
@@ -343,7 +345,7 @@ def main() -> None:
         test = run(test_cmd, timeout=600)
         commands.append(test)
         if test["returncode"] != 0:
-            fail("tests", "Post-rebase verification failed; not pushing rebased main.", commands=commands)
+            fail("tests", f"Post-rebase verification failed; not pushing rebased {TARGET_BRANCH}.", commands=commands)
             return
 
     if not push_origin(commands, force_with_lease=True):
@@ -353,7 +355,7 @@ def main() -> None:
         {
             "wakeAgent": False,
             "status": "updated",
-            "message": "Rebased Brayan's fork onto upstream/main, tests passed, and pushed fork main. No agent needed.",
+            "message": f"Rebased Brayan's {TARGET_BRANCH} onto upstream/main, tests passed, and pushed the personalization branch. No agent needed.",
             "repo": str(REPO),
             "before": before,
             "after": stdout(git("rev-parse", "--short", "HEAD")),
