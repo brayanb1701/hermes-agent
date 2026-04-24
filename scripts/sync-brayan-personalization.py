@@ -4,6 +4,7 @@
 This intentionally captures configuration/behavior assets that live outside the
 Hermes source checkout so Brayan can reinstall Darwin on another machine:
 - ~/.hermes/config.yaml
+- ~/.hermes/SOUL.md
 - ~/.hermes/channel_directory.json
 - ~/.hermes/cron/jobs.json, normalized to remove volatile run state
 - ~/.hermes/agents/
@@ -30,7 +31,7 @@ DEFAULT_HERMES_HOME = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes"
 BUNDLE = REPO / "brayan-personalization" / "runtime"
 
 COPY_DIRS = ["agents", "skills", "plugins", "scripts"]
-COPY_FILES = ["config.yaml", "channel_directory.json"]
+COPY_FILES = ["config.yaml", "SOUL.md", "channel_directory.json"]
 
 SECRET_LITERAL_PATTERNS = [
     re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
