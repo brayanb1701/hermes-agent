@@ -288,6 +288,53 @@ async def test_connect_clears_webhook_before_polling(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_polling_connect_preserves_pending_updates(monkeypatch):
+    """Initial polling startup must not drop messages sent during restarts."""
+    adapter = TelegramAdapter(PlatformConfig(enabled=True, token="***"))
+    monkeypatch.setattr(
+        "gateway.status.acquire_scoped_lock",
+        lambda scope, identity, metadata=None: (True, None),
+    )
+    monkeypatch.setattr(
+        "gateway.status.release_scoped_lock",
+        lambda scope, identity: None,
+    )
+
+    updater = SimpleNamespace(
+        start_polling=AsyncMock(),
+        stop=AsyncMock(),
+        running=True,
+    )
+    bot = SimpleNamespace(
+        delete_webhook=AsyncMock(),
+        set_my_commands=AsyncMock(),
+    )
+    app = SimpleNamespace(
+        bot=bot,
+        updater=updater,
+        add_handler=MagicMock(),
+        initialize=AsyncMock(),
+        start=AsyncMock(),
+    )
+    builder = MagicMock()
+    builder.token.return_value = builder
+    builder.request.return_value = builder
+    builder.get_updates_request.return_value = builder
+    builder.build.return_value = app
+    monkeypatch.setattr(
+        "gateway.platforms.telegram.Application",
+        SimpleNamespace(builder=MagicMock(return_value=builder)),
+    )
+
+    ok = await adapter.connect()
+
+    assert ok is True
+    bot.delete_webhook.assert_awaited_once_with(drop_pending_updates=False)
+    updater.start_polling.assert_awaited_once()
+    assert updater.start_polling.await_args.kwargs["drop_pending_updates"] is False
+
+
+@pytest.mark.asyncio
 async def test_disconnect_skips_inactive_updater_and_app(monkeypatch):
     adapter = TelegramAdapter(PlatformConfig(enabled=True, token="***"))
 
