@@ -7,6 +7,7 @@ This directory stores Brayan/Darwin runtime behavior that normally lives outside
 The generated snapshot lives under `brayan-personalization/runtime/` and currently includes:
 
 - `config.yaml` — Brayan's Hermes config, including model defaults, platform toolsets, notes-intake config, enabled plugins, and small channel prompts.
+- `SOUL.md` — Darwin's local persona/operating charter loaded from Hermes home.
 - `channel_directory.json` — known messaging targets/channels.
 - `cron/jobs.json` — portable cron job definitions with volatile run state reset.
 - `agents/` — file-defined agent prompt templates.
