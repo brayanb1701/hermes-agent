@@ -1,0 +1,224 @@
+{
+  "_portable_note": "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by scripts/sync-brayan-personalization.py. Secrets are not included.",
+  "updated_at": "2026-04-24T20:25:53+00:00",
+  "jobs": [
+    {
+      "id": "1e387ba82595",
+      "name": "darwin-daily-review",
+      "prompt": "You are Darwin running Brayan's daily review cron agent. Read and follow `~/.hermes/agents/daily-review/prompt-template.md`; stable behavior lives in `~/.hermes/skills/daily-review-agent/SKILL.md`. Keep this cron prompt intentionally tiny so prompt changes are tracked in files.",
+      "skills": [
+        "personal-vault-ops",
+        "daily-review-agent"
+      ],
+      "skill": "personal-vault-ops",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * *",
+        "display": "0 9 * * *"
+      },
+      "schedule_display": "0 9 * * *",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-22T00:53:31.428257-05:00",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "telegram:875925495",
+      "origin": null
+    },
+    {
+      "id": "50f9df74cb16",
+      "name": "darwin-topic-recommendations",
+      "prompt": "You are Darwin running Brayan's topic recommendations cron agent. Read and follow `~/.hermes/agents/topic-recommendations/prompt-template.md`; stable behavior lives in `~/.hermes/skills/topic-recommendations-agent/SKILL.md`. Keep this cron prompt intentionally tiny so prompt changes are tracked in files.",
+      "skills": [
+        "personal-vault-ops",
+        "topic-recommendations-agent"
+      ],
+      "skill": "personal-vault-ops",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 19 * * *",
+        "display": "0 19 * * *"
+      },
+      "schedule_display": "0 19 * * *",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-22T00:53:32.430783-05:00",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "telegram:875925495",
+      "origin": null
+    },
+    {
+      "id": "b5b791cd972b",
+      "name": "darwin-inbox-triage",
+      "prompt": "You are Darwin running Brayan's inbox triage cron agent. Read and follow `~/.hermes/agents/inbox-triage/prompt-template.md`; stable behavior lives in `~/.hermes/skills/inbox-triage-agent/SKILL.md`. Keep this cron prompt intentionally tiny so prompt changes are tracked in files.",
+      "skills": [
+        "personal-vault-ops",
+        "inbox-triage-agent"
+      ],
+      "skill": "personal-vault-ops",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": null,
+      "schedule": {
+        "kind": "interval",
+        "minutes": 180,
+        "display": "every 180m"
+      },
+      "schedule_display": "every 180m",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-22T00:53:33.433978-05:00",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "local",
+      "origin": null
+    },
+    {
+      "id": "65b0c66d08ee",
+      "name": "darwin-decision-reminders",
+      "prompt": "You are Darwin running Brayan's decision reminders cron agent. Read and follow `~/.hermes/agents/decision-reminders/prompt-template.md`; stable behavior lives in `~/.hermes/skills/decision-reminders-agent/SKILL.md`. Keep this cron prompt intentionally tiny so prompt changes are tracked in files.",
+      "skills": [
+        "personal-vault-ops",
+        "decision-reminders-agent"
+      ],
+      "skill": "personal-vault-ops",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": null,
+      "schedule": {
+        "kind": "interval",
+        "minutes": 240,
+        "display": "every 240m"
+      },
+      "schedule_display": "every 240m",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-22T00:53:42.578179-05:00",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "local",
+      "origin": null
+    },
+    {
+      "id": "edfaeb3aed5d",
+      "name": "darwin-job-tailoring-agent",
+      "prompt": "You are Darwin, Brayan's job-tailoring cron dispatcher fallback. Read and follow `~/.hermes/agents/job-tailoring/prompt-template.md` only for template architecture context; stable behavior lives in `~/.hermes/skills/job-tailoring-agent/SKILL.md`. The attached pre-run script is primary and dispatcher-only. If this prompt runs, inspect script errors, repair dispatcher/config/template issues if possible, and notify Brayan. Do not process job applications directly inside this parent cron session unless Brayan explicitly asks for a redesign.",
+      "skills": [
+        "personal-vault-ops",
+        "job-tailoring-agent"
+      ],
+      "skill": "personal-vault-ops",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "job_tailoring_ready_scan.py",
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 11 * * *",
+        "display": "0 11 * * *"
+      },
+      "schedule_display": "0 11 * * *",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-23T17:09:24.387845-05:00",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "telegram:875925495",
+      "origin": null
+    },
+    {
+      "id": "92663af3d092",
+      "name": "hermes-upstream-rebase-ci",
+      "prompt": "You are Darwin running Brayan's Hermes upstream rebase CI exception handler. Read and follow `~/.hermes/agents/hermes-upstream-rebase-ci/prompt-template.md`; stable behavior lives in `~/.hermes/skills/hermes-upstream-rebase-ci-agent/SKILL.md`. The pre-run script is primary and should wake this prompt only on failure/action-needed. Do not schedule or modify cron jobs from this run.",
+      "skills": [
+        "hermes-agent",
+        "systematic-debugging",
+        "personal-vault-ops",
+        "hermes-upstream-rebase-ci-agent"
+      ],
+      "skill": "hermes-agent",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "hermes_upstream_rebase_ci.py",
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 6 * * *",
+        "display": "0 6 * * *"
+      },
+      "schedule_display": "0 6 * * *",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-23T19:47:02.706648-05:00",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "local",
+      "origin": null
+    }
+  ]
+}
