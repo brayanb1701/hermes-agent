@@ -9,6 +9,7 @@ This document is the canonical repo-local rulebook for Brayan's personal Hermes 
 `brayan/personal-hermes-customizations` is the only branch that should contain Brayan/Darwin local runtime personalization, including:
 
 - `brayan-personalization/runtime/config.yaml`
+- `brayan-personalization/runtime/SOUL.md`
 - `brayan-personalization/runtime/channel_directory.json`
 - `brayan-personalization/runtime/cron/jobs.json`
 - `brayan-personalization/runtime/agents/`
