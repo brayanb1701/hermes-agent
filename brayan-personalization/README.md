@@ -35,7 +35,7 @@ cd ~/.hermes/hermes-agent
 scripts/sync-brayan-personalization.py
 ```
 
-The daily `hermes-upstream-rebase-ci` script also runs this sync and commits changes to Brayan's fork when the personalization bundle changed.
+The daily `hermes-upstream-rebase-ci` script also runs this sync and commits changes to **`brayan/personal-hermes-customizations` only** when the personalization bundle changed. It must never push this bundle to `main`.
 
 ## Applying to an already-installed Hermes on another machine
 
@@ -43,7 +43,8 @@ From that machine's Hermes fork checkout:
 
 ```bash
 cd ~/.hermes/hermes-agent
-git pull --ff-only origin main
+git switch brayan/personal-hermes-customizations
+git pull --ff-only origin brayan/personal-hermes-customizations
 scripts/apply-brayan-personalization.py          # dry run
 scripts/apply-brayan-personalization.py --apply  # copy into ~/.hermes
 ```
