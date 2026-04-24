@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Guard Brayan's personalization bundle from accidental pushes to main.
+set -euo pipefail
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [[ "$remote_ref" == "refs/heads/main" ]]; then
+    # Deletion pushes use all-zero local sha; allow normal Git handling.
+    if [[ "$local_sha" =~ ^0+$ ]]; then
+      continue
+    fi
+
+    # Determine the range being pushed. If remote sha is all zero, inspect the commit tree.
+    if [[ "$remote_sha" =~ ^0+$ ]]; then
+      changed=$(git ls-tree -r --name-only "$local_sha" -- brayan-personalization 2>/dev/null || true)
+    else
+      changed=$(git diff --name-only "$remote_sha" "$local_sha" -- brayan-personalization scripts/sync-brayan-personalization.py scripts/apply-brayan-personalization.py 2>/dev/null || true)
+    fi
+
+    if [[ -n "$changed" ]]; then
+      cat >&2 <<'MSG'
+ERROR: refusing to push Brayan personalization bundle changes to main.
+
+Personal/local Hermes runtime customizations belong on:
+  brayan/personal-hermes-customizations
+
+Use:
+  git switch brayan/personal-hermes-customizations
+  git cherry-pick <commit>
+  git push origin brayan/personal-hermes-customizations
+
+MSG
+      exit 1
+    fi
+  fi
+done

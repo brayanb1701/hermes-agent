@@ -7,6 +7,20 @@ past that); see the **routing table** at the end and read the area file before e
 
 **Never give up on the right solution.**
 
+## Brayan personalization branch rules
+
+**Critical:** Brayan's local/runtime personalization bundle belongs only on the branch `brayan/personal-hermes-customizations`.
+
+- Do **not** add, commit, or push `brayan-personalization/`, local config snapshots, cronjobs, local skills, local plugins, or `~/.hermes/scripts` snapshots to `main`.
+- Before changing personalization assets, run:
+  ```bash
+  git switch brayan/personal-hermes-customizations
+  git status --short --branch
+  ```
+- The `main` branch should stay a clean source-code baseline for Brayan's fork and upstream tracking.
+- Personalization sync/CI jobs must push to `origin/brayan/personal-hermes-customizations`, not `origin/main`.
+- If personalization accidentally lands on `main`, immediately move/save the commit to `brayan/personal-hermes-customizations`, then reset `main` back and push with `--force-with-lease`.
+
 ## What Hermes Is
 
 Hermes is a personal AI agent that runs the same agent core across a CLI, a messaging
