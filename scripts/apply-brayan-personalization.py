@@ -20,7 +20,7 @@ REPO = Path(__file__).resolve().parents[1]
 BUNDLE = REPO / "brayan-personalization" / "runtime"
 DEFAULT_HERMES_HOME = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes")).expanduser()
 COPY_DIRS = ["agents", "skills", "plugins", "scripts"]
-COPY_FILES = ["config.yaml", "channel_directory.json"]
+COPY_FILES = ["config.yaml", "SOUL.md", "channel_directory.json"]
 
 
 def backup_path(path: Path) -> Path:
