@@ -3185,9 +3185,10 @@ class TelegramAdapter(BasePlatformAdapter):
                 logger.error("[%s] Telegram polling error: %s", self.name, _redact_telegram_error_text(error), exc_info=True)
 
         self._polling_error_callback_ref = _polling_error_callback  # reused by _handle_polling_conflict
-        drop_pending = self._cold_boot_drop_pending(is_reconnect=is_reconnect)
         polling_started = await self._start_polling_resilient(
-            drop_pending_updates=drop_pending, error_callback=_polling_error_callback, require_progress=not is_reconnect)
+            # Preserve the Bot API queue on both cold service restarts and watcher reconnects so messages
+            # sent while the gateway is offline are delivered instead of silently discarded.
+            drop_pending_updates=False, error_callback=_polling_error_callback, require_progress=not is_reconnect)
         if not polling_started:
             logger.warning(
                 "[%s] Connected in degraded Telegram mode: gateway is alive, polling will be retried in the background", self.name)
@@ -3195,11 +3196,9 @@ class TelegramAdapter(BasePlatformAdapter):
     async def connect(self, *, is_reconnect: bool = False) -> bool:
         """Connect via long polling, or a webhook server if ``TELEGRAM_WEBHOOK_URL`` is set.
 
-        ``is_reconnect``: False = cold boot (drop the Bot API queue unless
-        ``extra.drop_pending_on_cold_boot`` is false); True = watcher reconnect (preserve
-        queued updates, else every message sent during the outage is lost). Webhook env:
-        TELEGRAM_WEBHOOK_URL, TELEGRAM_WEBHOOK_PORT (8443), TELEGRAM_WEBHOOK_HOST,
-        TELEGRAM_WEBHOOK_SECRET."""
+        ``is_reconnect`` distinguishes cold boot from watcher reconnect for lifecycle behavior. Polling
+        preserves queued Bot API updates in both cases. Webhook env: TELEGRAM_WEBHOOK_URL,
+        TELEGRAM_WEBHOOK_PORT (8443), TELEGRAM_WEBHOOK_HOST, TELEGRAM_WEBHOOK_SECRET."""
         # Explicit connect() is the only operation allowed to reopen polling after a completed teardown.
         self._polling_teardown_started = False
         self._webhook_mode = False  # re-evaluated on every explicit connection

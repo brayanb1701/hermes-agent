@@ -409,6 +409,30 @@ async def test_connect_does_not_block_on_post_connect_housekeeping(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_disconnect_skips_inactive_updater_and_app(monkeypatch):
+    adapter = TelegramAdapter(PlatformConfig(enabled=True, token="***"))
+
+    updater = SimpleNamespace(running=False, stop=AsyncMock())
+    app = SimpleNamespace(
+        updater=updater,
+        running=False,
+        stop=AsyncMock(),
+        shutdown=AsyncMock(),
+    )
+    adapter._app = app
+
+    warning = MagicMock()
+    monkeypatch.setattr("plugins.platforms.telegram.adapter.logger.warning", warning)
+
+    await adapter.disconnect()
+
+    updater.stop.assert_not_awaited()
+    app.stop.assert_not_awaited()
+    app.shutdown.assert_awaited_once()
+    warning.assert_not_called()
+
+
+@pytest.mark.asyncio
 async def test_polling_conflict_reschedule_uses_running_loop(monkeypatch):
     """Regression for #19471.
 
@@ -537,6 +561,19 @@ def _build_polling_app(monkeypatch, adapter):
     )
     monkeypatch.setattr("asyncio.sleep", AsyncMock())
     return captured
+
+
+@pytest.mark.asyncio
+async def test_cold_connect_preserves_pending_updates(monkeypatch):
+    """A cold first boot preserves messages sent during gateway restarts."""
+    adapter = TelegramAdapter(PlatformConfig(enabled=True, token="***"))
+    captured = _build_polling_app(monkeypatch, adapter)
+
+    ok = await adapter.connect()  # default is_reconnect=False
+
+    assert ok is True
+    assert captured["drop_pending_updates"] is False
+    await _cancel_heartbeat(adapter)
 
 
 @pytest.mark.asyncio
