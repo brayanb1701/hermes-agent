@@ -1,0 +1,5 @@
+name: notes_preprocessor
+version: 0.1.0
+description: Preprocess notes-group Telegram messages into structured intake context before Darwin routes them into the vault.
+provides_hooks:
+  - pre_llm_call
