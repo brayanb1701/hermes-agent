@@ -1,6 +1,7 @@
 import json
 import re
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime
 from html import unescape
@@ -109,7 +110,91 @@ def _decode_response_body(body: bytes, content_type_header: str) -> str:
         return body.decode("utf-8", errors="replace")
 
 
+def _is_youtube_url(url: str) -> bool:
+    try:
+        parsed = urllib.parse.urlparse(url)
+    except Exception:
+        return False
+    host = (parsed.netloc or "").lower().split(":", 1)[0]
+    return host in {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"}
+
+
+def _fetch_youtube_metadata(url: str) -> dict:
+    """Fetch lightweight YouTube metadata without downloading/parsing video HTML.
+
+    We intentionally do not fetch the watch page here: YouTube HTML is mostly JS
+    config noise in a notes-intake context. Transcript extraction remains an
+    explicit/on-demand workflow handled by the youtube-content skill.
+    """
+    endpoint = "https://www.youtube.com/oembed?" + urllib.parse.urlencode(
+        {"url": url, "format": "json"}
+    )
+    request = urllib.request.Request(
+        endpoint,
+        headers={
+            "User-Agent": "HermesNotesPreprocessor/1.0 (+AnythingInbox)",
+            "Accept": "application/json,*/*;q=0.1",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=8) as response:
+            content_type = response.headers.get("Content-Type", "")
+            body = response.read(_MAX_FETCH_BYTES)
+    except urllib.error.HTTPError as exc:
+        return {
+            "url": url,
+            "success": False,
+            "source_type": "youtube_metadata",
+            "error": f"youtube metadata unavailable: HTTP {exc.code}; generic video-page fetch skipped",
+        }
+    except Exception as exc:
+        return {
+            "url": url,
+            "success": False,
+            "source_type": "youtube_metadata",
+            "error": f"youtube metadata unavailable: {exc}; generic video-page fetch skipped",
+        }
+
+    try:
+        data = json.loads(_decode_response_body(body, content_type))
+    except Exception as exc:
+        return {
+            "url": url,
+            "success": False,
+            "source_type": "youtube_metadata",
+            "content_type": content_type,
+            "error": f"youtube metadata unavailable: invalid JSON ({exc}); generic video-page fetch skipped",
+        }
+
+    title = _collapse_whitespace(str(data.get("title") or ""))
+    channel_name = _collapse_whitespace(str(data.get("author_name") or ""))
+    if not (title or channel_name):
+        return {
+            "url": url,
+            "success": False,
+            "source_type": "youtube_metadata",
+            "content_type": content_type,
+            "error": "youtube metadata unavailable: empty oEmbed response; generic video-page fetch skipped",
+        }
+
+    return {
+        "url": url,
+        "success": True,
+        "source_type": "youtube_metadata",
+        "content_type": content_type or "application/json",
+        "title": title,
+        "channel_name": channel_name,
+        "channel_url": str(data.get("author_url") or ""),
+        "provider_name": str(data.get("provider_name") or "YouTube"),
+        "provider_url": str(data.get("provider_url") or "https://www.youtube.com/"),
+        "thumbnail_url": str(data.get("thumbnail_url") or ""),
+    }
+
+
 def _fetch_url_preview(url: str) -> dict:
+    if _is_youtube_url(url):
+        return _fetch_youtube_metadata(url)
+
     request = urllib.request.Request(
         url,
         headers={
@@ -227,10 +312,22 @@ def _build_context(origin: dict, text: str) -> str:
             lines.append(f"- url: {item.get('url', '')}")
             if item.get("success"):
                 lines.append("  fetch_status: ok")
+                if item.get("source_type"):
+                    lines.append(f"  source_type: {item.get('source_type')}")
                 if item.get("content_type"):
                     lines.append(f"  content_type: {item.get('content_type')}")
                 if item.get("title"):
                     lines.append(f"  title: {item.get('title')}")
+                if item.get("channel_name"):
+                    lines.append(f"  channel_name: {item.get('channel_name')}")
+                if item.get("channel_url"):
+                    lines.append(f"  channel_url: {item.get('channel_url')}")
+                if item.get("provider_name"):
+                    lines.append(f"  provider_name: {item.get('provider_name')}")
+                if item.get("provider_url"):
+                    lines.append(f"  provider_url: {item.get('provider_url')}")
+                if item.get("thumbnail_url"):
+                    lines.append(f"  thumbnail_url: {item.get('thumbnail_url')}")
                 if item.get("description"):
                     lines.append(f"  description: {item.get('description')}")
                 if item.get("text_excerpt"):
@@ -239,6 +336,8 @@ def _build_context(origin: dict, text: str) -> str:
                         lines.append(f"    {excerpt_line}")
             else:
                 lines.append("  fetch_status: failed")
+                if item.get("source_type"):
+                    lines.append(f"  source_type: {item.get('source_type')}")
                 if item.get("content_type"):
                     lines.append(f"  content_type: {item.get('content_type')}")
                 lines.append(f"  fetch_error: {item.get('error') or 'unknown error'}")

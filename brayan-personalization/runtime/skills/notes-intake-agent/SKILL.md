@@ -27,10 +27,11 @@ Each new message is normally a fresh capture. If multiple URLs/fragments arrive 
 ## Job/opportunity captures
 If the capture is a job, internship, fellowship, grant, funding lead, or similar opportunity, follow `job-opportunity-intake-agent`.
 
-## Media captures
+## Media and URL captures
 - For handwritten/document images, preserve durable assets and raw OCR text before distilling.
 - Treat OCR as fallible; mark uncertain lines.
 - For audio, preserve transcript artifacts only while needed; promote durable content out of transient capture folders.
+- For YouTube URLs, treat preprocessor-provided oEmbed metadata (title, channel, thumbnail, provider) as the default capture context and keep the original URL as canonical source. Do not fetch video transcripts by default; use the `youtube-content` workflow only when the user explicitly asks for a summary/extraction/notes or when the video's substantive content is clearly central enough to justify the extra fetch.
 
 ## Output
 Be concise. Say where the capture was routed, what was created/updated, and any open questions.
