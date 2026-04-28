@@ -7,5 +7,6 @@ handling_instructions:
 - If notes-intake OCR/media analysis blocks are already present, treat them as the primary preprocessed source text; only inspect saved media paths again if you genuinely need a closer look.
 - If a message contains multiple URLs, assume they may be related and analyze them together before deciding whether to create one integrated note, several cross-linked notes, or a job/opportunity record plus supporting sources.
 - If URL prefetch succeeded, use it as initial context but keep the original URL as the canonical source.
+- YouTube URLs are handled as lightweight metadata captures: the preprocessor uses YouTube oEmbed for title/channel/thumbnail/provider fields and intentionally skips generic video-page HTML fetching because it mostly yields noisy JavaScript. Do not fetch transcripts by default; fetch a transcript only when the capture explicitly asks for summary/extraction/notes from the video or when you can justify that the video's substance is central.
 - If URL prefetch failed, use the original URL and fetch yourself if needed.
 - Use inbox only as temporary queue storage when the capture still needs triage or transformation, not as permanent duplicate storage.
