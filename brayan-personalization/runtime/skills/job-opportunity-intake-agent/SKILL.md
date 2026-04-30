@@ -51,6 +51,17 @@ Do not invent new statuses for `type: opportunity-record`. Use only:
 
 Promotion rule: when uncertain, choose the earliest defensible status and record the blocker/open decision instead of promoting. Normal path: `captured -> researched -> tailoring-ready -> awaiting-review -> applied/archived`. Direct `archived` is allowed with a reason. Use `applied`, not `submitted`, for opportunity records.
 
+## Status lifecycle maintenance
+
+When Brayan questions status semantics or a workflow exposes status drift, update the whole control surface in one pass rather than only answering verbally:
+1. Update the canonical vault schema section in `~/personal_vault/_meta/schema.md`.
+2. Update the opportunity workflow in `~/personal_vault/_meta/workflows/opportunities/job-opportunity-intake-workflow.md`.
+3. Update the opportunity template in `~/personal_vault/_meta/templates/job-opportunity-template.md`.
+4. Update this skill and any runtime personalization copy under `~/.hermes/hermes-agent/brayan-personalization/runtime/skills/job-opportunity-intake-agent/SKILL.md`.
+5. If the distinction affects automation, update deterministic scripts such as `~/.hermes/scripts/vault_structure_audit.py` and sync runtime copies so unsupported opportunity statuses are flagged.
+6. Validate with a scan of all `opportunities/*/opportunity.md` statuses, the relevant dry-run script, `python3 -m py_compile` for modified scripts, `hermes config check` when Hermes files changed, and git status.
+7. Commit/push vault and Hermes personalization changes when the update changes durable repo-tracked behavior.
+
 ## Important scoring distinction
 `job_work_automation_potential` means how easily agents could automate, accelerate, or assist the actual work of the role after Brayan has it. It does not mean application-form automation.
 
