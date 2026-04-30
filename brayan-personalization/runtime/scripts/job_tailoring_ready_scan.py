@@ -2,7 +2,7 @@
 """Dispatch independent Hermes job-tailoring sessions for ready opportunities.
 
 Dispatcher-only responsibilities:
-1. Scan ~/personal_vault/projects/job-opportunities for `tailoring-ready` jobs.
+1. Scan ~/personal_vault/opportunities/*/opportunity.md for `tailoring-ready` opportunities.
 2. Sort/select at most MAX_SESSIONS launchable jobs.
 3. Render ~/.hermes/agents/job-tailoring/prompt-template.md with job fields.
 4. Launch one independent Hermes session per selected job.
@@ -26,8 +26,7 @@ from pathlib import Path
 HOME = Path.home()
 VAULT = HOME / "personal_vault"
 HERMES_HOME = HOME / ".hermes"
-JOBS_DIR = VAULT / "projects" / "job-opportunities"
-PACKETS_DIR = VAULT / "projects" / "job-application-packets"
+OPPORTUNITIES_DIR = VAULT / "opportunities"
 AGENT_DIR = HERMES_HOME / "agents" / "job-tailoring"
 PROMPT_TEMPLATE_PATH = AGENT_DIR / "prompt-template.md"
 STATE_DIR = HERMES_HOME / "state" / "job_tailoring_sessions"
@@ -98,8 +97,8 @@ def existing_packet_from_value(value: str, stem: str) -> bool:
 
 
 def has_existing_packet(path: Path, fm: dict[str, str], text: str) -> bool:
-    slug = path.stem
-    expected_packet = PACKETS_DIR / slug / "tailoring-packet.md"
+    slug = path.parent.name
+    expected_packet = path.parent / "application" / "tailoring-packet.md"
     if expected_packet.exists():
         return True
 
@@ -111,17 +110,15 @@ def has_existing_packet(path: Path, fm: dict[str, str], text: str) -> bool:
     if packet_line and existing_packet_from_value(packet_line.group(1), slug):
         return True
 
-    return any(slug in str(packet) for packet in PACKETS_DIR.glob("*/tailoring-packet.md"))
+    return False
 
 
 def collect_ready_jobs() -> list[dict[str, str]]:
     ready: list[dict[str, str]] = []
-    if not JOBS_DIR.exists():
+    if not OPPORTUNITIES_DIR.exists():
         return ready
 
-    for path in sorted(JOBS_DIR.glob("*.md")):
-        if path.name.lower() == "readme.md":
-            continue
+    for path in sorted(OPPORTUNITIES_DIR.glob("*/opportunity.md")):
         text = path.read_text(encoding="utf-8", errors="replace")
         fm = parse_frontmatter(text)
         status = (fm.get("status") or body_status(text)).strip().lower()
@@ -130,8 +127,8 @@ def collect_ready_jobs() -> list[dict[str, str]]:
         ready.append({
             "job_path": str(path),
             "path": str(path),
-            "stem": path.stem,
-            "title": extract_title(text, fm, path.stem),
+            "stem": path.parent.name,
+            "title": extract_title(text, fm, path.parent.name),
             "company": fm.get("company", "unknown"),
             "role": fm.get("role", "unknown"),
             "priority": fm.get("priority", "unknown"),
@@ -297,8 +294,7 @@ def main() -> None:
         "dispatch_only": True,
         "dry_run": args.dry_run,
         "vault": str(VAULT),
-        "jobs_dir": str(JOBS_DIR),
-        "packets_dir": str(PACKETS_DIR),
+        "opportunities_dir": str(OPPORTUNITIES_DIR),
         "prompt_template_path": str(PROMPT_TEMPLATE_PATH),
         "skills": SKILLS,
         "state_dir": str(STATE_DIR),
