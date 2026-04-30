@@ -553,6 +553,10 @@ terminal(command="tmux new-session -d -s resumed 'hermes --resume 20260225_14305
 3. Check `.env` has the right API key
 4. **Copilot 403**: `gh auth login` tokens do NOT work for Copilot API. You must use the Copilot-specific OAuth device code flow via `hermes model` → GitHub Copilot.
 
+### Reasoning effort scope pitfall
+
+Interactive `/reasoning <level>` can save the setting to `~/.hermes/config.yaml`. When a high-reasoning mode such as `/reasoning xhigh` is intended only for a spawned tmux/commander session, verify the active session accepted it, then reset the global default afterward (for example `hermes config set agent.reasoning_effort medium`) so unrelated future sessions do not inherit the expensive setting.
+
 ### Changes not taking effect
 - **Tools/skills:** `/reset` starts a new session with updated toolset
 - **Config changes:** In gateway: `/restart`. In CLI: exit and relaunch.
@@ -564,6 +568,16 @@ terminal(command="tmux new-session -d -s resumed 'hermes --resume 20260225_14305
 1. `hermes skills list` — verify installed
 2. `hermes skills config` — check platform enablement
 3. Load explicitly: `/skill name` or `hermes -s name`
+
+### Editing pinned local skills
+When a pinned local skill needs an approved edit, do not ask Brayan to run curator commands manually. Use the CLI directly:
+```bash
+hermes curator unpin <skill-name>
+# apply the skill_manage patch/edit
+hermes curator pin <skill-name>
+hermes curator status
+```
+Verify the patched content and that the skill is pinned again before reporting done.
 
 ### Gateway issues
 Check logs first. On some installs there is no `gateway.log`; use `~/.hermes/logs/agent.log`, `~/.hermes/logs/errors.log`, and systemd journal instead:
@@ -666,7 +680,7 @@ When a user has local Hermes source changes that must survive official updates, 
 13. If the user wants to install their personalized Hermes fork on another machine for an independent evolutionary line, create a source-controlled install guide plus a small wrapper installer rather than forking the whole upstream installer. Prefer making the base installer accept repository URL overrides such as `HERMES_REPO_URL_SSH` and `HERMES_REPO_URL_HTTPS`, then add a wrapper script that exports the user's fork URLs, defaults to a dedicated branch such as `second-computer-evolution`, invokes `scripts/install.sh`, sets `origin` to the user fork and `upstream` to official Hermes, and configures safe text defaults only. If the target is an already-installed Hermes, applying a sanitized personalization bundle can be as simple as switching to the designated personalization branch, pulling it, then running `scripts/apply-<user>-personalization.py` followed by `scripts/apply-<user>-personalization.py --apply`; restore `.env`/auth locally and run `hermes config check` plus gateway restart/status if needed. Push only the appropriate target branches, then verify raw GitHub URLs resolve.
 14. For future comparison of two evolving Hermes lines, document commands such as `git log --oneline --left-right --cherry-pick main...origin/<evolution-branch>` and `git diff main...origin/<evolution-branch> --stat`, then merge/cherry-pick only tested, secret-free, maintainable changes into an integration branch.
 
-This pattern is especially important for gateway/cron/plugin customizations, because `hermes update` and future upstream pulls can otherwise overwrite or conflict with untracked local edits. When modifying Brayan's live runtime assets under `~/.hermes/agents`, `~/.hermes/skills`, `~/.hermes/plugins`, or `~/.hermes/scripts`, make the live change first, verify it there, then run `scripts/sync-brayan-personalization.py` from `~/.hermes/hermes-agent` on `brayan/personal-hermes-customizations`; inspect `git status` and restore unrelated/volatile bundle diffs before committing only the intended personalization files. If local pytest is unavailable for a small runtime plugin, use a focused stdlib `unittest` regression plus `python -m py_compile`, then optionally smoke-test the live helper directly. If the user asks to update default text models, preserve unrelated task-specific model pins such as notes-intake vision fallback models unless they explicitly ask to change them.
+This pattern is especially important for gateway/cron/plugin customizations, because `hermes update` and future upstream pulls can otherwise overwrite or conflict with untracked local edits. When modifying Brayan's live runtime assets under `~/.hermes/agents`, `~/.hermes/skills`, `~/.hermes/plugins`, or `~/.hermes/scripts`, make the live change first, verify it there, then run `scripts/sync-brayan-personalization.py` from `~/.hermes/hermes-agent` on `brayan/personal-hermes-customizations`; inspect `git status` and restore unrelated/volatile bundle diffs before committing only the intended personalization files. If the sync creates broad unrelated changes, do not run destructive cleanup such as broad `git restore .` or `git clean -fd` without explicit approval; stage and commit only the intended personalization files, then clearly report the remaining residue. If local pytest is unavailable for a small runtime plugin, use a focused stdlib `unittest` regression plus `python -m py_compile`, then optionally smoke-test the live helper directly. If the user asks to update default text models, preserve unrelated task-specific model pins such as notes-intake vision fallback models unless they explicitly ask to change them.
 
 For user-specific assistant improvement work, treat token efficiency as a design constraint: avoid unnecessary context/tool use, prefer wake gates and local preprocessing when possible, and collect only privacy-aware, redacted task/evaluation traces for any future local-model, SFT, preference, distillation, or RL/post-training work. Start trace extraction from structured low-risk sources such as cron script JSON, CI logs, test results, and vault file-operation summaries before using free-form private conversations.
 
