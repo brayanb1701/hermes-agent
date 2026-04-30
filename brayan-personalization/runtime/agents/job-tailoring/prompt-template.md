@@ -23,7 +23,7 @@ Required execution:
 1. Process only the job listed above.
 2. Read the job note and canonical CV before drafting.
 3. Inspect the application/source URL if the job note lacks application-form details or screening requirements.
-4. Create/update the packet under `~/personal_vault/projects/job-application-packets/{{stem}}/`.
+4. Create/update the packet under `~/personal_vault/opportunities/{{stem}}/application/`.
 5. Update the source job note to `awaiting-review` and link the packet.
 6. Append a concise vault log entry.
 7. Notify Brayan with the packet path, main recommendation, and manual blockers.

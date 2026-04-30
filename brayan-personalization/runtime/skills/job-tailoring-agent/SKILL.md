@@ -45,7 +45,7 @@ Read these before drafting:
 1. `~/personal_vault/_meta/schema.md`
 2. `~/personal_vault/_meta/index.md`
 3. `~/personal_vault/_meta/log.md`
-4. `~/personal_vault/projects/job-application-cv-master.md`
+4. `~/personal_vault/profile/cv-master.md`
 5. `~/personal_vault/_meta/templates/job-tailoring-packet-template.md`
 6. The provided job note path
 
@@ -53,7 +53,7 @@ Follow `personal-vault-ops` for vault conventions, raw-vs-durable separation, li
 
 ## CV reading rules
 
-- Treat `~/personal_vault/projects/job-application-cv-master.md` as the canonical editable CV/profile source.
+- Treat `~/personal_vault/profile/cv-master.md` as the canonical editable CV/profile source.
 - Preserve factual integrity. Do not invent experience, degrees, dates, tools, citizenship/work authorization, language ability, references, compensation history, or portfolio artifacts.
 - Preserve Brayan's explicit correction that Invisible Technologies ended in 2024, not present.
 - Use the CV to build a tailored emphasis plan: reorder, compress, expand, and rephrase only within factual bounds.
@@ -82,7 +82,7 @@ If the form cannot be accessed, say so explicitly and infer only conservative li
 
 Search Brayan's vault for relevant evidence, including:
 - `~/personal_vault/projects/`
-- `~/personal_vault/projects/project-backlog.md`
+- `~/personal_vault/_meta/dashboards/project-dashboard.md`
 - `~/personal_vault/domains/ai/ai-map.md`
 - `~/personal_vault/domains/coding/coding-map.md`
 - `~/personal_vault/domains/physics/physics-map.md`
@@ -101,8 +101,8 @@ Be conservative: do not present seed ideas as completed work.
 ## Packet output
 
 Create/update:
-- `~/personal_vault/projects/job-application-packets/<stem>/tailoring-packet.md`
-- optionally `~/personal_vault/projects/job-application-packets/<stem>/tailored-cv.md` if the tailored CV is long enough to deserve its own file
+- `~/personal_vault/opportunities/<stem>/application/tailoring-packet.md`
+- optionally `~/personal_vault/opportunities/<stem>/application/tailored-cv.md` if the tailored CV is long enough to deserve its own file
 
 The packet must include:
 - reviewer summary for Brayan
@@ -123,7 +123,7 @@ The packet must include:
 
 After packet creation, update the source opportunity note:
 - `status: awaiting-review`
-- `tailoring_packet: [[projects/job-application-packets/<stem>/tailoring-packet]]`
+- `tailoring_packet: [[opportunities/<stem>/application/tailoring-packet]]`
 - add a concise status-log line for packet creation
 
 Keep the source note's original job details and links intact.
@@ -156,10 +156,10 @@ Not allowed by default:
 
 Use this when Brayan asks how many jobs are pending for tailoring, whether the tailoring cron worked, or what steps/scripts were involved.
 
-1. Orient with `personal-vault-ops` and read `_meta/schema.md`, `_meta/index.md`, `_meta/log.md`, plus this skill and `~/personal_vault/projects/job-tailoring-agent-automation.md`.
+1. Orient with `personal-vault-ops` and read `_meta/schema.md`, `_meta/index.md`, `_meta/log.md`, plus this skill and `~/personal_vault/_meta/workflows/opportunities/job-tailoring-agent-automation.md`.
 2. Count both semantic and dispatcher-launchable pending jobs:
-   - semantic: opportunity notes under `~/personal_vault/projects/job-opportunities/*.md` with `status: tailoring-ready`.
-   - launchable by current dispatcher: `status: tailoring-ready` AND no existing verified `projects/job-application-packets/<stem>/tailoring-packet.md`; a non-null `tailoring_packet` only blocks launch if it resolves to an existing `tailoring-packet.md` file.
+   - semantic: opportunity notes under `~/personal_vault/opportunities/*/opportunity.md` with `status: tailoring-ready`.
+   - launchable by current dispatcher: `status: tailoring-ready` AND no existing verified `opportunities/<stem>/application/tailoring-packet.md`; a non-null `tailoring_packet` only blocks launch if it resolves to an existing `tailoring-packet.md` file.
    - Always run `python3 ~/.hermes/scripts/job_tailoring_ready_scan.py --dry-run` from the vault to verify the dispatcher's own `ready_count`, `selected_jobs`, and skipped behavior.
 3. Inspect runtime configuration and history:
    - `cronjob(action="list")` for `darwin-job-tailoring-agent`, schedule, last run, next run, script, and enabled state.
@@ -187,7 +187,7 @@ Use this when the queue count looks wrong, a `tailoring-ready` opportunity is sk
    - search `~/.hermes/sessions/` for the exact bad wikilink/path and opportunity stem;
    - inspect the originating session messages/tool calls to identify whether intake, tailoring, cron, or a manual conversation wrote the field;
    - inspect relevant skills/templates/docs that may have instructed the bad write.
-2. Treat `tailoring_packet` as a strict state field, not a generic support-link field. It should only point to a verified full packet at `projects/job-application-packets/<stem>/tailoring-packet` / `.md`.
+2. Treat `tailoring_packet` as a strict state field, not a generic support-link field. It should only point to a verified full packet at `opportunities/<stem>/application/tailoring-packet` / `.md`.
 3. Use distinct fields for non-packet artifacts:
    - `strategy_note` for fellowship/program/path-analysis notes;
    - `sprint_note` for competition/challenge execution plans;
@@ -196,7 +196,7 @@ Use this when the queue count looks wrong, a `tailoring-ready` opportunity is sk
    - affected opportunity frontmatter and body packet section;
    - source status-log lines and `_meta/log.md`;
    - `_meta/templates/job-opportunity-template.md`;
-   - workflow docs such as `projects/job-opportunity-intake-workflow.md` and `projects/job-tailoring-agent-automation.md`;
+   - workflow docs such as `_meta/workflows/opportunities/job-opportunity-intake-workflow.md` and `_meta/workflows/opportunities/job-tailoring-agent-automation.md`;
    - skills such as `job-opportunity-intake-agent` and this skill;
    - dispatcher script behavior if the automation can enforce the invariant.
 5. Verify with both semantic and automated checks:
