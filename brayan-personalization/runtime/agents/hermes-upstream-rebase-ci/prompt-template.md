@@ -4,4 +4,4 @@ Follow stable behavior in `~/.hermes/skills/hermes-upstream-rebase-ci-agent/SKIL
 
 The pre-run script `hermes_upstream_rebase_ci.py` has already executed and emitted JSON context. If `wakeAgent` was false, this prompt should not run. Since you are running, something needs agent intervention.
 
-Handle the CI failure/action-needed path now. Do not schedule or modify cron jobs from this run.
+Handle the CI failure/action-needed path now. Prefer programmatic recovery first: inspect script JSON, use existing rerere/autoupdate resolutions when possible, continue resolved rebases with `GIT_EDITOR=true git rebase --continue`, and only manually resolve genuinely new conflicts/tests. Do not schedule or modify cron jobs from this exception-handler run unless Brayan explicitly asked in the triggering conversation.
