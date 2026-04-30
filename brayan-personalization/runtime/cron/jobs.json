@@ -1,6 +1,4 @@
 {
-  "_portable_note": "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by scripts/sync-brayan-personalization.py. Secrets are not included.",
-  "updated_at": "2026-04-30T06:24:16+00:00",
   "jobs": [
     {
       "id": "1e387ba82595",
@@ -23,16 +21,16 @@
       "schedule_display": "0 9 * * *",
       "repeat": {
         "times": null,
-        "completed": 0
+        "completed": 6
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-22T00:53:31.428257-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
+      "next_run_at": "2026-04-30T09:00:00-05:00",
+      "last_run_at": "2026-04-29T09:15:02.165172-05:00",
+      "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
@@ -59,16 +57,16 @@
       "schedule_display": "0 19 * * *",
       "repeat": {
         "times": null,
-        "completed": 0
+        "completed": 5
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-22T00:53:32.430783-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
+      "next_run_at": "2026-04-30T19:00:00-05:00",
+      "last_run_at": "2026-04-29T19:03:39.540379-05:00",
+      "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
@@ -95,16 +93,16 @@
       "schedule_display": "every 180m",
       "repeat": {
         "times": null,
-        "completed": 0
+        "completed": 28
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-22T00:53:33.433978-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
+      "next_run_at": "2026-04-30T03:20:29.667898-05:00",
+      "last_run_at": "2026-04-30T00:20:29.667898-05:00",
+      "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "local",
@@ -131,16 +129,16 @@
       "schedule_display": "every 240m",
       "repeat": {
         "times": null,
-        "completed": 0
+        "completed": 21
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-22T00:53:42.578179-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
+      "next_run_at": "2026-04-30T05:24:00.146028-05:00",
+      "last_run_at": "2026-04-30T01:24:00.146028-05:00",
+      "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
@@ -167,16 +165,16 @@
       "schedule_display": "0 11 * * *",
       "repeat": {
         "times": null,
-        "completed": 0
+        "completed": 6
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-23T17:09:24.387845-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
+      "next_run_at": "2026-04-30T11:00:00-05:00",
+      "last_run_at": "2026-04-29T11:00:06.528675-05:00",
+      "last_status": "ok",
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
@@ -212,7 +210,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-23T19:47:02.706648-05:00",
-      "next_run_at": null,
+      "next_run_at": "2026-04-30T09:30:00-05:00",
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
@@ -245,13 +243,18 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T18:24:57.201587-05:00",
-      "next_run_at": null,
+      "next_run_at": "2026-09-01T09:00:00-05:00",
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "origin",
-      "origin": null,
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "-1003960601334",
+        "chat_name": "Anything Inbox",
+        "thread_id": null
+      },
       "enabled_toolsets": [
         "file"
       ]
@@ -281,13 +284,18 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T18:25:02.228115-05:00",
-      "next_run_at": null,
+      "next_run_at": "2026-10-15T09:00:00-05:00",
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "origin",
-      "origin": null,
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "-1003960601334",
+        "chat_name": "Anything Inbox",
+        "thread_id": null
+      },
       "enabled_toolsets": [
         "file"
       ]
@@ -317,13 +325,18 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T18:25:19.559901-05:00",
-      "next_run_at": null,
+      "next_run_at": "2026-12-15T09:00:00-05:00",
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "origin",
-      "origin": null,
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "-1003960601334",
+        "chat_name": "Anything Inbox",
+        "thread_id": null
+      },
       "enabled_toolsets": [
         "file"
       ]
@@ -353,13 +366,18 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T19:01:30.700746-05:00",
-      "next_run_at": null,
+      "next_run_at": "2026-05-15T09:00:00-05:00",
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "origin",
-      "origin": null,
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "-1003960601334",
+        "chat_name": "Anything Inbox",
+        "thread_id": null
+      },
       "enabled_toolsets": [
         "file",
         "web"
@@ -390,13 +408,18 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T19:01:40.249481-05:00",
-      "next_run_at": null,
+      "next_run_at": "2026-09-01T09:00:00-05:00",
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "origin",
-      "origin": null,
+      "origin": {
+        "platform": "telegram",
+        "chat_id": "-1003960601334",
+        "chat_name": "Anything Inbox",
+        "thread_id": null
+      },
       "enabled_toolsets": [
         "file",
         "web"
@@ -405,7 +428,7 @@
     {
       "id": "ea904b1d1a01",
       "name": "vault-structure-auditor",
-      "prompt": "You are Darwin running Brayan's weekly Vault v2 structure auditor. Read and follow `~/.hermes/agents/vault-structure-auditor/prompt-template.md`; stable behavior lives in `~/.hermes/skills/vault-structure-auditor-agent/SKILL.md`. The attached pre-run script writes the deterministic audit report. Summarize findings and propose exact patch groups only; do not move/delete/archive notes or apply patches in this cron run.",
+      "prompt": "You are Darwin running Brayan's weekly Vault v2 structure auditor. Read and follow `~/.hermes/agents/vault-structure-auditor/prompt-template.md` and the loaded `personal-vault-ops` + `vault-structure-auditor-agent` skills.\n\nA deterministic pre-run script (`vault_structure_audit.py`) has already executed and injected JSON context plus a report path. Treat that script output as the first-pass inventory, not the whole audit.\n\nYour task:\n1. Read the generated audit report under `~/personal_vault/_meta/audits/`.\n2. Use the script findings for counts, broken links, frontmatter errors, retired-path references, semantic location issues, and git status.\n3. Independently perform a systematic semantic organization pass: inspect suspicious filenames/titles and representative notes from every top-level folder; verify passive tool/resource catalogs live under `references/`; verify `inbox/` has no durable `_captures` store; verify true projects use `projects/<slug>/README.md`; verify opportunities use `opportunities/<slug>/opportunity.md` plus optional `application/` materials; verify workflows/guides/architecture remain under `_meta/`.\n4. If there are issues, send a concise Telegram report with exact patch proposal groups, affected paths, risk level, and recommended next action.\n5. Do not move/delete/archive notes or apply patches in this cron run. This weekly job is report-only unless Brayan later approves fixes interactively.\n6. Return `[SILENT]` if both the deterministic script and your semantic pass find no meaningful issue.",
       "skills": [
         "personal-vault-ops",
         "vault-structure-auditor-agent"
@@ -430,7 +453,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-30T01:11:15.920109-05:00",
-      "next_run_at": null,
+      "next_run_at": "2026-05-03T10:00:00-05:00",
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
@@ -442,5 +465,6 @@
         "terminal"
       ]
     }
-  ]
+  ],
+  "updated_at": "2026-04-30T01:40:55.010132-05:00"
 }

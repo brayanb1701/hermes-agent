@@ -33,7 +33,7 @@ Keep Vault v2 clean and semantically consistent:
 4. The latest audit report under `~/personal_vault/_meta/audits/`
 5. Directly relevant notes for any proposed patch group
 
-## Deterministic script
+## Deterministic script + semantic pass
 
 Primary inventory is produced by:
 
@@ -43,17 +43,21 @@ It writes:
 
 `~/personal_vault/_meta/audits/YYYY-MM-DD-vault-structure-audit.md`
 
-The script checks:
+The script is the first-pass inventory, not the whole audit. It checks:
 
 - files by top-level folder;
 - frontmatter `type`, `status`, and `area` values;
 - notes in `projects/` that are not `projects/<slug>/README.md` project hubs;
 - project notes missing next-action wording;
 - active references to retired Vault v1 paths;
+- retired Vault v1 paths still existing on disk;
 - broken wikilinks;
 - opportunity records with packet/status inconsistency;
 - passive references accidentally treated as active queue items;
+- semantic folder-role mismatches such as reference notes outside `references/` or tool/resource catalogs left under `concepts/`;
 - git status at audit time.
+
+After reading the script output, the auditor must independently perform a systematic semantic pass. Inspect suspicious filenames/titles and representative notes from every top-level folder, especially catalogs, cookbooks, tools, dashboards, workflows, guides, decisions, profile assets, opportunities, project-support material, and active queues. The cron agent should not rely only on `issue_count: 0` if the organization still looks semantically wrong.
 
 ## Output behavior
 
