@@ -38,6 +38,19 @@ Record:
 - tailoring brief
 - open questions / missing data
 
+## Canonical opportunity statuses
+
+Do not invent new statuses for `type: opportunity-record`. Use only:
+
+- `captured` — source/link/comment received and preserved, but the posting, eligibility, deadline, application form, or required artifacts are not sufficiently inspected. Use for blocked pages, generic portals, future-cycle pages with weak evidence, or first-pass saves. Not launchable by the tailoring dispatcher.
+- `researched` — inspected enough to summarize fit, requirements, priority, application process, and blockers, but not yet selected or specific enough for packet drafting. Use for watch targets, broad company boards, multi-role pages, future cycles, role-choice-needed cases, and researched-but-not-currently-pursued opportunities. Not launchable by the tailoring dispatcher.
+- `tailoring-ready` — a specific application target has enough current details for packet drafting now: role/program, company/host, application URL or process, deadline/timeline if known, requirements, eligibility/logistics, required artifacts, form/screening questions or explicit form-access limitation, priority/interest, and any manual blockers. This is the only intake/research status launchable by `darwin-job-tailoring-agent`, and only when no verified `opportunities/<slug>/application/tailoring-packet.md` exists.
+- `awaiting-review` — packet, application draft, or tailored material exists under `opportunities/<slug>/application/` and Brayan needs to review, edit, decide, or submit. Set this after creating review material. Not launchable unless explicitly reset to `tailoring-ready` after the packet becomes obsolete.
+- `applied` — Brayan has submitted the application, or Darwin submitted it only after explicit approval. Preserve submitted artifacts/status log when possible.
+- `archived` — closed, expired, rejected, intentionally skipped, obsolete, duplicated, or no longer worth tracking. Include the reason in the body/status log.
+
+Promotion rule: when uncertain, choose the earliest defensible status and record the blocker/open decision instead of promoting. Normal path: `captured -> researched -> tailoring-ready -> awaiting-review -> applied/archived`. Direct `archived` is allowed with a reason. Use `applied`, not `submitted`, for opportunity records.
+
 ## Important scoring distinction
 `job_work_automation_potential` means how easily agents could automate, accelerate, or assist the actual work of the role after Brayan has it. It does not mean application-form automation.
 
