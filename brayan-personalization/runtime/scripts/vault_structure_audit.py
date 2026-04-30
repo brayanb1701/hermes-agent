@@ -45,6 +45,7 @@ IGNORE_OLD_PATH_IN = {
 }
 IGNORE_PREFIXES = (
     "_meta/migration_v2_vault/",
+    "_meta/audits/",
 )
 
 
@@ -87,12 +88,18 @@ def resolve_wikilink(target: str, paths: set[str], by_stem: dict[str, list[str]]
     target = target.split("#", 1)[0].split("|", 1)[0].strip()
     if not target:
         return True
+    if "{{" in target or "}}" in target or "<" in target or ">" in target:
+        return True
+    raw_target = target
     target = target[:-3] if target.endswith(".md") else target
     if target in paths:
         return True
     if target.startswith("/") and target[1:] in paths:
         return True
     if target in by_stem:
+        return True
+    # Obsidian can link non-Markdown assets or folders; resolve those against the vault.
+    if (VAULT / raw_target).exists() or (VAULT / target).exists():
         return True
     return False
 
@@ -125,7 +132,7 @@ def main() -> None:
         r = rel(p)
         text = read(p)
         fm = parse_frontmatter(text)
-        if not fm and not r.startswith("_meta/migration_v2_vault/"):
+        if not fm and not r.startswith("_meta/migration_v2_vault/") and not r.startswith("raw/assets/"):
             missing_frontmatter.append(r)
         typ = fm.get("type", "")
         status = fm.get("status", "")
@@ -153,10 +160,11 @@ def main() -> None:
                 if pattern in text:
                     old_path_refs.append((r, pattern))
 
-        for m in re.finditer(r"\[\[([^\]]+)\]\]", text):
-            target = m.group(1)
-            if not resolve_wikilink(target, paths, by_stem):
-                broken_links.append((r, target))
+        if not r.startswith("raw/assets/") and not r.startswith(IGNORE_PREFIXES):
+            for m in re.finditer(r"\[\[([^\]]+)\]\]", text):
+                target = m.group(1)
+                if not resolve_wikilink(target, paths, by_stem):
+                    broken_links.append((r, target))
 
         if r.startswith("queries/") and "awesome-llm-apps" in text:
             if re.search(r"awesome-llm-apps.*\|\s*P[01]\s*\|\s*pending", text, re.I):
