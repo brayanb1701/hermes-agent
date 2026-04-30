@@ -15,10 +15,9 @@ Read, at minimum:
 1. `~/personal_vault/_meta/schema.md`
 2. `~/personal_vault/_meta/index.md`
 3. `~/personal_vault/_meta/log.md`
-4. `~/personal_vault/projects/project-backlog.md`
-5. `~/personal_vault/projects/pending-decisions.md`
-6. `~/personal_vault/inbox/inbox.md`
-7. `~/personal_vault/inbox/idea-garden.md`
+4. `~/personal_vault/_meta/dashboards/project-dashboard.md`
+5. `~/personal_vault/decisions/pending.md`
+6. Inspect actual files under `~/personal_vault/inbox/`; treat `inbox/README.md` as policy only
 
 ## Behavior
 - Create or update a daily note under `~/personal_vault/daily/` named with today's date.

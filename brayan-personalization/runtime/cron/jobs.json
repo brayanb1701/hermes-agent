@@ -1,6 +1,6 @@
 {
   "_portable_note": "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by scripts/sync-brayan-personalization.py. Secrets are not included.",
-  "updated_at": "2026-04-30T05:58:42+00:00",
+  "updated_at": "2026-04-30T06:12:42+00:00",
   "jobs": [
     {
       "id": "1e387ba82595",
@@ -143,7 +143,7 @@
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
-      "deliver": "local",
+      "deliver": "telegram:875925495",
       "origin": null
     },
     {
@@ -223,7 +223,7 @@
     {
       "id": "64be0631db63",
       "name": "max-planck-cs-internship-2027-prep-reminder",
-      "prompt": "Remind Brayan to start the P0 Max Planck CS Research Internships 2027 preparation project. Context: vault note [[projects/job-opportunities/2026-04-28-max-planck-cs-research-internships-2027]]. Summer-start internships are due November 1 of the previous year. Recommended actions: choose target start window, shortlist MPI faculty/research groups, audit transcript/CV/research-portfolio gaps, identify recommender, and decide whether to build a small aligned proof-of-work project.",
+      "prompt": "Remind Brayan to start the P0 Max Planck CS Research Internships 2027 preparation project. Context: vault note [[opportunities/2026-04-28-max-planck-cs-research-internships-2027/opportunity]]. Summer-start internships are due November 1 of the previous year. Recommended actions: choose target start window, shortlist MPI faculty/research groups, audit transcript/CV/research-portfolio gaps, identify recommender, and decide whether to build a small aligned proof-of-work project.",
       "skills": [],
       "skill": null,
       "model": null,
@@ -259,7 +259,7 @@
     {
       "id": "84999fa7645a",
       "name": "max-planck-cs-internship-2027-final-application-reminder",
-      "prompt": "Remind Brayan that the Max Planck CS Research Internships summer-cycle deadline is November 1 of the previous year. Context: vault note [[projects/job-opportunities/2026-04-28-max-planck-cs-research-internships-2027]]. Final checklist: CV, transcripts, at least one reference contact with prior permission, optional motivation letter, target faculty/research groups, intended internship period, and post-registration form inspection.",
+      "prompt": "Remind Brayan that the Max Planck CS Research Internships summer-cycle deadline is November 1 of the previous year. Context: vault note [[opportunities/2026-04-28-max-planck-cs-research-internships-2027/opportunity]]. Final checklist: CV, transcripts, at least one reference contact with prior permission, optional motivation letter, target faculty/research groups, intended internship period, and post-registration form inspection.",
       "skills": [],
       "skill": null,
       "model": null,
@@ -295,7 +295,7 @@
     {
       "id": "f5fc18167064",
       "name": "fermi-summer-school-2027-cycle-check",
-      "prompt": "Remind Brayan to check whether the NASA/Fermi Summer School 2027 page/application is live. Context: vault note [[projects/job-opportunities/2026-04-28-fermi-summer-school-2027-watch]]. The 2026 deadline was February 6 and early applications were favored, especially for applicants needing a US visa. Check the new deadline, eligibility, fee/support, and whether Brayan has a credible physics/data-analysis statement or project before applying.",
+      "prompt": "Remind Brayan to check whether the NASA/Fermi Summer School 2027 page/application is live. Context: vault note [[opportunities/2026-04-28-fermi-summer-school-2027-watch/opportunity]]. The 2026 deadline was February 6 and early applications were favored, especially for applicants needing a US visa. Check the new deadline, eligibility, fee/support, and whether Brayan has a credible physics/data-analysis statement or project before applying.",
       "skills": [],
       "skill": null,
       "model": null,
@@ -331,7 +331,7 @@
     {
       "id": "f4326c4276a7",
       "name": "erasmus-scholarship-shortlist-reminder",
-      "prompt": "Reminder/task for Darwin: follow up on Brayan's Erasmus+ scholarship application interest. Use the personal-vault notes at ~/personal_vault/projects/job-opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch.md and ~/personal_vault/projects/scholarship-application-prep/2026-04-28-erasmus-scholarship-application-strategy.md. Deliver a concise reminder to Brayan to build a 10-20 Erasmus/Erasmus Mundus programme shortlist and collect document blockers (transcripts, English proof, passport, recommendations). If web tools are available, optionally include 3-5 promising programme-search starting points, but do not fabricate deadlines.",
+      "prompt": "Reminder/task for Darwin: follow up on Brayan's Erasmus+ scholarship application interest. Use the personal-vault notes at ~/personal_vault/opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch/opportunity.md and ~/personal_vault/opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch/application/application-strategy.md. Deliver a concise reminder to Brayan to build a 10-20 Erasmus/Erasmus Mundus programme shortlist and collect document blockers (transcripts, English proof, passport, recommendations). If web tools are available, optionally include 3-5 promising programme-search starting points, but do not fabricate deadlines.",
       "skills": [],
       "skill": null,
       "model": null,
@@ -368,7 +368,7 @@
     {
       "id": "ad098fa6c877",
       "name": "erasmus-icetex-deadline-window-check",
-      "prompt": "Reminder/task for Darwin: start the likely Erasmus/Erasmus Mundus and ICETEX scholarship deadline window check for Brayan. Use ~/personal_vault/projects/job-opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch.md, ~/personal_vault/projects/scholarship-application-prep/2026-04-28-erasmus-scholarship-application-strategy.md, and ~/personal_vault/projects/job-opportunities/2026-04-28-icetex-international-scholarships-search-watch.md. Check current public pages if possible, summarize next deadlines/requisites if verifiable, and tell Brayan what to decide/prep next. Do not submit applications.",
+      "prompt": "Reminder/task for Darwin: start the likely Erasmus/Erasmus Mundus and ICETEX scholarship deadline window check for Brayan. Use ~/personal_vault/opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch/opportunity.md, ~/personal_vault/opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch/application/application-strategy.md, and ~/personal_vault/opportunities/2026-04-28-icetex-international-scholarships-search-watch/opportunity.md. Check current public pages if possible, summarize next deadlines/requisites if verifiable, and tell Brayan what to decide/prep next. Do not submit applications.",
       "skills": [],
       "skill": null,
       "model": null,
@@ -400,6 +400,46 @@
       "enabled_toolsets": [
         "file",
         "web"
+      ]
+    },
+    {
+      "id": "ea904b1d1a01",
+      "name": "vault-structure-auditor",
+      "prompt": "You are Darwin running Brayan's weekly Vault v2 structure auditor. Read and follow `~/.hermes/agents/vault-structure-auditor/prompt-template.md`; stable behavior lives in `~/.hermes/skills/vault-structure-auditor-agent/SKILL.md`. The attached pre-run script writes the deterministic audit report. Summarize findings and propose exact patch groups only; do not move/delete/archive notes or apply patches in this cron run.",
+      "skills": [
+        "personal-vault-ops",
+        "vault-structure-auditor-agent"
+      ],
+      "skill": "personal-vault-ops",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "vault_structure_audit.py",
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 10 * * 0",
+        "display": "0 10 * * 0"
+      },
+      "schedule_display": "0 10 * * 0",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-04-30T01:11:15.920109-05:00",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "telegram:875925495",
+      "origin": null,
+      "enabled_toolsets": [
+        "file",
+        "terminal"
       ]
     }
   ]
