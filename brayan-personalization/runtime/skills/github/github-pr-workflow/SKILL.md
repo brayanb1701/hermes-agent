@@ -76,7 +76,7 @@ Branch naming conventions:
 
 ## 2. Making Commits
 
-Use the agent's file tools (`write_file`, `patch`) to make changes, then commit:
+Use the agent's file tools (`write_file`, `patch`) to make changes, then commit. Stage only the files that belong to the requested change; if the working tree has unrelated user/session residue, leave it unstaged and call it out instead of sweeping it into the commit.
 
 ```bash
 # Stage specific files
