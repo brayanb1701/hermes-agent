@@ -189,7 +189,7 @@ Use this when Brayan sends a bundle of articles, blogs, papers, X threads, video
 1. Orient by reading `_meta/schema.md`, `_meta/index.md`, `_meta/log.md`, and the directly relevant domain/project hubs.
 2. Preserve Brayan's original bundle verbatim in `raw/notes/` as a source capture, including his comments next to each URL/file.
 3. Search the vault for existing reading queues, source notes, or related concepts before creating duplicates.
-4. For mixed cross-domain bundles that do not fit a single specialized queue, create or update `queries/general-learning-resource-queue.md` as the durable routing layer, then cross-link individual items into more specific queues/catalogs when useful. Example: a bundle mixing free prototype domains, AI-agent cookbooks, trading courses, and an education essay belongs in the general queue while `awesome-llm-apps` also goes to `queries/ai-reading-priority-queue.md` and `concepts/agentic-development-tooling-catalog.md`, and trading resources also link from economy/prediction-market notes.
+4. For mixed cross-domain bundles that do not fit a single specialized queue, create or update `queries/general-learning-resource-queue.md` as the durable routing layer, then cross-link individual items into more specific queues/catalogs when useful. Example: a bundle mixing free prototype domains, AI-agent cookbooks, trading courses, and an education essay belongs in the general queue while `awesome-llm-apps` also goes to `queries/ai-reading-priority-queue.md` and `references/tools/agentic-development-tooling-catalog.md`, and trading resources also link from economy/prediction-market notes.
 5. When lightweight URL prefetching needs backup, prefer a simple Python `requests` metadata scrape for titles/descriptions/context. If `bs4` is unavailable, use stdlib regex/HTML unescape stripping rather than installing dependencies during intake. Do not let metadata-fetch failure block raw preservation and routing.
 6. Create or update a durable queue note, usually in `queries/`, with:
    - every item marked `pending` unless Brayan explicitly says it was read/watched;
@@ -383,13 +383,13 @@ Use this when Brayan explicitly approves a full vault restructure and wants all 
    - vault docs, templates, domain hubs, dashboards, queues, and wikilinks;
    - `~/.hermes/scripts/`, `~/.hermes/agents/`, `~/.hermes/skills/`, cron jobs/config, and Hermes source files if runtime defaults embed vault paths.
 5. Use programmatic migration for large path changes. Preserve raw material, move notes with `git mv`/Python path operations, and rewrite wikilinks/path strings consistently. For Vault v2 specifically:
-   - `projects/job-opportunities/<slug>.md` -> `opportunities/<slug>/opportunity.md`;
-   - `projects/job-application-packets/<slug>/...` -> `opportunities/<slug>/application/...`;
-   - `projects/job-application-cv-master.md` -> `profile/cv-master.md`;
-   - `projects/pending-decisions.md` -> `decisions/pending.md`;
-   - `projects/project-backlog.md` -> `_meta/dashboards/project-dashboard.md`;
+   - retired single-file opportunity records become `opportunities/<slug>/opportunity.md`;
+   - retired split application-packet folders become `opportunities/<slug>/application/...`;
+   - the canonical CV/profile source belongs in `profile/`;
+   - pending decisions belong in `decisions/`;
+   - the project dashboard belongs in `_meta/dashboards/project-dashboard.md`;
    - true projects become `projects/<slug>/README.md`;
-   - old `inbox/inbox.md`, `inbox/idea-garden.md`, and `inbox/_captures/` are removed from active use.
+   - old inbox sentinel files and inbox capture subfolders are removed from active use.
 6. Update automation to the new paths only. Do not leave scanners/templates checking old paths unless Brayan explicitly requests a transition period. For opportunity tailoring, scanner fallback names must use the parent folder slug because every opportunity file is named `opportunity.md`.
 7. Create or update a deterministic audit script when changing folder semantics. It should ignore historical migration/audit/raw-asset contexts that may legitimately contain old path text, but it should fail on active docs/scripts/cron references to retired paths.
 8. Validate before reporting done:
