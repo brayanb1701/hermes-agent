@@ -366,6 +366,43 @@ Use this when Brayan asks whether the personal vault structure is drifting, proj
 9. For a vault-maintenance/auditor agent, start report-only. It may detect wrong-folder notes, unsupported frontmatter, duplicates, orphan/broken links, project notes missing next actions, and references misclassified as active queues. It must not move/delete/archive notes or change priorities without approval.
 10. Present a phased plan: backup/commit first, schema clarification, low-risk metadata fixes, create target containers/dashboards, pilot one low-risk migration, then batch-migrate once automation is updated and verified.
 
+## Vault v2 one-pass migration execution workflow
+Use this when Brayan explicitly approves a full vault restructure and wants all comments/requirements applied consistently in one pass rather than a phased compatibility migration.
+
+1. Start with protection, not edits:
+   - check `git status --short --branch` in `~/personal_vault`;
+   - commit the current state as a pre-migration snapshot;
+   - create a dated rollback tag such as `pre-vault-v2-restructure-YYYY-MM-DD`.
+2. Treat comments embedded in analysis/planning docs as requirements. Extract them into concrete decisions before editing. Brayan prefers:
+   - no lingering legacy compatibility paths when the target structure is clear;
+   - cleaner replacements over deprecated sentinel files;
+   - programmatic migration plus deterministic validation;
+   - agent/script/docs/cron updates in the same pass as file moves.
+3. Define the target taxonomy first in durable docs (`_meta/schema.md`, `_meta/routing-matrix.md`, `_meta/vault-organization-v2.md`) so subsequent migration scripts have a stable destination map.
+4. Search for all dependent surfaces before moving files:
+   - vault docs, templates, domain hubs, dashboards, queues, and wikilinks;
+   - `~/.hermes/scripts/`, `~/.hermes/agents/`, `~/.hermes/skills/`, cron jobs/config, and Hermes source files if runtime defaults embed vault paths.
+5. Use programmatic migration for large path changes. Preserve raw material, move notes with `git mv`/Python path operations, and rewrite wikilinks/path strings consistently. For Vault v2 specifically:
+   - `projects/job-opportunities/<slug>.md` -> `opportunities/<slug>/opportunity.md`;
+   - `projects/job-application-packets/<slug>/...` -> `opportunities/<slug>/application/...`;
+   - `projects/job-application-cv-master.md` -> `profile/cv-master.md`;
+   - `projects/pending-decisions.md` -> `decisions/pending.md`;
+   - `projects/project-backlog.md` -> `_meta/dashboards/project-dashboard.md`;
+   - true projects become `projects/<slug>/README.md`;
+   - old `inbox/inbox.md`, `inbox/idea-garden.md`, and `inbox/_captures/` are removed from active use.
+6. Update automation to the new paths only. Do not leave scanners/templates checking old paths unless Brayan explicitly requests a transition period. For opportunity tailoring, scanner fallback names must use the parent folder slug because every opportunity file is named `opportunity.md`.
+7. Create or update a deterministic audit script when changing folder semantics. It should ignore historical migration/audit/raw-asset contexts that may legitimately contain old path text, but it should fail on active docs/scripts/cron references to retired paths.
+8. Validate before reporting done:
+   - `git diff --check` in `~/personal_vault`;
+   - `python3 -m py_compile` for modified scripts;
+   - dry-run any workflow scanner affected by path changes;
+   - run the vault audit script;
+   - `hermes config check` if Hermes config/cron/runtime files changed;
+   - search active vault and Hermes files for retired path strings;
+   - verify old paths no longer exist on disk.
+9. Commit the final migrated vault state separately from the pre-migration snapshot. Report commits, tag, validation commands, cron changes, and any non-vault Hermes files changed.
+10. Do not restart Hermes from inside an active chat unless necessary; report if a gateway reload may be needed for runtime source changes.
+
 ## Pitfalls
 - Do not overwrite raw source material
 - Do not treat OCR output as polished truth
