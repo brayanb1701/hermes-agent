@@ -14,7 +14,7 @@ Use this when the daily `hermes-upstream-rebase-ci` cron wakes because the pre-r
 - Repository: `/home/brayan/.hermes/hermes-agent`
 - Fork origin: `git@github.com:brayanb1701/hermes-agent.git`
 - Official upstream: `git@github.com:NousResearch/hermes-agent.git`
-- Workflow doc: `~/personal_vault/projects/hermes-fork-update-workflow.md`
+- Workflow doc: `~/personal_vault/_meta/workflows/hermes/hermes-fork-update-workflow.md`
 - Script: `~/.hermes/scripts/hermes_upstream_rebase_ci.py`
 
 ## Rules
