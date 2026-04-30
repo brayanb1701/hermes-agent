@@ -113,7 +113,7 @@ Use independent `hermes chat -q` sessions when Brayan wants separate session his
 For Brayan's job-tailoring workflow, the intended architecture is:
 
 - `darwin-job-tailoring-agent` runs once daily.
-- It scans `~/personal_vault/projects/job-opportunities/` for `tailoring-ready` jobs.
+- It scans `~/personal_vault/opportunities/<slug>/opportunity.md` for `tailoring-ready` jobs.
 - It selects at most 3 highest-priority launchable jobs.
 - It launches one independent Hermes session per selected job.
 - It does not use plugin handoffs, immediate triggers, or `delegate_task` subagents.
