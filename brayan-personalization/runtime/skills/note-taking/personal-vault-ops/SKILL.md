@@ -370,6 +370,28 @@ Use this when Brayan asks whether the personal vault structure is drifting, proj
 9. For a vault-maintenance/auditor agent, start report-only. It may detect wrong-folder notes, unsupported frontmatter, duplicates, orphan/broken links, project notes missing next actions, and references misclassified as active queues. It must not move/delete/archive notes or change priorities without approval.
 10. Present a phased plan: backup/commit first, schema clarification, low-risk metadata fixes, create target containers/dashboards, pilot one low-risk migration, then batch-migrate once automation is updated and verified.
 
+## Meta folder substructure refinement workflow
+Use this when Brayan says `_meta/` is still too flat/noisy or asks whether meta docs should move into more specific folders.
+
+1. Treat `_meta/` as the vault operating layer, not a dumping ground. The root should stay small: normally `_meta/schema.md`, `_meta/index.md`, `_meta/log.md`, `_meta/routing-matrix.md`, and `_meta/vault-organization-v2.md` only.
+2. Classify root-level meta notes by role before moving:
+   - `_meta/principles/` for slow-changing doctrine and operating invariants, e.g. `agent-operating-principles` and `token-efficiency-and-local-first`.
+   - `_meta/workflows/` for tactical/runbook/playbook procedures, e.g. `agentic-coding-playbooks`.
+   - `_meta/workflows/notes-intake/` for capture/OCR/STT routing procedures, e.g. `capture-protocol` and `ocr-workflow`.
+   - `_meta/architecture/` for system design/runtime/integration docs, e.g. local AI stack, ingestion pipeline, cron system, vault access layer, trace schema, and harness alignment comparisons.
+   - `_meta/guides/`, `_meta/templates/`, `_meta/dashboards/`, `_meta/audits/`, and `_meta/migration_v2_vault/` for their explicit roles.
+3. Preserve semantic distinctions even when filenames share prefixes. Do not do blind prefix replacement that accidentally moves/links a more specific note to the wrong subtree; for example `agent-foundations-harness-alignment` is an architecture/comparison note, not a principle, even though it starts with `agent-foundations`.
+4. After moving files, update all active wikilinks and plain path references across the vault and Hermes skills/agents/scripts/runtime personalization copies. Historical migration notes and generated audits may legitimately mention old paths; active docs should not.
+5. Inspect moved docs for stale content while they are in hand. In prior work, `local-ai-stack` still described EasyOCR as primary even though GLM-OCR was live, and `vault-access-layer` contained only a cached `read_file` placeholder; fix content, not only paths.
+6. Re-run deterministic validation:
+   - active search for old `_meta/<old-name>` references excluding `_meta/migration_v2_vault/` and `_meta/audits/`;
+   - root `_meta/*.md` check against the small allowed set;
+   - `python3 ~/.hermes/scripts/vault_structure_audit.py`;
+   - affected workflow dry-runs when relevant;
+   - `hermes config check` when Hermes skills/config/runtime copies changed.
+7. The vault audit script writes a generated audit report; restore that generated audit file before committing unless the audit report itself is the intended artifact.
+8. Commit/push vault changes separately from Hermes personalization changes, and report both commits.
+
 ## Vault v2 one-pass migration execution workflow
 Use this when Brayan explicitly approves a full vault restructure and wants all comments/requirements applied consistently in one pass rather than a phased compatibility migration.
 
