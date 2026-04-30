@@ -28,36 +28,36 @@
     "created_at": "2026-04-30T08:11:07.416991+00:00",
     "last_patched_at": null,
     "last_used_at": null,
-    "last_viewed_at": null,
+    "last_viewed_at": "2026-04-30T18:27:55.162796+00:00",
     "patch_count": 0,
     "pinned": true,
     "state": "active",
     "use_count": 0,
-    "view_count": 0
+    "view_count": 1
   },
   "file-defined-hermes-agents": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.176418+00:00",
     "last_patched_at": null,
-    "last_used_at": null,
-    "last_viewed_at": "2026-04-30T08:07:22.176429+00:00",
+    "last_used_at": "2026-04-30T17:12:43.517027+00:00",
+    "last_viewed_at": "2026-04-30T17:12:43.513576+00:00",
     "patch_count": 0,
     "pinned": true,
     "state": "active",
-    "use_count": 0,
-    "view_count": 1
+    "use_count": 3,
+    "view_count": 3
   },
   "hermes-upstream-rebase-ci-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.090129+00:00",
     "last_patched_at": null,
-    "last_used_at": null,
-    "last_viewed_at": "2026-04-30T08:07:22.090140+00:00",
+    "last_used_at": "2026-04-30T16:14:59.297147+00:00",
+    "last_viewed_at": "2026-04-30T16:14:59.295402+00:00",
     "patch_count": 0,
     "pinned": true,
     "state": "active",
-    "use_count": 0,
-    "view_count": 1
+    "use_count": 1,
+    "view_count": 2
   },
   "inbox-triage-agent": {
     "archived_at": null,
@@ -74,14 +74,14 @@
   "job-application-vault-workflow": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.180893+00:00",
-    "last_patched_at": null,
-    "last_used_at": null,
-    "last_viewed_at": "2026-04-30T08:07:22.180903+00:00",
-    "patch_count": 0,
+    "last_patched_at": "2026-04-30T17:03:58.267785+00:00",
+    "last_used_at": "2026-04-30T16:52:17.629458+00:00",
+    "last_viewed_at": "2026-04-30T16:52:17.625898+00:00",
+    "patch_count": 1,
     "pinned": true,
     "state": "active",
-    "use_count": 0,
-    "view_count": 1
+    "use_count": 1,
+    "view_count": 2
   },
   "job-opportunity-intake-agent": {
     "archived_at": null,
@@ -122,14 +122,14 @@
   "personal-vault-ops": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.168633+00:00",
-    "last_patched_at": "2026-04-30T08:09:03.237497+00:00",
-    "last_used_at": null,
-    "last_viewed_at": "2026-04-30T08:09:39.753654+00:00",
-    "patch_count": 1,
+    "last_patched_at": "2026-04-30T19:19:11.527640+00:00",
+    "last_used_at": "2026-04-30T19:19:21.220811+00:00",
+    "last_viewed_at": "2026-04-30T19:19:21.218426+00:00",
+    "patch_count": 7,
     "pinned": false,
     "state": "active",
-    "use_count": 0,
-    "view_count": 2
+    "use_count": 6,
+    "view_count": 9
   },
   "topic-recommendations-agent": {
     "archived_at": null,
