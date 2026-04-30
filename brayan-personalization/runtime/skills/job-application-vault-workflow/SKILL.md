@@ -92,11 +92,12 @@ Trigger path:
    - a non-empty `tailoring_packet:` field, or
    - an existing full packet at `opportunities/<job-stem>/application/tailoring-packet.md`.
 6. The scanner sorts ready jobs by priority (`P0` before `P1` before `P2` before `P3`) and then by note stem, then selects at most three launchable jobs for the day with `max_sessions: 3` and `selected_count`.
-7. The pre-run script itself is the dispatcher: for each selected job, read `~/.hermes/agents/job-tailoring/prompt-template.md`, fill placeholders from the selected job, and launch one fully independent Hermes CLI session with `hermes --skills personal-vault-ops,job-tailoring-agent chat -Q --source job-tailoring-session -q <rendered prompt>`.
-8. Stable specialized behavior lives in `~/.hermes/skills/job-tailoring-agent/SKILL.md`; do not embed large job-tailoring prompts in `~/.hermes/scripts/job_tailoring_ready_scan.py`. Scripts are dispatchers only: scan/select, render templates, launch sessions, write locks/logs, and emit wake-gated JSON.
-9. Each independent session handles exactly one job, reads the job note and canonical Markdown CV, creates/updates the packet under `opportunities/<job-stem>/application/`, updates the source job note to `awaiting-review` with a `tailoring_packet:` link, and reports blockers or next action to Brayan.
-10. The parent cron LLM normally stays asleep: the dispatcher emits `wakeAgent: false` after a clean scan/launch and only wakes the fallback prompt if dispatch errors need repair.
-11. The dispatcher records per-job locks/logs under `~/.hermes/state/job_tailoring_sessions/` and `~/.hermes/logs/job_tailoring_sessions/` so the next daily run avoids relaunching active/fresh sessions.
+7. Whenever updating `~/personal_vault/opportunities/dashboard.md`, keep the table sorted as Brayan's opportunity review queue: exact `P0`, mixed/ranged `P0/P1` or `P0-P1`, exact `P1`, mixed/ranged `P1/P2` or `P1-P2`, exact `P2`, mixed/ranged `P2/P3` or `P2-P3`, then exact `P3`. Preserve same-bucket order unless deadline/urgency clearly demands a manual adjustment.
+8. The pre-run script itself is the dispatcher: for each selected job, read `~/.hermes/agents/job-tailoring/prompt-template.md`, fill placeholders from the selected job, and launch one fully independent Hermes CLI session with `hermes --skills personal-vault-ops,job-tailoring-agent chat -Q --source job-tailoring-session -q <rendered prompt>`.
+9. Stable specialized behavior lives in `~/.hermes/skills/job-tailoring-agent/SKILL.md`; do not embed large job-tailoring prompts in `~/.hermes/scripts/job_tailoring_ready_scan.py`. Scripts are dispatchers only: scan/select, render templates, launch sessions, write locks/logs, and emit wake-gated JSON.
+10. Each independent session handles exactly one job, reads the job note and canonical Markdown CV, creates/updates the packet under `opportunities/<job-stem>/application/`, updates the source job note to `awaiting-review` with a `tailoring_packet:` link, and reports blockers or next action to Brayan.
+11. The parent cron LLM normally stays asleep: the dispatcher emits `wakeAgent: false` after a clean scan/launch and only wakes the fallback prompt if dispatch errors need repair.
+12. The dispatcher records per-job locks/logs under `~/.hermes/state/job_tailoring_sessions/` and `~/.hermes/logs/job_tailoring_sessions/` so the next daily run avoids relaunching active/fresh sessions.
 
 Packet contents should include:
 - tailored CV draft or exact CV delta instructions
