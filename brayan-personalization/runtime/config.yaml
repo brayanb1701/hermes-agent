@@ -18,7 +18,7 @@ agent:
   gateway_timeout_warning: 900
   gateway_notify_interval: 600
   verbose: false
-  reasoning_effort: medium
+  reasoning_effort: high
   personalities:
     helpful: You are a helpful, friendly AI assistant.
     concise: You are a concise assistant. Keep responses brief and to the point.
@@ -183,7 +183,7 @@ display:
   resume_display: full
   busy_input_mode: interrupt
   bell_on_complete: false
-  show_reasoning: false
+  show_reasoning: true
   streaming: true
   final_response_markdown: strip
   inline_diffs: true
@@ -442,3 +442,7 @@ plugins:
   enabled:
   - notes_preprocessor
   disabled: []
+onboarding:
+  seen:
+    busy_input_prompt: true
+    tool_progress_prompt: true
