@@ -190,7 +190,9 @@ Use this when Brayan sends a bundle of articles, blogs, papers, X threads, video
 1. Orient by reading `_meta/schema.md`, `_meta/index.md`, `_meta/log.md`, and the directly relevant domain/project hubs.
 2. Preserve Brayan's original bundle verbatim in `raw/notes/` as a source capture, including his comments next to each URL/file.
 3. Search the vault for existing reading queues, source notes, or related concepts before creating duplicates.
-4. Create or update a durable queue note, usually in `queries/`, with:
+4. For mixed cross-domain bundles that do not fit a single specialized queue, create or update `queries/general-learning-resource-queue.md` as the durable routing layer, then cross-link individual items into more specific queues/catalogs when useful. Example: a bundle mixing free prototype domains, AI-agent cookbooks, trading courses, and an education essay belongs in the general queue while `awesome-llm-apps` also goes to `queries/ai-reading-priority-queue.md` and `concepts/agentic-development-tooling-catalog.md`, and trading resources also link from economy/prediction-market notes.
+5. When lightweight URL prefetching needs backup, prefer a simple Python `requests` metadata scrape for titles/descriptions/context. If `bs4` is unavailable, use stdlib regex/HTML unescape stripping rather than installing dependencies during intake. Do not let metadata-fetch failure block raw preservation and routing.
+6. Create or update a durable queue note, usually in `queries/`, with:
    - every item marked `pending` unless Brayan explicitly says it was read/watched;
    - a priority tier such as P0/P1/P2 based on current goals, not just apparent source quality;
    - a short `what to extract` field for each item;
@@ -198,10 +200,31 @@ Use this when Brayan sends a bundle of articles, blogs, papers, X threads, video
    - for code-heavy learning videos, explicitly prefer active replication over passive viewing and note when the source should later become a small project/notebook/repo;
    - a suggested first reading/watching path;
    - a reusable extraction template for Brayan's key takeaways, Darwin synthesis, follow-up actions, deeper links/papers, generated artifacts, and related vault connections.
-5. If one source exists as a transient inbox file because a website/social platform was inaccessible, promote that file to `raw/articles/` or `raw/papers/`, link it from the queue, and remove the transient inbox duplicate after preservation.
-6. For dynamic or blocked pages, inspect with browser tools if lightweight fetching fails; if still blocked, record the access issue in the queue rather than inventing content.
-7. Link the queue from relevant domain hubs and active projects, especially `domains/ai/ai-map.md`, `projects/darwin-improvement.md`, and `projects/darwin-token-efficiency-and-local-model-training.md` when the sources affect AI, agents, token efficiency, or local/post-training.
-8. Add important queues to `_meta/index.md`, append a structural entry to `_meta/log.md`, and verify by searching for the queue slug plus any removed inbox filename.
+5. If Brayan's comment frames one or more sources as a possible project, implementation experiment, tutorial to replicate, or research path worth building on, create or update a seed `projects/` note in addition to the reading queue. Include the source links, why the project matters, an MVP/experiment design, guardrails if security or external side effects are involved, open questions, next actions, and links back to the queue/raw capture. Do not leave explicitly actionable research leads only as passive reading-list rows.
+   - For closed competitions, hiring challenges, take-homes, benchmark contests, or puzzle notebooks that Brayan wants to use for learning/practice, usually create/update a `queries/*challenge-practice-queue.md` plus a seed `projects/*challenge-practice-lab.md` instead of treating them only as expired opportunities. Capture official deadlines/prizes when useful, but emphasize runnable setup, baseline metrics, improvement logs, write-ups, and proof-of-work artifacts. Create a formal `projects/job-opportunities/` record only when the challenge is live, recurring/future-cycle, application-relevant, or has concrete recruiting/funding/network value.
+6. If one source exists as a transient inbox file because a website/social platform was inaccessible, promote that file to `raw/articles/` or `raw/papers`, link it from the queue, and remove the transient inbox duplicate after preservation. For direct PDF links that are important study/research materials, save a durable copy under `raw/papers/` when lightweight fetching only captures metadata or fails to extract text.
+7. For dynamic or blocked pages, inspect with browser tools if lightweight fetching fails; if still blocked, record the access issue in the queue rather than inventing content.
+8. Link the queue and any seed project from relevant domain hubs and active projects, especially `domains/ai/ai-map.md`, `domains/coding/coding-map.md`, `domains/physics/physics-map.md`, `projects/project-backlog.md`, `projects/darwin-improvement.md`, and `projects/darwin-token-efficiency-and-local-model-training.md` when the sources affect AI, agents, token efficiency, or local/post-training.
+9. Add important queues/projects to `_meta/index.md`, append a structural entry to `_meta/log.md`, and verify by searching for the queue/project slug plus any removed inbox filename.
+
+## Mixed learning / fun media watch-queue workflow
+Use this when Brayan sends YouTube videos, channels, anime, shows, or other media and explicitly distinguishes items for learning/notes from items for fun.
+
+1. Orient by reading `_meta/schema.md`, `_meta/index.md`, `_meta/log.md`, and relevant domain hubs such as `domains/ai/ai-map.md`, `domains/physics/physics-map.md`, and `domains/creative/creative-map.md`.
+2. Preserve Brayan's original bundle verbatim in `raw/notes/`, including his uncertainty about whether each item deserves notes.
+3. Search for existing watch queues, reading queues, and related source notes before creating duplicates.
+4. Create or update `queries/media-watch-queue.md` as the cross-domain personal media queue with at least two explicit modes:
+   - **Watch + take notes / learning potential** — videos/channels where notes, questions, or follow-up research may compound.
+   - **Watch for fun / no note-taking obligation** — entertainment/leisure items that should stay guilt-free unless Brayan later asks for analysis.
+5. For learning-potential items, use a light priority and mode field (`notes`, `maybe notes`, `light notes`, `active replication`, or `research/idea extraction`) and describe only what to extract. Avoid making every educational-looking video into homework.
+   - For creative software / maker tutorials (Ableton, DJing, art tools, video editing, game engines, etc.) that Brayan frames as a place to start learning or experimenting, treat them as **active replication** rather than passive watching. Preserve the raw capture, add the video to `queries/media-watch-queue.md`, and create/update a seed `projects/*-learning-lab.md` if there is a concrete practice artifact to produce.
+   - If Brayan also mentions agent/MCP/tool-control possibilities for that software, link the seed project from both the creative domain and the AI/Darwin tooling context, and make the first automation idea read-only/summarization-first before any destructive editing.
+6. Cross-link domain-specific learning items into the relevant queues when they materially affect existing study paths:
+   - AI/agent/model videos into `queries/ai-reading-priority-queue.md`.
+   - Physics/math/quantum videos into `queries/physics-study-priority-queue.md`.
+   - Creative/storytelling analysis only if Brayan frames the entertainment item as a creative-study target; otherwise keep it fun-only.
+7. Link `queries/media-watch-queue.md` from relevant domain hubs and `_meta/index.md`, append a `_meta/log.md` entry, and verify by searching for the queue slug plus distinctive media titles.
+8. Do not fetch YouTube transcripts or summarize videos unless Brayan explicitly asks for extraction/notes; routing the queue is enough for intake.
 
 ## Foundational source-bundle promotion workflow
 Use this when Brayan drops a high-importance folder/bundle into `inbox/` that contains original sources plus derived principles/playbooks/specs that should become durable operating doctrine, especially for Darwin/Hermes, agentic coding, vault architecture, or long-term workflows.
@@ -313,6 +336,37 @@ Use this when the user asks whether a prior `Anything Inbox` handwritten-note ru
    - whether a bare `Vision auto-detect` line in `agent.log` actually corresponds to notes-intake fallback, or is merely auxiliary/client initialization; do not treat that line alone as proof that image classification or OCR used remote vision when session metadata shows `classification_engine: local_clip` and `ocr_fallback_used: false`
 7. Use verdict language that separates user-visible success from architectural success. Example: "worked operationally via fallback, but not as designed."
 
+## Vault organization audit / restructure planning workflow
+Use this when Brayan asks whether the personal vault structure is drifting, projects are noisy, references are being treated as active work, or models are having trouble retrieving/categorizing vault information.
+
+1. Do not start by moving files. First run a report-only audit and present tradeoffs.
+2. Orient with `_meta/schema.md`, `_meta/index.md`, `_meta/log.md`, `_meta/routing-matrix.md`, `projects/project-backlog.md`, and directly relevant workflow notes.
+3. Inventory the actual filesystem and frontmatter before recommending changes:
+   - counts by top-level folder
+   - all notes under `projects/` excluding obvious subtrees as needed
+   - frontmatter `type`, `status`, and `area` values outside schema
+   - links to deprecated/possibly unused queue files such as `inbox/inbox.md` and `inbox/idea-garden.md`
+   - scripts/cron/agent templates that depend on current paths before proposing path moves
+4. Treat `projects/` as execution-only. A note belongs there only if it has a concrete outcome, next action, status, and completion/stop condition. Workflows, guides, CV/profile sources, pending decisions, architecture notes, passive references, opportunity records, and application packets should not be treated as independent projects.
+5. Preferred long-term taxonomy when restructuring:
+   - `_meta/` for schema, workflows, architecture, guides, templates, logs, dashboards, and operating principles
+   - `raw/` for immutable captures/assets/papers/transcripts
+   - `domains/` for navigation hubs only
+   - `concepts/` for durable ideas/models/catalogs
+   - `queries/` for active queues and saved syntheses
+   - `references/` or `concepts/` with `status: reference` for passive tools/cookbooks/resources that should not imply action
+   - `projects/` for true actionable execution efforts only
+   - `opportunities/` for jobs, fellowships, internships, grants, scholarships, bounties, competitions, and their application materials
+   - `profile/` for canonical CV, bio, portfolio, and application-profile source material
+   - `decisions/` for pending decisions and decision logs
+   - `daily/` for reviews/snapshots
+   - `inbox/` for transient unprocessed files only, often empty
+6. For opportunity records, prefer one folder per opportunity in the long run, e.g. `opportunities/<slug>/opportunity.md` plus `opportunities/<slug>/application/tailoring-packet.md`, `tailored-cv.md`, and `application-draft.md`. However, first update scanners/templates/skills to support both legacy and new layouts before migrating files.
+7. When auditing `inbox/inbox.md` and `inbox/idea-garden.md`, check whether agents still read them. If they are unused as real queues, prefer replacing them with an `inbox/README.md` policy note or marking them deprecated, but update skills/prompts/docs first so agents inspect actual inbox folder contents rather than stale sentinel files.
+8. Passive resources such as implementation cookbooks, domain/hosting tools, pricing/free-tier references, or utility catalogs should be filed as references, not P0/P1 pending reading or projects, unless Brayan explicitly wants an active extraction/build sprint.
+9. For a vault-maintenance/auditor agent, start report-only. It may detect wrong-folder notes, unsupported frontmatter, duplicates, orphan/broken links, project notes missing next actions, and references misclassified as active queues. It must not move/delete/archive notes or change priorities without approval.
+10. Present a phased plan: backup/commit first, schema clarification, low-risk metadata fixes, create target containers/dashboards, pilot one low-risk migration, then batch-migrate once automation is updated and verified.
+
 ## Pitfalls
 - Do not overwrite raw source material
 - Do not treat OCR output as polished truth
@@ -320,3 +374,5 @@ Use this when the user asks whether a prior `Anything Inbox` handwritten-note ru
 - Do not create isolated notes with no links unless unavoidable
 - Do not claim a test was "fully erased" if references still exist in active Hermes session history; distinguish practical retest cleanliness from total historical erasure
 - Do not infer the real OCR/provider path from the final note alone; verify against logs
+- Do not use `projects/` as a generic place for important files; separate true projects from workflows, guides, support assets, references, opportunities, and decisions
+- Do not migrate opportunity paths before updating job-tailoring scripts/templates/skills that depend on the legacy `projects/job-opportunities/` and `projects/job-application-packets/` layout
