@@ -171,9 +171,20 @@ def is_ancestor(older: str, newer: str) -> bool:
 
 
 def dirty_paths() -> list[str]:
-    result = git("status", "--porcelain")
+    # Use raw subprocess output here, not git()/run(), because run() redacts and
+    # truncates command output for logs. Large personalization snapshots can make
+    # `git status --porcelain` exceed the log limit; parsing the truncated text
+    # produces bogus paths like "UNCATED]" and falsely trips the dirty-tree gate.
+    proc = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=REPO,
+        text=True,
+        capture_output=True,
+        check=False,
+        env={**os.environ, "NO_COLOR": "1", "GIT_EDITOR": "true", "GIT_SEQUENCE_EDITOR": "true"},
+    )
     paths: list[str] = []
-    for line in str(result.get("stdout", "")).splitlines():
+    for line in proc.stdout.splitlines():
         if not line:
             continue
         # Porcelain v1 format: XY PATH, or XY OLD -> NEW. Use destination for renames.
