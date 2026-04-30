@@ -127,6 +127,8 @@ def main() -> None:
     broken_links = []
     opportunity_issues = []
     reference_queue_issues = []
+    semantic_location_issues = []
+    old_paths_existing = []
 
     for p in notes:
         r = rel(p)
@@ -147,6 +149,30 @@ def main() -> None:
                 unsupported.append((r, "status", status))
         if area and area not in ALLOWED_AREAS:
             unsupported.append((r, "area", area))
+
+        top = Path(r).parts[0] if Path(r).parts else ""
+        if r == "inbox/README.md":
+            pass
+        elif top == "inbox":
+            semantic_location_issues.append((r, "inbox/ should contain only transient manual files; durable captures belong under raw/ and this should be manually triaged"))
+        elif top == "references" and r != "references/README.md" and typ != "reference":
+            semantic_location_issues.append((r, "references/ notes should use type: reference"))
+        elif top == "references" and r != "references/README.md" and status != "reference":
+            semantic_location_issues.append((r, "references/ notes should use status: reference"))
+        elif top == "concepts" and (typ == "reference" or status == "reference"):
+            semantic_location_issues.append((r, "passive references should live under references/, not concepts/"))
+        elif top == "concepts" and re.search(r"tool|tools|tooling|cookbook|resource", p.stem, re.I) and re.search(r"implementation cookbook|tool candidates|use when|candidate list", text, re.I):
+            semantic_location_issues.append((r, "tool/resource catalogs should usually live under references/tools/ unless they are conceptual synthesis"))
+        elif top == "queries" and typ != "query":
+            semantic_location_issues.append((r, "queries/ notes should use type: query"))
+        elif top == "domains" and typ != "domain":
+            semantic_location_issues.append((r, "domains/ notes should use type: domain"))
+        elif top == "decisions" and typ != "decision-register":
+            semantic_location_issues.append((r, "decisions/ notes should use type: decision-register"))
+        elif top == "profile" and typ != "profile":
+            semantic_location_issues.append((r, "profile/ notes should use type: profile"))
+        elif top == "raw" and not r.startswith("raw/assets/") and typ and typ != "raw-source":
+            semantic_location_issues.append((r, "raw/ notes should preserve source material with type: raw-source"))
 
         if r.startswith("projects/") and r != "projects/README.md":
             parts = Path(r).parts
@@ -187,6 +213,11 @@ def main() -> None:
             elif not packet.exists():
                 opportunity_issues.append((rel(opp), "tailoring_packet is set but application/tailoring-packet.md is missing"))
 
+    for pattern in OLD_PATH_PATTERNS:
+        candidate = VAULT / pattern
+        if candidate.exists():
+            old_paths_existing.append(pattern)
+
     issues = {
         "unsupported_frontmatter": unsupported,
         "missing_frontmatter": missing_frontmatter,
@@ -196,6 +227,8 @@ def main() -> None:
         "broken_wikilinks": broken_links,
         "opportunity_issues": opportunity_issues,
         "reference_queue_issues": reference_queue_issues,
+        "semantic_location_issues": semantic_location_issues,
+        "old_paths_existing": old_paths_existing,
     }
     issue_count = sum(len(v) for v in issues.values())
 
@@ -265,6 +298,12 @@ Report-only deterministic audit. This script proposes fixes but does not move/de
 
 ### Reference-vs-query issues
 {bullet_list(reference_queue_issues, lambda x: f"`{x[0]}` — {x[1]}")}
+
+### Semantic location issues
+{bullet_list(semantic_location_issues, lambda x: f"`{x[0]}` — {x[1]}")}
+
+### Retired paths still existing on disk
+{bullet_list(old_paths_existing, lambda x: f"`{x}`")}
 
 ## Patch proposal policy
 
