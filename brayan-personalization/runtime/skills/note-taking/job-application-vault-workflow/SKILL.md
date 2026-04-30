@@ -19,19 +19,19 @@ Always orient with:
 1. `~/personal_vault/_meta/schema.md`
 2. `~/personal_vault/_meta/index.md`
 3. `~/personal_vault/_meta/log.md`
-4. `~/personal_vault/projects/job-application-copilot.md` if it exists
+4. `~/personal_vault/projects/job-application-copilot/README.md` if it exists
 5. `~/personal_vault/domains/opportunities/opportunities-map.md` if it exists
 
 ## Canonical file locations
-- Master Markdown CV: `~/personal_vault/projects/job-application-cv-master.md`
+- Master Markdown CV: `~/personal_vault/profile/cv-master.md`
 - CV source-pack note: `~/personal_vault/raw/notes/YYYY-MM-DD-brayan-barajas-cv-source-pack.md`
 - Durable source files: `~/personal_vault/raw/assets/YYYY-MM-DD-cv-brayan-barajas.docx` and `.pdf`
-- Job workflow note: `~/personal_vault/projects/job-opportunity-intake-workflow.md`
-- Job tailoring automation note: `~/personal_vault/projects/job-tailoring-agent-automation.md`
-- Per-job records: `~/personal_vault/projects/job-opportunities/YYYY-MM-DD-company-role.md`
+- Job workflow note: `~/personal_vault/_meta/workflows/opportunities/job-opportunity-intake-workflow.md`
+- Job tailoring automation note: `~/personal_vault/_meta/workflows/opportunities/job-tailoring-agent-automation.md`
+- Per-job records: `~/personal_vault/opportunities/YYYY-MM-DD-company-role.md`
 - Job opportunity template: `~/personal_vault/_meta/templates/job-opportunity-template.md`
 - Tailoring packet template: `~/personal_vault/_meta/templates/job-tailoring-packet-template.md`
-- Tailored packets: `~/personal_vault/projects/job-application-packets/<job-stem>/`
+- Tailored packets: `~/personal_vault/opportunities/<job-stem>/application/`
 - Independent-session dispatcher/scanner script: `~/.hermes/scripts/job_tailoring_ready_scan.py`
 - Job-tailoring prompt template: `~/.hermes/agents/job-tailoring/prompt-template.md`
 - Job-tailoring specialized skill: `~/.hermes/skills/job-tailoring-agent/SKILL.md`
@@ -58,7 +58,7 @@ This is good enough for structured CV recovery when `python-docx` is also unavai
 ## Opportunity intake workflow
 For each new job link:
 1. Preserve the source URL and any user notes.
-2. Create a job note from `_meta/templates/job-opportunity-template.md` under `projects/job-opportunities/`.
+2. Create a job note from `_meta/templates/job-opportunity-template.md` under `opportunities/`.
 3. Read the full public posting.
 4. Open the actual application form, not just the listing.
 5. Record whether the form requires or requests:
@@ -85,16 +85,16 @@ The current implementation intentionally uses only a once-daily cron-backed disp
 
 Trigger path:
 1. User sends job link/details to the Telegram Anything Inbox.
-2. First agent creates/updates a job note in `projects/job-opportunities/`.
+2. First agent creates/updates a job note in `opportunities/`.
 3. First agent marks the note `status: tailoring-ready` only when there is enough information to tailor.
 4. Cron job `darwin-job-tailoring-agent` (`edfaeb3aed5d`) runs daily at 11:00 with pre-run script `~/.hermes/scripts/job_tailoring_ready_scan.py`.
 5. The scanner emits JSON listing all ready jobs and skips any job that already has:
    - a non-empty `tailoring_packet:` field, or
-   - an existing packet directory under `projects/job-application-packets/<job-stem>/`.
+   - an existing full packet at `opportunities/<job-stem>/application/tailoring-packet.md`.
 6. The scanner sorts ready jobs by priority (`P0` before `P1` before `P2` before `P3`) and then by note stem, then selects at most three launchable jobs for the day with `max_sessions: 3` and `selected_count`.
 7. The pre-run script itself is the dispatcher: for each selected job, read `~/.hermes/agents/job-tailoring/prompt-template.md`, fill placeholders from the selected job, and launch one fully independent Hermes CLI session with `hermes --skills personal-vault-ops,job-tailoring-agent chat -Q --source job-tailoring-session -q <rendered prompt>`.
 8. Stable specialized behavior lives in `~/.hermes/skills/job-tailoring-agent/SKILL.md`; do not embed large job-tailoring prompts in `~/.hermes/scripts/job_tailoring_ready_scan.py`. Scripts are dispatchers only: scan/select, render templates, launch sessions, write locks/logs, and emit wake-gated JSON.
-9. Each independent session handles exactly one job, reads the job note and canonical Markdown CV, creates/updates the packet under `projects/job-application-packets/<job-stem>/`, updates the source job note to `awaiting-review` with a `tailoring_packet:` link, and reports blockers or next action to Brayan.
+9. Each independent session handles exactly one job, reads the job note and canonical Markdown CV, creates/updates the packet under `opportunities/<job-stem>/application/`, updates the source job note to `awaiting-review` with a `tailoring_packet:` link, and reports blockers or next action to Brayan.
 10. The parent cron LLM normally stays asleep: the dispatcher emits `wakeAgent: false` after a clean scan/launch and only wakes the fallback prompt if dispatch errors need repair.
 11. The dispatcher records per-job locks/logs under `~/.hermes/state/job_tailoring_sessions/` and `~/.hermes/logs/job_tailoring_sessions/` so the next daily run avoids relaunching active/fresh sessions.
 
@@ -118,8 +118,8 @@ When setting up or updating the system, make sure these exist and are linked:
 - job opportunity template
 - tailoring packet template
 - job tailoring automation note
-- job-opportunities folder/readme or equivalent index
-- job-application-packets folder/readme or equivalent index
+- opportunities folder/dashboard
+- per-opportunity `application/` folders
 - `_meta/index.md` links
 - `_meta/log.md` entry documenting the structural change
 
@@ -133,10 +133,10 @@ When auditing whether a Telegram job-link intake actually worked, check all of t
 1. `~/.hermes/logs/notes_preprocessor.jsonl` for URL detection/prefetch counts (`prefetched_ok`, `prefetched_failed`).
 2. The relevant `~/.hermes/sessions/session_*.json` for the intake agent's actual tool calls and final response.
 3. `~/personal_vault/raw/notes/` for the preserved source capture.
-4. `~/personal_vault/projects/job-opportunities/` for created/updated opportunity records and statuses.
+4. `~/personal_vault/opportunities/<slug>/opportunity.md` for created/updated opportunity records and statuses.
 5. `~/.hermes/scripts/job_tailoring_ready_scan.py` output for the live tailoring queue.
 6. `~/.hermes/cron/output/<job_id>/` and `~/.hermes/sessions/session_cron_<job_id>_*.json` for tailoring-agent executions.
-7. `~/personal_vault/projects/job-application-packets/` for generated packets.
+7. `~/personal_vault/opportunities/<stem>/application/` for generated packets.
 
 Important audit lessons from the first live bundle:
 - URL prefetch context may be injected into the model call without being persisted into the session transcript. If the session JSON only shows the raw user message, verify prefetch in `notes_preprocessor.jsonl` before concluding it failed.
