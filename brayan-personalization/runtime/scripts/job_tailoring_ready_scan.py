@@ -20,6 +20,7 @@ import os
 import re
 import shutil
 import subprocess
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -113,33 +114,60 @@ def has_existing_packet(path: Path, fm: dict[str, str], text: str) -> bool:
     return False
 
 
-def collect_ready_jobs() -> list[dict[str, str]]:
+def job_record(path: Path, text: str, fm: dict[str, str]) -> dict[str, str]:
+    return {
+        "job_path": str(path),
+        "path": str(path),
+        "stem": path.parent.name,
+        "title": extract_title(text, fm, path.parent.name),
+        "company": fm.get("company", "unknown"),
+        "role": fm.get("role", "unknown"),
+        "priority": fm.get("priority", "unknown"),
+        "status": (fm.get("status") or body_status(text)).strip().lower() or "unknown",
+        "source_url": fm.get("source_url", "unknown"),
+        "application_url": fm.get("application_url", "unknown"),
+        "form_inspection_status": fm.get("form_inspection_status", "unknown"),
+        "tailoring_packet": fm.get("tailoring_packet", "unknown"),
+        "job_work_automation_potential": fm.get("job_work_automation_potential", "unknown"),
+        "application_process_complexity": fm.get("application_process_complexity", "unknown"),
+    }
+
+
+def collect_inventory() -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    """Return (launchable_ready_jobs, all opportunity records with skip reasons).
+
+    Only `tailoring-ready` opportunities without a verified full packet are launchable.
+    `captured` and `researched` are intentionally not dispatched: they are intake/research
+    states that still need a specific application decision, role selection, form completion,
+    or explicit promotion to `tailoring-ready`.
+    """
     ready: list[dict[str, str]] = []
+    inventory: list[dict[str, str]] = []
     if not OPPORTUNITIES_DIR.exists():
-        return ready
+        return ready, inventory
 
     for path in sorted(OPPORTUNITIES_DIR.glob("*/opportunity.md")):
         text = path.read_text(encoding="utf-8", errors="replace")
         fm = parse_frontmatter(text)
-        status = (fm.get("status") or body_status(text)).strip().lower()
-        if status != "tailoring-ready" or has_existing_packet(path, fm, text):
-            continue
-        ready.append({
-            "job_path": str(path),
-            "path": str(path),
-            "stem": path.parent.name,
-            "title": extract_title(text, fm, path.parent.name),
-            "company": fm.get("company", "unknown"),
-            "role": fm.get("role", "unknown"),
-            "priority": fm.get("priority", "unknown"),
-            "source_url": fm.get("source_url", "unknown"),
-            "application_url": fm.get("application_url", "unknown"),
-            "job_work_automation_potential": fm.get("job_work_automation_potential", "unknown"),
-            "application_process_complexity": fm.get("application_process_complexity", "unknown"),
-        })
+        record = job_record(path, text, fm)
+        packet_exists = has_existing_packet(path, fm, text)
+        record["has_existing_packet"] = str(packet_exists).lower()
+        if record["status"] != "tailoring-ready":
+            record["skip_reason"] = f"status is {record['status']}, not tailoring-ready"
+        elif packet_exists:
+            record["skip_reason"] = "verified application/tailoring-packet.md already exists"
+        else:
+            record["skip_reason"] = "launchable"
+            ready.append(record)
+        inventory.append(record)
 
     priority_rank = {"p0": 0, "p1": 1, "p2": 2, "p3": 3}
     ready.sort(key=lambda job: (priority_rank.get(job.get("priority", "").lower(), 9), job["stem"]))
+    return ready, inventory
+
+
+def collect_ready_jobs() -> list[dict[str, str]]:
+    ready, _inventory = collect_inventory()
     return ready
 
 
@@ -275,7 +303,7 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Show selected jobs without launching sessions")
     args = parser.parse_args()
 
-    ready = collect_ready_jobs()
+    ready, inventory = collect_inventory()
     selected, skipped_active = select_jobs(ready)
     launched: list[dict[str, object]] = []
     errors: list[dict[str, str]] = []
@@ -289,8 +317,12 @@ def main() -> None:
             except Exception as exc:  # keep one bad launch from blocking others
                 errors.append({"path": job["job_path"], "stem": job["stem"], "error": repr(exc)})
 
+    status_counts = Counter(job.get("status", "unknown") for job in inventory)
+    skip_counts = Counter(job.get("skip_reason", "unknown") for job in inventory)
+    non_launchable_jobs = [job for job in inventory if job.get("skip_reason") != "launchable"]
+
     print(json.dumps({
-        "wakeAgent": bool(errors),
+        "wakeAgent": bool(errors or launched),
         "dispatch_only": True,
         "dry_run": args.dry_run,
         "vault": str(VAULT),
@@ -300,6 +332,9 @@ def main() -> None:
         "state_dir": str(STATE_DIR),
         "log_dir": str(LOG_DIR),
         "max_sessions": MAX_SESSIONS,
+        "opportunity_count": len(inventory),
+        "status_counts": dict(sorted(status_counts.items())),
+        "skip_counts": dict(sorted(skip_counts.items())),
         "ready_count": len(ready),
         "selected_count": len(selected),
         "launched_count": len(launched),
@@ -309,6 +344,7 @@ def main() -> None:
         "selected_jobs": selected,
         "launched_jobs": launched,
         "skipped_active_jobs": skipped_active,
+        "non_launchable_jobs": non_launchable_jobs,
         "errors": errors,
     }, ensure_ascii=False))
 
