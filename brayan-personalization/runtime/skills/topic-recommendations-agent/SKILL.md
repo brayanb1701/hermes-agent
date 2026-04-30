@@ -33,5 +33,12 @@ Prefer topics that compound Brayan's skill, agency, earning potential, or durabl
 
 Append only strong reusable recommendations to `~/personal_vault/queries/topic-recommendations.md`; do not spam the file with weak one-offs.
 
+## Run procedure
+1. After the required reads, check whether today's daily review exists under `~/personal_vault/daily/YYYY-MM-DD.md`; if present, use it as the pressure/priority signal so recommendations reflect current deadlines and blockers rather than repeating older sets.
+2. Read any directly relevant project/opportunity notes for candidate recommendations before writing, especially P0/P1 items, deadline-driven sprints, and newly created creative/build labs.
+3. If adding a durable recommendation set, update the `updated:` date in `queries/topic-recommendations.md` and append a concise entry to `~/personal_vault/_meta/log.md`.
+4. Verify the new set by searching for the date/slug and reading the changed section.
+5. If the vault working tree already has unrelated dirty files, run validation scoped to the files touched by this agent, e.g. `git diff --check -- _meta/log.md queries/topic-recommendations.md`, and do not attempt to clean unrelated whitespace or pending changes from other agents.
+
 ## Output
-Send a concise recommendation briefing explaining why each item matters and what the next action is.
+Send a concise recommendation briefing explaining why each item matters and what the next action is. Mention durable vault updates only briefly unless there was a problem.
