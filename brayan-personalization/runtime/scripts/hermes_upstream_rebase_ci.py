@@ -45,6 +45,8 @@ TEST_COMMANDS = [
         "tests/plugins/test_notes_preprocessor_intake.py",
         "tests/cron/test_cron_script.py::TestScriptWakeGate",
         "-q",
+        "-o",
+        "addopts=",
     ],
     [
         str(PYTHON),
@@ -54,6 +56,8 @@ TEST_COMMANDS = [
         "tests/tools/test_cronjob_tools.py",
         "tests/hermes_cli/test_cron.py",
         "-q",
+        "-o",
+        "addopts=",
     ],
     ["/home/brayan/.local/bin/hermes", "config", "check"],
 ]
@@ -104,7 +108,7 @@ def run(cmd: list[str], *, check: bool = False, timeout: int = 300) -> dict[str,
         capture_output=True,
         timeout=timeout,
         check=False,
-        env={**os.environ, "NO_COLOR": "1"},
+        env={**os.environ, "NO_COLOR": "1", "GIT_EDITOR": "true", "GIT_SEQUENCE_EDITOR": "true"},
     )
     result = {
         "cmd": cmd,
@@ -121,6 +125,43 @@ def git(*args: str, check: bool = False, timeout: int = 300) -> dict[str, Any]:
     return run(["git", *args], check=check, timeout=timeout)
 
 
+def configure_git_automation(commands: list[dict[str, Any]]) -> None:
+    """Enable Git helpers that make repeated rebases less manual.
+
+    rerere records conflict resolutions. If upstream produces the same conflict
+    again, Git can reuse the prior resolution instead of waking the agent for
+    the same manual edit. autoupdate stages reused resolutions so the script can
+    continue the rebase non-interactively when all conflicts were resolved.
+    """
+    for key, value in (("rerere.enabled", "true"), ("rerere.autoupdate", "true")):
+        result = git("config", key, value)
+        commands.append(result)
+
+
+def unmerged_paths() -> list[str]:
+    result = git("diff", "--name-only", "--diff-filter=U")
+    return [line.strip() for line in stdout(result).splitlines() if line.strip()]
+
+
+def rebase_in_progress() -> bool:
+    return any((REPO / marker).exists() for marker in (".git/rebase-merge", ".git/rebase-apply"))
+
+
+def try_continue_resolved_rebase(commands: list[dict[str, Any]]) -> bool:
+    """Continue a rebase if rerere/autoupdate resolved every conflict.
+
+    Returns True only when the rebase completed successfully. If conflicts remain
+    or continue fails, callers should wake the agent with diagnostics.
+    """
+    if not rebase_in_progress() or unmerged_paths():
+        return False
+    status = git("status", "--porcelain")
+    commands.append(status)
+    cont = git("rebase", "--continue", timeout=300)
+    commands.append(cont)
+    return cont["returncode"] == 0
+
+
 def stdout(result: dict[str, Any]) -> str:
     return str(result.get("stdout", "")).strip()
 
@@ -132,7 +173,7 @@ def is_ancestor(older: str, newer: str) -> bool:
 def dirty_paths() -> list[str]:
     result = git("status", "--porcelain")
     paths: list[str] = []
-    for line in stdout(result).splitlines():
+    for line in str(result.get("stdout", "")).splitlines():
         if not line:
             continue
         # Porcelain v1 format: XY PATH, or XY OLD -> NEW. Use destination for renames.
@@ -218,6 +259,8 @@ def status_snapshot() -> dict[str, Any]:
         "head": stdout(git("rev-parse", "--short", "HEAD")),
         "remotes": stdout(git("remote", "-v")),
         "ahead_behind_upstream": stdout(git("rev-list", "--left-right", "--count", "upstream/main...HEAD")),
+        "unmerged_paths": unmerged_paths(),
+        "rebase_in_progress": rebase_in_progress(),
     }
 
 
@@ -277,6 +320,8 @@ def main() -> None:
             fail("preflight", f"Missing git remote: {remote}", commands=[result])
             return
 
+    configure_git_automation(commands)
+
     fetch_upstream = git("fetch", "upstream", "main", "--quiet", timeout=120)
     commands.append(fetch_upstream)
     if fetch_upstream["returncode"] != 0:
@@ -332,15 +377,18 @@ def main() -> None:
     before = stdout(git("rev-parse", "--short", "HEAD"))
     upstream = stdout(git("rev-parse", "--short", "upstream/main"))
 
-    rebase = git("rebase", "upstream/main", timeout=300)
+    rebase = git("rebase", "upstream/main", timeout=600)
     commands.append(rebase)
     if rebase["returncode"] != 0:
-        fail(
-            "rebase",
-            f"Rebase onto upstream/main failed. Repo may be mid-rebase; resolve conflicts before continuing. Before={before}, upstream={upstream}.",
-            commands=commands,
-        )
-        return
+        if try_continue_resolved_rebase(commands):
+            commands.append({"cmd": ["git", "rebase", "--continue"], "returncode": 0, "stdout": "Rebase continued automatically after rerere/autoupdate resolved conflicts.", "stderr": ""})
+        else:
+            fail(
+                "rebase",
+                f"Rebase onto upstream/main failed. Repo may be mid-rebase; resolve conflicts before continuing. Before={before}, upstream={upstream}. Unmerged paths: {', '.join(unmerged_paths()) or 'none reported'}.",
+                commands=commands,
+            )
+            return
 
     for test_cmd in TEST_COMMANDS:
         test = run(test_cmd, timeout=600)
