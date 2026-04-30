@@ -13,7 +13,7 @@ Read before acting:
 1. `~/personal_vault/_meta/schema.md`
 2. `~/personal_vault/_meta/routing-matrix.md`
 3. `~/personal_vault/inbox/README.md`
-4. `~/personal_vault/_meta/review-cron-system.md`
+4. `~/personal_vault/_meta/architecture/review-cron-system.md`
 5. `~/personal_vault/_meta/log.md`
 
 ## Core rule
