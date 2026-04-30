@@ -28,7 +28,7 @@ Requires the codex CLI and a git repository.
 - Codex installed: `npm install -g @openai/codex`
 - OpenAI API key configured
 - **Must run inside a git repository** — Codex refuses to run outside one
-- Use `pty=true` in terminal calls — Codex is an interactive terminal app
+- Use `pty=true` for the interactive TUI (`codex` / `codex resume`). `codex exec` is non-interactive and can run without PTY, including in background/process/systemd supervisors.
 
 ## One-Shot Tasks
 
@@ -64,8 +64,13 @@ process(action="kill", session_id="<id>")
 | Flag | Effect |
 |------|--------|
 | `exec "prompt"` | One-shot execution, exits when done |
+| `exec resume --last "prompt"` | Resume the most recent recorded exec session; useful for supervisor loops |
 | `--full-auto` | Sandboxed but auto-approves file changes in workspace |
-| `--yolo` | No sandbox, no approvals (fastest, most dangerous) |
+| `--dangerously-bypass-approvals-and-sandbox` | No sandbox, no approvals (fastest, most dangerous; use only when the environment/workspace is trusted) |
+| `-C, --cd <DIR>` | Working root for the agent |
+| `--add-dir <DIR>` | Additional writable directory |
+| `-c key=value` | Override config, e.g. `-c 'model_reasoning_effort="high"'` |
+| `--json` / `--output-last-message FILE` | Machine-readable logs and final response capture for supervisors |
 
 ## PR Reviews
 
@@ -113,7 +118,7 @@ terminal(command="gh pr comment 86 --body '<review>'", workdir="~/project")
 
 ## Rules
 
-1. **Always use `pty=true`** — Codex is an interactive terminal app and hangs without a PTY
+1. **PTY depends on mode** — use `pty=true` for interactive TUI sessions; `codex exec` can run non-interactively and is suitable for background/systemd supervisors.
 2. **Git repo required** — Codex won't run outside a git directory. Use `mktemp -d && git init` for scratch
 3. **Use `exec` for one-shots** — `codex exec "prompt"` runs and exits cleanly
 4. **`--full-auto` for building** — auto-approves changes within the sandbox
