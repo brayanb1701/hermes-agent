@@ -29,6 +29,7 @@ ALLOWED_STATUSES = {
     "seed", "active", "pending", "reference", "captured", "researched", "tailoring-ready",
     "awaiting-review", "draft", "submitted", "applied", "paused", "archived", "complete",
 }
+OPPORTUNITY_STATUSES = {"captured", "researched", "tailoring-ready", "awaiting-review", "applied", "archived"}
 ALLOWED_AREAS = {"ai", "physics", "coding", "creative", "economy", "opportunities", "meta", "personal", "other"}
 OLD_PATH_PATTERNS = [
     "projects/job-opportunities",
@@ -203,6 +204,8 @@ def main() -> None:
         slug = opp.parent.name
         if fm.get("type") != "opportunity-record":
             opportunity_issues.append((rel(opp), "type is not opportunity-record"))
+        if fm.get("status") not in OPPORTUNITY_STATUSES:
+            opportunity_issues.append((rel(opp), f"unsupported opportunity status: {fm.get('status')!r}"))
         packet_ref = fm.get("tailoring_packet", "").strip()
         packet = opp.parent / "application" / "tailoring-packet.md"
         if fm.get("status") == "tailoring-ready" and packet.exists():
