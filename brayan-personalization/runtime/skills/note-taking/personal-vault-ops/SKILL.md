@@ -43,6 +43,10 @@ Do not split them mentally into separate systems unless the user asks.
 - `inbox/` — transient unprocessed manual files only; often empty
 - `comparisons/` — side-by-side analyses when needed
 
+## Project code workspace convention
+
+When Brayan starts a real coding/research project, keep runnable repositories and generated experiment artifacts outside the vault under `/home/brayan/projects/<repo-or-experiment>/`. The vault `projects/<slug>/README.md` remains the documentation/control layer: objective, constraints, success levels, links to live workspaces, decisions, stop conditions, and postmortem. For autonomous experiment commanders, link the live `FEEDBACK.md`, `COMMANDER_STATUS.md`, and `EXPERIMENTS.tsv` files from the vault project note instead of copying bulky logs into the vault. See `references/project-workspace-control-layer.md` for the reusable setup pattern.
+
 ## Important hubs
 - `domains/ai/ai-map.md`
 - `domains/physics/physics-map.md`
@@ -72,6 +76,7 @@ Do not split them mentally into separate systems unless the user asks.
 - Append meaningful structural changes to `_meta/log.md`
 - Keep domain notes as navigation hubs, not giant dumps
 - Avoid polluting durable notes with low-confidence OCR output or raw scraps
+- When maintaining `opportunities/dashboard.md`, keep the table sorted as Brayan's review queue: exact `P0`, mixed/ranged `P0/P1` or `P0-P1`, exact `P1`, mixed/ranged `P1/P2` or `P1-P2`, exact `P2`, mixed/ranged `P2/P3` or `P2-P3`, then exact `P3`. Reorder it every time the dashboard is modified.
 - When removing duplicate binary uploads from `inbox/` after promotion to `raw/assets/`, verify byte identity first with hashes/checksums, then update any raw source note that points at the transient `inbox/` path so it preserves the original upload filename without depending on a deleted file path.
 
 ## Current architecture docs
