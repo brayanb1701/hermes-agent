@@ -160,7 +160,8 @@ Use this when Brayan asks how many jobs are pending for tailoring, whether the t
 2. Count both semantic and dispatcher-launchable pending jobs:
    - semantic: opportunity notes under `~/personal_vault/opportunities/*/opportunity.md` with `status: tailoring-ready`.
    - launchable by current dispatcher: `status: tailoring-ready` AND no existing verified `opportunities/<stem>/application/tailoring-packet.md`; a non-null `tailoring_packet` only blocks launch if it resolves to an existing `tailoring-packet.md` file.
-   - Always run `python3 ~/.hermes/scripts/job_tailoring_ready_scan.py --dry-run` from the vault to verify the dispatcher's own `ready_count`, `selected_jobs`, and skipped behavior.
+   - `captured` and `researched` opportunities are intentionally not dispatched; they need explicit promotion to `tailoring-ready` after a specific application/role/form is ready for packet drafting.
+   - Always run `python3 ~/.hermes/scripts/job_tailoring_ready_scan.py --dry-run` from the vault to verify the dispatcher's own `status_counts`, `skip_counts`, `ready_count`, `selected_jobs`, `non_launchable_jobs`, and skipped behavior.
 3. Inspect runtime configuration and history:
    - `cronjob(action="list")` for `darwin-job-tailoring-agent`, schedule, last run, next run, script, and enabled state.
    - `~/.hermes/scripts/job_tailoring_ready_scan.py` for scan/select/launch logic.
