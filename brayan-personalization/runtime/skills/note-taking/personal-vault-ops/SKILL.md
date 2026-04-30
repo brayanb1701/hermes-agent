@@ -29,15 +29,19 @@ This is one unified system:
 Do not split them mentally into separate systems unless the user asks.
 
 ## Folder roles
-- `_meta/` — rules, architecture, index, log
-- `inbox/` — quick capture and triage
-- `raw/` — immutable source material and assets
-- `concepts/` — durable concepts
-- `projects/` — execution and active efforts
+- `_meta/` — vault operating layer: schema, index, routing, log, architecture, workflows, principles, guides, templates, dashboards, audits, and migration history
+- `raw/` — immutable source material, assets, papers, articles, and transcripts
 - `domains/` — navigation hubs by area
-- `comparisons/` — side-by-side analyses
-- `queries/` — saved synthesized answers
+- `concepts/` — durable reusable ideas/models that are not passive tool references
+- `queries/` — active reading/research/watch/practice queues and saved syntheses
+- `references/` — passive tools/resources/cookbooks/pricing/infrastructure references used when needed
+- `projects/` — true actionable execution efforts only; each project has `projects/<slug>/README.md`
+- `opportunities/` — jobs, fellowships, grants, challenges, and co-located application materials
+- `profile/` — canonical CV, bio, portfolio, and application profile sources
+- `decisions/` — pending decisions and decision logs
 - `daily/` — reviews and snapshots
+- `inbox/` — transient unprocessed manual files only; often empty
+- `comparisons/` — side-by-side analyses when needed
 
 ## Important hubs
 - `domains/ai/ai-map.md`
@@ -72,12 +76,12 @@ Do not split them mentally into separate systems unless the user asks.
 
 ## Current architecture docs
 Read these when relevant:
-- `~/personal_vault/_meta/ingestion-pipeline.md`
-- `~/personal_vault/_meta/ocr-workflow.md`
-- `~/personal_vault/_meta/review-cron-system.md`
-- `~/personal_vault/_meta/vault-access-layer.md`
+- `~/personal_vault/_meta/architecture/notes-intake-ingestion-pipeline.md`
+- `~/personal_vault/_meta/workflows/notes-intake/ocr-workflow.md`
+- `~/personal_vault/_meta/architecture/review-cron-system.md`
+- `~/personal_vault/_meta/architecture/vault-access-layer.md`
 - `~/personal_vault/_meta/routing-matrix.md`
-- `~/personal_vault/_meta/local-ai-stack.md`
+- `~/personal_vault/_meta/architecture/local-ai-stack.md`
 
 ## Current runtime helpers
 - Telegram notes intake group: `Anything Inbox` (`chat_id: -1003960601334`)
@@ -85,13 +89,13 @@ Read these when relevant:
 - The notes group uses a Telegram `channel_prompt` plus a `pre_llm_call` plugin hook so captures are preprocessed into structured intake context before Darwin routes them into the vault.
 - The live Anything Inbox config uses `notes_intake.auto_new_session_per_capture: true`: each new capture should run in a fresh gateway session by default to prevent unrelated notes/ideas/jobs from contaminating each other. If multiple URLs/fragments are related, Brayan should send them in the same Telegram message; one agent then handles that whole bundle together.
 - The notes preprocessor supports multiple URL prefetches (currently capped at 10) and should treat multiple URLs in one message as potentially related before deciding whether to create one integrated note, several cross-linked notes, or a job/opportunity record plus supporting sources.
-- Local OCR/STT packages are available to Hermes through a `.pth` link into `~/.hermes/venvs/ocr_test` (also aliased as `~/.hermes/venvs/ocr`).
+- Local OCR/STT packages are available through the stable `~/.hermes/venvs/ocr` alias, which currently resolves to `~/.hermes/venvs/ocr_test`.
 
 ## Live ingestion reality vs design docs
 When auditing or explaining the notes intake pipeline, distinguish what is now live from what is still only a design goal:
 - Live runtime: Telegram media is cached locally by the gateway before the agent turn.
 - In `Anything Inbox` specifically, images now go through a dedicated pre-LLM notes-intake pipeline in `~/.hermes/hermes-agent/gateway/notes_intake.py`.
-- That live image pipeline does `classify -> OCR-first for handwritten/document-like captures -> vision transcription fallback if OCR is weak -> compact summary for screenshots/diagrams/mixed visuals -> inject text block into the user message`.
+- That live image pipeline does `classify -> OCR-first for handwritten/document-like captures -> GLM-OCR local first -> EasyOCR local fallback -> vision transcription fallback if local OCR is weak -> compact summary for screenshots/diagrams/mixed visuals -> inject text block into the user message`.
 - Voice/audio in `Anything Inbox` is transcribed before the agent reasons over it; durable transcript artifacts belong under `~/personal_vault/raw/transcripts/`.
 - The `notes_preprocessor` plugin is still text-first, but it is now intentionally minimal: it annotates modality, preserves media-analysis blocks, and prefetched URL context when possible.
 - It no longer emits regex-based intent labels or suggested vault targets; final organization is left to the agent.
@@ -164,7 +168,7 @@ Use this if an orientation file such as `_meta/schema.md` appears corrupted, emp
 1. Verify the problem from disk, not only from a cached `read_file` response. Use a terminal/Python read or file-size check if `read_file` returns a suspicious message like `File unchanged since last read...`.
 2. Search session history and nearby vault docs for the intended schema details before rewriting:
    - `session_search` for `_meta/schema.md`, `Vault Schema`, `folder roles`, `frontmatter`, and `type: inbox`.
-   - Existing docs such as `_meta/routing-matrix.md`, `_meta/index.md`, `_meta/review-cron-system.md`, and representative notes with frontmatter.
+   - Existing docs such as `_meta/routing-matrix.md`, `_meta/index.md`, `_meta/architecture/review-cron-system.md`, and representative notes with frontmatter.
 3. Reconstruct the schema conservatively from stable conventions already used in the vault: folder roles, standard frontmatter, note type conventions, inbox policy, raw preservation rules, linking rules, and core hub links.
 4. Restore the schema note, add it to `_meta/index.md` if missing, and append a `_meta/log.md` entry explaining the repair.
 5. Re-read the repaired file, index, log, and inbox inventory to verify the vault is clean and the orientation path works again.
@@ -311,8 +315,8 @@ Use this when the user asks whether a prior `Anything Inbox` handwritten-note ru
 
 1. Read the handoff / architecture docs first:
    - `~/personal_vault/_meta/anything-inbox-handwritten-note-retest-handoff.md` if present
-   - `~/personal_vault/_meta/ingestion-pipeline.md`
-   - `~/personal_vault/_meta/ocr-workflow.md`
+   - `~/personal_vault/_meta/architecture/notes-intake-ingestion-pipeline.md`
+   - `~/personal_vault/_meta/workflows/notes-intake/ocr-workflow.md`
    If the handoff file is missing, explicitly note that, search `_meta/` for similarly named handoff/retest docs, and continue the audit from logs + vault evidence instead of failing the workflow.
 2. Pull live evidence from Hermes logs, not just the vault result:
    - `~/.hermes/logs/agent.log` for cache, provider, OCR, and fallback lines
@@ -381,7 +385,9 @@ Use this when Brayan explicitly approves a full vault restructure and wants all 
 3. Define the target taxonomy first in durable docs (`_meta/schema.md`, `_meta/routing-matrix.md`, `_meta/vault-organization-v2.md`) so subsequent migration scripts have a stable destination map.
 4. Search for all dependent surfaces before moving files:
    - vault docs, templates, domain hubs, dashboards, queues, and wikilinks;
-   - `~/.hermes/scripts/`, `~/.hermes/agents/`, `~/.hermes/skills/`, cron jobs/config, and Hermes source files if runtime defaults embed vault paths.
+   - `~/.hermes/scripts/`, `~/.hermes/agents/`, `~/.hermes/skills/`, cron jobs/config, and Hermes source files if runtime defaults embed vault paths;
+   - live config overrides such as `~/.hermes/config.yaml`, because a code default can be correct while config still forces an old path;
+   - persisted personalization/runtime copies under `~/.hermes/hermes-agent/brayan-personalization/runtime/` when the changed agent/script/skill/config should survive rebase/install workflows.
 5. Use programmatic migration for large path changes. Preserve raw material, move notes with `git mv`/Python path operations, and rewrite wikilinks/path strings consistently. For Vault v2 specifically:
    - retired single-file opportunity records become `opportunities/<slug>/opportunity.md`;
    - retired split application-packet folders become `opportunities/<slug>/application/...`;
@@ -399,6 +405,8 @@ Use this when Brayan explicitly approves a full vault restructure and wants all 
    - run the vault audit script;
    - `hermes config check` if Hermes config/cron/runtime files changed;
    - search active vault and Hermes files for retired path strings;
+   - search live config files for path overrides that may defeat corrected code defaults;
+   - compare or sync live `~/.hermes` scripts/agents/skills/config/cron with `~/.hermes/hermes-agent/brayan-personalization/runtime/` when those runtime copies are the durable personalization source;
    - verify old paths no longer exist on disk.
 9. Commit the final migrated vault state separately from the pre-migration snapshot. Report commits, tag, validation commands, cron changes, and any non-vault Hermes files changed.
 10. Do not restart Hermes from inside an active chat unless necessary; report if a gateway reload may be needed for runtime source changes.
