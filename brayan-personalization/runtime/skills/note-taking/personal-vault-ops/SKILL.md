@@ -433,6 +433,22 @@ Use this when Brayan explicitly approves a full vault restructure and wants all 
 9. Commit the final migrated vault state separately from the pre-migration snapshot. Report commits, tag, validation commands, cron changes, and any non-vault Hermes files changed.
 10. Do not restart Hermes from inside an active chat unless necessary; report if a gateway reload may be needed for runtime source changes.
 
+## Absorbed workflow index
+
+This skill is the class-level umbrella for Brayan's vault operations. Detailed former narrow-agent runbooks have been demoted into `references/` so agents load this broad skill first and then inspect the relevant reference only when needed.
+
+- `references/notes-intake-agent.md` — Anything Inbox capture routing, OCR/STT/URL preprocessor behavior, and concise output rules.
+- `references/inbox-triage-agent.md` — recurring inbox cleanup and transient-queue policy.
+- `references/daily-review-agent.md` — daily priority review inputs, daily-note update, and briefing format.
+- `references/decision-reminders-agent.md` — pending-decision reminder behavior.
+- `references/topic-recommendations-agent.md` — recurring recommendation balance and durable recommendation updates.
+- `references/vault-structure-auditor-agent.md` — report-only Vault v2 structure audit behavior and approval boundaries.
+- `references/job-application-vault-workflow.md` — end-to-end CV/source preservation, opportunity intake, and job-tailoring system.
+- `references/job-opportunity-intake-agent.md` — detailed opportunity-record statuses, form inspection, blocked-page rescue, grants/challenges/scholarship handling.
+- `references/job-tailoring-agent.md` — one-job tailoring session behavior, packet creation, queue audits, and semantic mismatch repairs.
+
+When a request clearly matches one of those subdomains, use this skill's vault invariants first, then read the reference for detailed legacy procedure. Do not recreate separate top-level micro-skills for those agents.
+
 ## Pitfalls
 - Do not overwrite raw source material
 - Do not treat OCR output as polished truth

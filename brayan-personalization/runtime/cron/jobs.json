@@ -1,4 +1,6 @@
 {
+  "_portable_note": "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by scripts/sync-brayan-personalization.py. Secrets are not included.",
+  "updated_at": "2026-04-30T14:31:26+00:00",
   "jobs": [
     {
       "id": "1e387ba82595",
@@ -21,16 +23,16 @@
       "schedule_display": "0 9 * * *",
       "repeat": {
         "times": null,
-        "completed": 6
+        "completed": 0
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-22T00:53:31.428257-05:00",
-      "next_run_at": "2026-04-30T09:00:00-05:00",
-      "last_run_at": "2026-04-29T09:15:02.165172-05:00",
-      "last_status": "ok",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
@@ -57,16 +59,16 @@
       "schedule_display": "0 19 * * *",
       "repeat": {
         "times": null,
-        "completed": 5
+        "completed": 0
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-22T00:53:32.430783-05:00",
-      "next_run_at": "2026-04-30T19:00:00-05:00",
-      "last_run_at": "2026-04-29T19:03:39.540379-05:00",
-      "last_status": "ok",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
@@ -93,16 +95,16 @@
       "schedule_display": "every 180m",
       "repeat": {
         "times": null,
-        "completed": 28
+        "completed": 0
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-22T00:53:33.433978-05:00",
-      "next_run_at": "2026-04-30T03:20:29.667898-05:00",
-      "last_run_at": "2026-04-30T00:20:29.667898-05:00",
-      "last_status": "ok",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "local",
@@ -129,16 +131,16 @@
       "schedule_display": "every 240m",
       "repeat": {
         "times": null,
-        "completed": 21
+        "completed": 0
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-22T00:53:42.578179-05:00",
-      "next_run_at": "2026-04-30T05:24:00.146028-05:00",
-      "last_run_at": "2026-04-30T01:24:00.146028-05:00",
-      "last_status": "ok",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
@@ -165,16 +167,16 @@
       "schedule_display": "0 11 * * *",
       "repeat": {
         "times": null,
-        "completed": 6
+        "completed": 0
       },
       "enabled": true,
       "state": "scheduled",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-23T17:09:24.387845-05:00",
-      "next_run_at": "2026-04-30T11:00:00-05:00",
-      "last_run_at": "2026-04-29T11:00:06.528675-05:00",
-      "last_status": "ok",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
@@ -210,7 +212,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-23T19:47:02.706648-05:00",
-      "next_run_at": "2026-04-30T09:30:00-05:00",
+      "next_run_at": null,
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
@@ -243,18 +245,13 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T18:24:57.201587-05:00",
-      "next_run_at": "2026-09-01T09:00:00-05:00",
+      "next_run_at": null,
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "origin",
-      "origin": {
-        "platform": "telegram",
-        "chat_id": "-1003960601334",
-        "chat_name": "Anything Inbox",
-        "thread_id": null
-      },
+      "origin": null,
       "enabled_toolsets": [
         "file"
       ]
@@ -284,18 +281,13 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T18:25:02.228115-05:00",
-      "next_run_at": "2026-10-15T09:00:00-05:00",
+      "next_run_at": null,
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "origin",
-      "origin": {
-        "platform": "telegram",
-        "chat_id": "-1003960601334",
-        "chat_name": "Anything Inbox",
-        "thread_id": null
-      },
+      "origin": null,
       "enabled_toolsets": [
         "file"
       ]
@@ -325,18 +317,13 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T18:25:19.559901-05:00",
-      "next_run_at": "2026-12-15T09:00:00-05:00",
+      "next_run_at": null,
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "origin",
-      "origin": {
-        "platform": "telegram",
-        "chat_id": "-1003960601334",
-        "chat_name": "Anything Inbox",
-        "thread_id": null
-      },
+      "origin": null,
       "enabled_toolsets": [
         "file"
       ]
@@ -366,18 +353,13 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T19:01:30.700746-05:00",
-      "next_run_at": "2026-05-15T09:00:00-05:00",
+      "next_run_at": null,
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "origin",
-      "origin": {
-        "platform": "telegram",
-        "chat_id": "-1003960601334",
-        "chat_name": "Anything Inbox",
-        "thread_id": null
-      },
+      "origin": null,
       "enabled_toolsets": [
         "file",
         "web"
@@ -408,18 +390,13 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T19:01:40.249481-05:00",
-      "next_run_at": "2026-09-01T09:00:00-05:00",
+      "next_run_at": null,
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "origin",
-      "origin": {
-        "platform": "telegram",
-        "chat_id": "-1003960601334",
-        "chat_name": "Anything Inbox",
-        "thread_id": null
-      },
+      "origin": null,
       "enabled_toolsets": [
         "file",
         "web"
@@ -453,7 +430,7 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-30T01:11:15.920109-05:00",
-      "next_run_at": "2026-05-03T10:00:00-05:00",
+      "next_run_at": null,
       "last_run_at": null,
       "last_status": null,
       "last_error": null,
@@ -465,6 +442,5 @@
         "terminal"
       ]
     }
-  ],
-  "updated_at": "2026-04-30T01:59:49.076225-05:00"
+  ]
 }

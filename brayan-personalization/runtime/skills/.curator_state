@@ -1,0 +1,8 @@
+{
+  "last_report_path": "/home/brayan/.hermes/logs/curator/20260430-080708",
+  "last_run_at": "2026-04-30T08:07:08.950671+00:00",
+  "last_run_duration_seconds": 190.170038,
+  "last_run_summary": "auto: no changes; llm: Umbrella consolidation completed.\n\n## Clusters processed\n\n1. **Recurring Darwin/Hermes automation agents**\n   - `daily-review-agent`\n   - `decision-reminders-agent`\n   - `file-defined-hermes-agents`\n   - `hermes-upstream-rebase-ci-agent`\n  …",
+  "paused": false,
+  "run_count": 1
+}
