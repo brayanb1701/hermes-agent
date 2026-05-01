@@ -130,6 +130,8 @@ Pick the closest existing category. Don't invent new top-level categories casual
 
 ## Editing Existing In-Repo Skills
 
+Before editing, distinguish analysis from authorization. If Brayan asks “how would you fix/change this skill?”, treat it as read-only review: inspect and propose the patch/restore plan, but do not call `skill_manage` to modify files until he explicitly says to apply it. See `references/approval-boundaries.md`.
+
 - **Small fix (typo, added pitfall, tightened trigger):** `skill_manage(action='patch', name=..., old_string=..., new_string=...)` works fine on in-repo skills.
 - **Major rewrite:** `write_file` the whole SKILL.md. `skill_manage(action='edit')` also works but requires supplying the full new content.
 - **Adding supporting files:** `write_file` to `skills/<category>/<name>/references/<file>.md`, `templates/<file>`, or `scripts/<file>`. `skill_manage(action='write_file')` also works and enforces the references/templates/scripts/assets subdir allowlist.
@@ -149,7 +151,7 @@ Pick the closest existing category. Don't invent new top-level categories casual
 
 6. **Expecting the current session to see the new skill.** It won't. The skill loader is initialized at session start. Verify in a fresh session or via `skill_view` using the exact path.
 
-7. **Linking to skills that don't exist in-repo.** `related_skills: [some-user-local-skill]` works for you but breaks for other clones. Prefer only in-repo links.
+7. **Mistaking a review request for edit authorization.** “How would you fix/change this?” means analyze and propose first. Do not patch/edit/remove skill files until Brayan explicitly approves the change, unless the current request itself says to update the skill library. Preserve candidate restore points and wait for confirmation.
 
 ## Verification Checklist
 

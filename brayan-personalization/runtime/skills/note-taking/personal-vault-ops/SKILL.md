@@ -47,6 +47,18 @@ Do not split them mentally into separate systems unless the user asks.
 
 When Brayan starts a real coding/research project, keep runnable repositories and generated experiment artifacts outside the vault under `/home/brayan/projects/<repo-or-experiment>/`. The vault `projects/<slug>/README.md` remains the documentation/control layer: objective, constraints, success levels, links to live workspaces, decisions, stop conditions, and postmortem. For autonomous experiment commanders, link the live `FEEDBACK.md`, `COMMANDER_STATUS.md`, and `EXPERIMENTS.tsv` files from the vault project note instead of copying bulky logs into the vault. See `references/project-workspace-control-layer.md` for the reusable setup pattern.
 
+Resource-planning notes (for example expiring compute credits, coupons, cloud budgets, hardware availability, or general tool access) are portfolio-level unless Brayan explicitly says they change a specific active project. Preserve them in a general project/query/reference layer and daily/automation reminders; do **not** inject them into an active project's control files, agent feedback, mission prompts, or budget policy merely because that project can use the resource. Existing project-specific caps remain binding until the user explicitly changes them.
+
+### Expiring compute-credit / resource-allocation capture workflow
+Use this when Brayan asks to save expiring credits, cloud coupons, compute budgets, grant credits, or similar temporary resources.
+1. Orient with `_meta/schema.md`, `_meta/index.md`, `_meta/log.md`, and `decisions/pending.md`; search first for the provider/resource name plus expiration date so you update existing records instead of duplicating them.
+2. Preserve Brayan's original wording in `raw/notes/` if it has not already been preserved.
+3. Add or update a `decisions/pending.md` item with amount, provider, expiration date, urgency, default policy, blocker, and reminder policy. The blocker should usually be "choose bounded run cards" rather than "spend now."
+4. Create or update a portfolio-level planning note under `queries/` (not `projects/`) when the resource can support multiple projects. Include candidate uses, allocation principles, guardrails, and a reusable run-card template with objective, estimated cost, artifact, and stop condition.
+5. Link the planning note from relevant domain hubs, `_meta/index.md`, `_meta/log.md`, and `queries/topic-recommendations.md` so recurring review agents surface it before expiration.
+6. Save only the compact durable fact to memory, including the expiry date and any project-specific cap/guardrail that must not be overridden.
+7. Verify by reading the new/updated planning note, searching for the planning-note wikilink, and checking git status; do not auto-commit if other concurrent vault edits exist.
+
 ## Important hubs
 - `domains/ai/ai-map.md`
 - `domains/physics/physics-map.md`
@@ -379,6 +391,8 @@ Use this when Brayan asks whether the personal vault structure is drifting, proj
 Use this when Brayan says `_meta/` is still too flat/noisy or asks whether meta docs should move into more specific folders.
 
 1. Treat `_meta/` as the vault operating layer, not a dumping ground. The root should stay small: normally `_meta/schema.md`, `_meta/index.md`, `_meta/log.md`, `_meta/routing-matrix.md`, and `_meta/vault-organization-v2.md` only.
+2. Use `_meta/tmp_analysis/` for fresh-session handoff analyses, unresolved design notes, and completed-but-still-useful migration analyses that should not be normal orientation context. Do not add `_meta/tmp_analysis/` to `_meta/index.md` unless Brayan explicitly wants it visible. Add a small README making clear that agents should not treat files there as active workflow instructions unless Brayan points to them.
+3. Completed migration analysis should usually be preserved first, not deleted immediately: move it to `_meta/tmp_analysis/<topic>/` or later to an explicit archive such as `_meta/archive/completed-migrations/<topic-date>/`, update any live source links that still point to the old path, and record the disposition recommendation in the new analysis note.
 2. Classify root-level meta notes by role before moving:
    - `_meta/principles/` for slow-changing doctrine and operating invariants, e.g. `agent-operating-principles` and `token-efficiency-and-local-first`.
    - `_meta/workflows/` for tactical/runbook/playbook procedures, e.g. `agentic-coding-playbooks`.
@@ -463,3 +477,6 @@ When a request clearly matches one of those subdomains, use this skill's vault i
 - Do not infer the real OCR/provider path from the final note alone; verify against logs
 - Do not use `projects/` as a generic place for important files; separate true projects from workflows, guides, support assets, references, opportunities, and decisions
 - Do not reintroduce legacy split opportunity/application-packet paths; Vault v2 uses `opportunities/<slug>/opportunity.md` and `opportunities/<slug>/application/` only
+- Do not assume dirty git files/commits in the vault or Hermes personalization repo are mistakes: Brayan may have concurrent sessions editing the same repositories. Report exact paths and diffs clearly, then ask or scope commits to only the files you intentionally changed.
+- Do not leave completed migration/design analyses in active-looking meta paths where future agents may treat stale plans as current instructions; park them in `_meta/tmp_analysis/` or a clearly labeled archive and keep them out of normal orientation.
+- Do not let a general resource-planning fact contaminate an active project's execution context. If Brayan says a compute credit/budget/resource is for “general” or “other projects,” keep it out of challenge folders, live agent feedback, mission files, direct messages, and run prompts for an unrelated active project. Verify by searching the active project workspace for the general-resource strings.

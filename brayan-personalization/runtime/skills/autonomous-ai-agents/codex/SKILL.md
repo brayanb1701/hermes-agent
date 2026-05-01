@@ -123,5 +123,7 @@ terminal(command="gh pr comment 86 --body '<review>'", workdir="~/project")
 3. **Use `exec` for one-shots** — `codex exec "prompt"` runs and exits cleanly
 4. **`--full-auto` for building** — auto-approves changes within the sandbox
 5. **Background for long tasks** — use `background=true` and monitor with `process` tool
-6. **Don't interfere** — monitor with `poll`/`log`, be patient with long-running tasks
-7. **Parallel is fine** — run multiple Codex processes at once for batch work
+6. **Don't interfere without authorization** — monitor with `poll`/`log` and be patient. A status/analysis request is not permission to kill, restart, create STOP files, edit prompts, or change policy unless there is immediate safety/spend risk or Brayan explicitly asks.
+7. **Keep project policy out of this generic skill** — if a Codex run needs cloud GPUs, paid APIs, challenge-specific budgets, watchdogs, STOP files, or experiment run cards, put that policy in the project workspace (`AGENTS.md`, `RUNBOOK.md`, status/control files) or a class-level paid-compute/autoresearch skill. Do not pollute the generic Codex skill with one-project details.
+8. **Remote paid jobs need separate verification** — stopping a local Codex process/supervisor does not prove external work stopped. Check provider-side app/task/billing state separately before saying spend is contained.
+9. **Parallel is fine** — run multiple Codex processes at once for batch work
