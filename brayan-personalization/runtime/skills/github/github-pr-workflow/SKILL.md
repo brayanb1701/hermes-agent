@@ -76,7 +76,7 @@ Branch naming conventions:
 
 ## 2. Making Commits
 
-Use the agent's file tools (`write_file`, `patch`) to make changes, then commit. Stage only the files that belong to the requested change; if the working tree has unrelated user/session residue, leave it unstaged and call it out instead of sweeping it into the commit.
+Use the agent's file tools (`write_file`, `patch`) to make changes, then commit. Stage only the files that belong to the requested change. If the working tree has unrelated changes, inspect them first and remember Brayan may have other active Hermes sessions; do not assume they are noise. Either leave them unstaged and call them out, or commit them separately only when Brayan confirms they are intentional.
 
 ```bash
 # Stage specific files

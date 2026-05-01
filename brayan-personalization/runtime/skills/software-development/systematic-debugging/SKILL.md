@@ -28,6 +28,8 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 If you haven't completed Phase 1, you cannot propose fixes.
 
+When Brayan explicitly says "give me your analysis before making any change" or similar, treat the task as investigation-only: collect evidence, reproduce minimally, form hypotheses, and report proposed fixes, but do not patch files, edit config, remove locks, restart services, or otherwise change state until he approves. Non-mutating diagnostic commands and file reads are allowed.
+
 ## When to Use
 
 Use for ANY technical issue:
