@@ -176,6 +176,8 @@ hermes cron remove ID       Delete a job
 hermes cron status          Scheduler status
 ```
 
+When changing an existing recurring job, first list jobs and identify the exact job ID by name/skills/delivery, then update the schedule and immediately list again to verify `schedule`, `enabled`, and `next_run_at`. Multi-time daily schedules can use standard cron hour lists, e.g. `0 12,17 * * *` for noon and 5pm daily; prefer this over interval schedules like `every 240m` when the user asks for fixed clock times.
+
 ### Webhooks
 
 ```
@@ -569,7 +571,7 @@ Interactive `/reasoning <level>` can save the setting to `~/.hermes/config.yaml`
 - **Code changes:** Restart the CLI or gateway process
 - **Default model changes for gateway sessions:** `hermes config set model.default <model>` affects new sessions, but existing gateway sessions may keep the old model in `~/.hermes/sessions/session_<session_id>.json`. Check `~/.hermes/sessions/sessions.json` to map active gateway session keys to session IDs, then update the active session JSON `model` field if the user explicitly wants currently running Telegram/Discord/etc. agents changed too. Preserve unrelated task-specific model pins, such as notes-intake `vision_model`, when the user asks to change text/default models only.
 - **Gateway restart verification:** after `hermes gateway restart`, immediately check `hermes gateway status`. A restart can briefly show `TEMPFAIL` / “restart pending” while systemd waits to relaunch; wait a few seconds and re-check or run `hermes gateway start` if it remains stopped.
-- **Cron CI force-push approvals:** scheduled Hermes runs that rebase Brayan's personalization branch may need `git push --force-with-lease origin HEAD:brayan/personal-hermes-customizations`. If the terminal approval layer blocks the force push, do not bypass it; verify clean state/tests/SHAs and report the exact manual command. For `gateway/run.py` conflicts between upstream native image routing and Brayan's Anything Inbox pipeline, preserve both: Anything Inbox images use `enrich_anything_inbox_image`, while other images keep upstream's session-scoped `_pending_native_image_paths_by_session` buffer rather than the older single pending-image field.
+- **Cron CI force-push approvals:** scheduled Hermes runs that rebase Brayan's personalization branch may need `git push --force-with-lease origin HEAD:brayan/personal-hermes-customizations`. Current Hermes has no built-in exact-command permission for one cron job: `approvals.cron_mode: approve` allows all dangerous cron commands, `command_allowlist` is pattern-level (for this case, `git force push (rewrites remote history)`) and `cron_mode: deny` blocks before the permanent allowlist can approve, and `pre_approval_request` / `post_approval_response` hooks are observer-only. Therefore do not make the LLM cron agent retry a direct terminal force-push in autonomous cron sessions. Prefer a narrow deterministic script finalizer with hardcoded repo/branch/ref guards, exact `--force-with-lease=<ref>:<observed-sha>`, and tests/config checks; the LLM agent should resolve conflicts and run/report the finalizer, not own the privileged push. In an interactive CLI session, if a dangerous command was blocked because it was bundled with other destructive operations, retry separate explicit operations so Brayan can approve each one individually. For `gateway/run.py` conflicts between upstream native image routing and Brayan's Anything Inbox pipeline, preserve both: Anything Inbox images use `enrich_anything_inbox_image`, while other images keep upstream's session-scoped `_pending_native_image_paths_by_session` buffer rather than the older single pending-image field.
 
 ### Skills not showing
 1. `hermes skills list` — verify installed
@@ -701,7 +703,13 @@ This pattern is especially important for gateway/cron/plugin customizations, bec
 
 For user-specific assistant improvement work, treat token efficiency as a design constraint: avoid unnecessary context/tool use, prefer wake gates and local preprocessing when possible, and collect only privacy-aware, redacted task/evaluation traces for any future local-model, SFT, preference, distillation, or RL/post-training work. Start trace extraction from structured low-risk sources such as cron script JSON, CI logs, test results, and vault file-operation summaries before using free-form private conversations.
 
-For a reusable checklist when diagnosing degraded responses from Brayan's personalized branch, see `references/brayan-personalized-branch-quality-audit.md`.
+### Isolated upstream PR workspace for Hermes framework fixes
+
+When Brayan wants to fix Hermes framework bugs and possibly contribute them upstream, prefer an isolated clone under `/home/brayan/projects/` instead of editing the live runtime checkout. For Brayan's current setup, use `/home/brayan/projects/hermes-agent-upstream-prs` with `upstream = git@github.com:NousResearch/hermes-agent.git`, `origin = git@github.com:brayanb1701/hermes-agent.git`, local `main` tracking `upstream/main`, and focused branches such as `fix/<bug-name>` pushed to the fork.
+
+Before coding, read the repo-local `CONTRIBUTING.md`, `AGENTS.md`, `.github/PULL_REQUEST_TEMPLATE.md`, and relevant workflows. Keep PRs one logical change each, add regression tests for bug fixes, use Conventional Commits, run the repo's canonical `scripts/run_tests.sh`, and include reproduction steps, platform tested, and cross-platform/process-management considerations in the PR body. Keep runtime personalization, vault edits, local config, cron state, sessions, and private IDs out of upstream PR branches.
+
+For the full workspace setup/checklist, see `references/upstream-pr-workspace.md`. For a reusable checklist when diagnosing degraded responses from Brayan's personalized branch, see `references/brayan-personalized-branch-quality-audit.md`.
 
 ### Adding a Tool (3 files)
 
