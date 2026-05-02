@@ -78,7 +78,7 @@ Use this when Brayan asks to save expiring credits, cloud coupons, compute budge
 - Once an item is confidently routed into a durable destination, remove it from `inbox/` rather than keeping duplicate content there
 - Durable knowledge goes to `concepts/`, `domains/`, `comparisons/`, or `queries/`
 - Actionable execution goes to `projects/`
-- Assistant-improvement ideas should usually link to `projects/darwin-improvement/README.md`
+- Assistant-improvement ideas should usually link to `projects/darwin-improvement/README.md`; upstreamable Hermes framework fixes can be tracked there as pending PR work with the isolated `/home/brayan/projects/hermes-agent-upstream-prs` workspace, branch names, and contribution discipline instead of creating a new vault project for each bugfix.
 - Income, trading, and monetization ideas should usually link to `domains/economy/economy-map.md`
 - Jobs, internships, fellowships, grants, and project funding leads should usually link to `domains/opportunities/opportunities-map.md`
 
