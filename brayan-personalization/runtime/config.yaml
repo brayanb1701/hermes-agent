@@ -2,7 +2,7 @@ model:
   default: gpt-5.5
   provider: openai-codex
   base_url: https://chatgpt.com/backend-api/codex
-  context_length: 400000
+  context_length: 256000
 providers: {}
 fallback_providers: []
 credential_pool_strategies: {}
@@ -97,7 +97,7 @@ checkpoints:
 file_read_max_chars: 100000
 compression:
   enabled: true
-  threshold: 0.65
+  threshold: 0.8
   target_ratio: 0.2
   protect_last_n: 20
 bedrock:
