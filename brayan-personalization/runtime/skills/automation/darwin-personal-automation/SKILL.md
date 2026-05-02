@@ -112,7 +112,9 @@ See `personal-vault-ops` for current vault taxonomy and `references/job-applicat
 
 ## Hermes upstream rebase CI exception handler
 
-For the daily Hermes personalization rebase CI, wake only on script-reported exceptions. Diagnose the failure stage first, preserve Brayan's customization branch, prefer extension points over base-code changes, resolve conflicts/tests, verify, and push only `HEAD:brayan/personal-hermes-customizations` with `--force-with-lease`. Never push personalization to `origin/main`.
+For the daily Hermes personalization rebase CI, wake only on script-reported exceptions. Diagnose the failure stage first, preserve Brayan's customization branch, prefer extension points over base-code changes, resolve conflicts/tests, verify, and ensure only `HEAD:brayan/personal-hermes-customizations` is pushed. Never push personalization to `origin/main`.
+
+Approval nuance: current Hermes has no exact-command allowlist for one cron job. `approvals.cron_mode: approve` is broad for all dangerous cron commands, `command_allowlist` is pattern-level and ineffective when cron mode is deny, and approval hooks are observer-only. Therefore the autonomous LLM cron agent should not repeatedly attempt a terminal `git push --force-with-lease`; move that privileged step into a narrow deterministic finalizer script with hardcoded repo/branch/ref guards and exact lease verification, then have the agent run/report that finalizer after manual repairs.
 
 See `references/hermes-upstream-rebase-ci-agent.md` for exact repo paths and verification commands.
 
