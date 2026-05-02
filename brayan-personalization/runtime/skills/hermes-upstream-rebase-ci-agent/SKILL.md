@@ -29,8 +29,9 @@ Use this when the daily `hermes-upstream-rebase-ci` cron wakes because the pre-r
 7. If verification passes and branch is healthy, push only the personalization branch with `git push --force-with-lease origin HEAD:brayan/personal-hermes-customizations`. Never push personalization to `origin/main`.
 8. Prefer programmatic recovery before manual edits: inspect the script output, let the script use `git rerere`/`rerere.autoupdate` and `GIT_EDITOR=true git rebase --continue` when conflicts have already been resolved, and only manually resolve genuinely new conflicts or failing tests.
 9. If a conflict is manually resolved, make the resolution durable: keep repo-local `rerere.enabled=true` and `rerere.autoupdate=true`, continue the rebase, run verification, and update this skill/script/docs if the conflict suggests a reusable rule.
-10. Update the workflow doc or `_meta/log.md` only for meaningful workflow changes, conflict resolution notes, or persistent lessons.
-11. Final response should be concise: failure stage, fix, tests, current HEAD, push status, and manual action needed.
+10. After a manual conflict resolution, explicitly push the rebased personalization branch. Be aware that `git push --force-with-lease ...` may be blocked by Hermes terminal approval in autonomous cron sessions because no human is present. If the approval layer blocks the push, report the exact blocked command and leave the branch state clearly documented; do not falsely report the remote as updated.
+11. Update the workflow doc or `_meta/log.md` only for meaningful workflow changes, conflict resolution notes, or persistent lessons.
+12. Final response should be concise: failure stage, fix, tests, current HEAD, push status, and manual action needed.
 
 ## Verification commands
 Use the repo venv and clear repo-level pytest addopts where needed:
