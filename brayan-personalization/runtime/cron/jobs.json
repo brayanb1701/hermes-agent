@@ -1,6 +1,6 @@
 {
   "_portable_note": "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by scripts/sync-brayan-personalization.py. Secrets are not included.",
-  "updated_at": "2026-05-02T07:23:12+00:00",
+  "updated_at": "2026-05-02T14:57:13+00:00",
   "jobs": [
     {
       "id": "1e387ba82595",
@@ -124,11 +124,11 @@
       "base_url": null,
       "script": null,
       "schedule": {
-        "kind": "interval",
-        "minutes": 240,
-        "display": "every 240m"
+        "kind": "cron",
+        "expr": "0 12,17 * * *",
+        "display": "0 12,17 * * *"
       },
-      "schedule_display": "every 240m",
+      "schedule_display": "0 12,17 * * *",
       "repeat": {
         "times": null,
         "completed": 0
