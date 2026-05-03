@@ -22,14 +22,14 @@ REPORT_PATH = AUDIT_DIR / f"{TODAY}-vault-structure-audit.md"
 
 ALLOWED_TYPES = {
     "raw-source", "concept", "principle", "reference", "project", "opportunity-record",
-    "application-packet", "application-draft", "profile", "workflow", "guide", "architecture",
+    "preparation-packet", "application-draft", "profile", "workflow", "guide", "architecture",
     "domain", "query", "decision-register", "daily", "template", "index", "audit", "comparison",
 }
 ALLOWED_STATUSES = {
-    "seed", "active", "pending", "reference", "captured", "researched", "tailoring-ready",
+    "seed", "active", "pending", "reference", "captured", "researched", "preparation-ready",
     "awaiting-review", "draft", "submitted", "applied", "paused", "archived", "complete",
 }
-OPPORTUNITY_STATUSES = {"captured", "researched", "tailoring-ready", "awaiting-review", "applied", "archived"}
+OPPORTUNITY_STATUSES = {"captured", "researched", "preparation-ready", "awaiting-review", "applied", "archived"}
 ALLOWED_AREAS = {"ai", "physics", "coding", "creative", "economy", "opportunities", "meta", "personal", "other"}
 OLD_PATH_PATTERNS = [
     "projects/job-opportunities",
@@ -206,15 +206,17 @@ def main() -> None:
             opportunity_issues.append((rel(opp), "type is not opportunity-record"))
         if fm.get("status") not in OPPORTUNITY_STATUSES:
             opportunity_issues.append((rel(opp), f"unsupported opportunity status: {fm.get('status')!r}"))
-        packet_ref = fm.get("tailoring_packet", "").strip()
-        packet = opp.parent / "application" / "tailoring-packet.md"
-        if fm.get("status") == "tailoring-ready" and packet.exists():
-            opportunity_issues.append((rel(opp), "status tailoring-ready but application/tailoring-packet.md already exists"))
+        packet_ref = fm.get("preparation_packet", "").strip()
+        packet = opp.parent / "application" / "preparation-packet.md"
+        if fm.get("status") == "preparation-ready" and packet.exists():
+            opportunity_issues.append((rel(opp), "status preparation-ready but application/preparation-packet.md already exists"))
+        if fm.get("tailoring_packet", "").strip() and fm.get("tailoring_packet", "").strip().lower() not in {"null", "none"}:
+            opportunity_issues.append((rel(opp), "retired tailoring_packet field still set; migrate to preparation_packet/preparation-packet.md"))
         if packet_ref and packet_ref.lower() not in {"null", "none"}:
-            if "tailoring-packet" not in packet_ref:
-                opportunity_issues.append((rel(opp), "tailoring_packet does not point to tailoring-packet"))
+            if "preparation-packet" not in packet_ref:
+                opportunity_issues.append((rel(opp), "preparation_packet does not point to preparation-packet"))
             elif not packet.exists():
-                opportunity_issues.append((rel(opp), "tailoring_packet is set but application/tailoring-packet.md is missing"))
+                opportunity_issues.append((rel(opp), "preparation_packet is set but application/preparation-packet.md is missing"))
 
     for pattern in OLD_PATH_PATTERNS:
         candidate = VAULT / pattern

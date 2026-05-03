@@ -24,8 +24,8 @@ Each new message is normally a fresh capture. If multiple URLs/fragments arrive 
 6. Add wikilinks from relevant hubs.
 7. Update `_meta/index.md` for important new pages and `_meta/log.md` for meaningful structural changes.
 
-## Job/opportunity captures
-If the capture is a job, internship, fellowship, grant, funding lead, or similar opportunity, follow `job-opportunity-intake-agent`.
+## Opportunity captures
+If the capture is a job, internship, fellowship, grant, scholarship, challenge, bounty, funding lead, watch target, or similar opportunity, follow `opportunity-intake-agent`.
 
 ## Media and URL captures
 - For handwritten/document images, preserve durable assets and raw OCR text before distilling.
