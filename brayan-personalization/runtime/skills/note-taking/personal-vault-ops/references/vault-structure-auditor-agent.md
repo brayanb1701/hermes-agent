@@ -107,5 +107,5 @@ After any approved cleanup:
 
 - run `python3 ~/.hermes/scripts/vault_structure_audit.py`;
 - run `git diff --check` in `~/personal_vault`;
-- run the job-tailoring dry run if opportunity paths or packet fields changed;
+- run the opportunity-preparation dry run if opportunity paths, statuses, routing fields, or packet fields changed;
 - report remaining issues separately from fixed issues.
