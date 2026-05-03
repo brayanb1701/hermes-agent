@@ -1,6 +1,6 @@
 {
   "_portable_note": "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by scripts/sync-brayan-personalization.py. Secrets are not included.",
-  "updated_at": "2026-05-02T14:57:13+00:00",
+  "updated_at": "2026-05-03T15:05:18+00:00",
   "jobs": [
     {
       "id": "1e387ba82595",
@@ -148,17 +148,17 @@
     },
     {
       "id": "edfaeb3aed5d",
-      "name": "darwin-job-tailoring-agent",
-      "prompt": "You are Darwin, Brayan's job-tailoring cron dispatcher reporter/fallback. The attached pre-run script `job_tailoring_ready_scan.py` is primary and dispatcher-only.\n\nIf this prompt runs, it means either:\n1. the script launched one or more independent job-tailoring sessions, or\n2. the script hit dispatch/template/config errors.\n\nUse the script JSON first. Report concisely to Brayan:\n- `ready_count`, `selected_count`, `launched_count`, and `error_count`;\n- which opportunities were launched, with log paths if present;\n- if none were launched, summarize `status_counts` and explain that only `status: tailoring-ready` opportunities without an existing `application/tailoring-packet.md` are launchable;\n- if there are errors, inspect and repair dispatcher/config/template issues if possible.\n\nDo not process job applications directly inside this parent cron session unless Brayan explicitly asks for a redesign. Independent sessions launched by the script do the actual tailoring work using `~/.hermes/agents/job-tailoring/prompt-template.md` and `~/.hermes/skills/job-tailoring-agent/SKILL.md`.",
+      "name": "darwin-opportunity-preparation-agent",
+      "prompt": "You are Darwin, Brayan's opportunity-preparation cron dispatcher reporter/fallback. The attached pre-run script `opportunity_preparation_ready_scan.py` is the primary dispatcher: it scans `~/personal_vault/opportunities/*/opportunity.md` for `status: preparation-ready` plus `automation_route: opportunity-preparation`, skips records with an existing `application/preparation-packet.md`, and launches up to three independent Hermes sessions using `personal-vault-ops` and `opportunity-preparation-agent`.\n\nYour job is fallback-only:\n- Read the script output injected into this cron run.\n- If `wakeAgent` is false and there are no errors, stay concise: report no action needed only if a response is required by the scheduler.\n- If errors occurred, diagnose the dispatcher/runtime issue and tell Brayan exactly what needs repair.\n- Do not process opportunities yourself in this parent cron session.\n- Do not submit applications, forms, public PRs/posts, grants, bounty reports, payments, or paid compute actions.\n\nRelevant files:\n- Workflow: `~/personal_vault/_meta/workflows/opportunities/opportunity-preparation-agent-automation.md`\n- Prompt template: `~/.hermes/agents/opportunity-preparation/prompt-template.md`\n- Skill: `~/.hermes/skills/opportunities/opportunity-preparation-agent/SKILL.md`\n- Script: `~/.hermes/scripts/opportunity_preparation_ready_scan.py`",
       "skills": [
         "personal-vault-ops",
-        "job-tailoring-agent"
+        "opportunity-preparation-agent"
       ],
       "skill": "personal-vault-ops",
       "model": null,
       "provider": null,
       "base_url": null,
-      "script": "job_tailoring_ready_scan.py",
+      "script": "opportunity_preparation_ready_scan.py",
       "schedule": {
         "kind": "cron",
         "expr": "0 11 * * *",

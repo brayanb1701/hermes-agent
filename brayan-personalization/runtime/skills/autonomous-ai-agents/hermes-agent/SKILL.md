@@ -565,6 +565,15 @@ Use a fresh session or `execute_code` + direct Python `subprocess.run(..., execu
 
 Interactive `/reasoning <level>` can save the setting to `~/.hermes/config.yaml`. When a high-reasoning mode such as `/reasoning xhigh` is intended only for a spawned tmux/commander session, verify the active session accepted it, then reset the global default afterward (for example `hermes config set agent.reasoning_effort medium`) so unrelated future sessions do not inherit the expensive setting.
 
+### Safe config schema/version updates
+When asked to update Hermes config to the latest version without breaking anything, do **not** hand-edit `_config_version`. That can falsely mark migrations complete and skip default insertion, field moves, legacy-key cleanup, or side effects such as creating required runtime directories. First ground the answer with `hermes config path`, `hermes --version`, `hermes config check`, `hermes doctor`, and source checkout inspection (`git status --short --branch`, remotes, recent log) when source updates may be involved.
+
+Decision path:
+- If `hermes config check` says the config version is current for the installed code, say so; no migration is needed unless the goal is to update Hermes code too.
+- If only the config needs migration for the current code, use `hermes config migrate`, then verify with `hermes config check` and `hermes doctor`.
+- If Brayan wants latest upstream Hermes plus latest config schema, respect the local checkout workflow: Brayan's runtime personalization branch is `brayan/personal-hermes-customizations`, so do not casually run a raw `hermes update` or manually switch/update `main`. Prefer the documented fetch/rebase/test/migrate path for the personalization branch, then restart and check the gateway if needed.
+- For any real update, create or rely on a pre-update backup/snapshot before mutations, preserve unrelated task-specific pins such as notes-intake vision models, and verify after migration before reporting success.
+
 ### Changes not taking effect
 - **Tools/skills:** `/reset` starts a new session with updated toolset
 - **Config changes:** In gateway: `/restart`. In CLI: exit and relaunch.
@@ -578,6 +587,23 @@ Interactive `/reasoning <level>` can save the setting to `~/.hermes/config.yaml`
 2. `hermes skills config` — check platform enablement
 3. Load explicitly: `/skill name` or `hermes -s name`
 
+### Curator / automatic skill reorganization
+
+For Brayan's setup, do **not** assume the skill curator should be active. Brayan found automatic curator consolidation/reorganization stressful because it disrupted his manually created skill organization. If asked to disable it, act directly and verify:
+```bash
+hermes config set curator.enabled false
+hermes curator status
+```
+Expected verification is `curator: DISABLED`. If the status says `PAUSED`, check `curator.enabled` in `~/.hermes/config.yaml`; paused is a separate state flag, while `curator.enabled: false` is the actual hard gate. Only run `hermes curator resume` after disabling if needed to make status reporting unambiguous as `DISABLED` rather than `PAUSED`. Do not run `hermes curator run` or reorganize/restore skills unless Brayan explicitly asks.
+
+If Brayan is upset by curator changes, acknowledge the disruption, keep the reply short, and offer to inspect the last curator report/backups without touching skills. Useful recovery commands:
+```bash
+hermes curator status
+hermes curator rollback --list
+# only with explicit approval:
+# hermes curator rollback --id <snapshot> -y
+```
+
 ### Editing pinned local skills
 When a pinned local skill needs an approved edit, do not ask Brayan to run curator commands manually. Use the CLI directly:
 ```bash
@@ -587,6 +613,8 @@ hermes curator pin <skill-name>
 hermes curator status
 ```
 Verify the patched content and that the skill is pinned again before reporting done.
+
+If several related pinned skills or synced reference copies need the same content change, unpin all affected skills first, patch the canonical/top-level skill plus any bundled reference copies, then repin and run the personalization sync if the runtime bundle should preserve the change.
 
 ### Gateway issues
 Check logs first. On some installs there is no `gateway.log`; use `~/.hermes/logs/agent.log`, `~/.hermes/logs/errors.log`, and systemd journal instead:

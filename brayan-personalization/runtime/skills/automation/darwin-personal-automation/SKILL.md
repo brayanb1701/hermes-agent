@@ -1,6 +1,6 @@
 ---
 name: darwin-personal-automation
-description: "Umbrella workflow for Brayan/Darwin recurring Hermes automations: file-defined agents, cron wake-gated agents, vault review loops, job-tailoring fanout, topic recommendations, and exception handlers."
+description: "Umbrella workflow for Brayan/Darwin recurring Hermes automations: file-defined agents, cron wake-gated agents, vault review loops, opportunity-preparation fanout, topic recommendations, and exception handlers."
 version: 1.0.0
 author: Darwin
 license: MIT
@@ -104,11 +104,11 @@ Start report-only. Run/read the deterministic audit script, then perform a seman
 Opportunity/job workflows are vault workflows and may also be automation workflows.
 
 - Intake turns links/listings/programs/challenges/grants into structured `opportunities/<slug>/opportunity.md` records.
-- Tailoring-ready means a specific target has enough details for a packet; it is the only launchable intake status for the tailoring dispatcher.
-- Tailoring fanout is intentionally daily and low-frequency: a scanner selects at most three highest-priority ready jobs and launches one independent session per job.
-- Tailoring sessions create `opportunities/<slug>/application/tailoring-packet.md`, update the source record to `awaiting-review`, and notify Brayan. They must not submit applications.
+- `preparation-ready` means a specific target has enough details for an adaptive preparation packet; it is the only launchable intake status for the preparation dispatcher.
+- Opportunity-preparation fanout is intentionally daily and low-frequency: a scanner selects at most three highest-priority ready opportunities and launches one independent session per opportunity.
+- Preparation sessions create `opportunities/<slug>/application/preparation-packet.md`, update the source record to `awaiting-review`, and notify Brayan. They must not submit applications/forms/public PRs/payments or other external actions without explicit approval.
 
-See `personal-vault-ops` for current vault taxonomy and `references/job-application-vault-workflow.md`, `references/job-opportunity-intake-agent.md`, and `references/job-tailoring-agent.md` for detailed legacy runbooks.
+See `personal-vault-ops` for current vault taxonomy and `references/opportunity-preparation-vault-workflow.md`, `references/opportunity-intake-agent.md`, and `references/opportunity-preparation-agent.md` for detailed runbooks.
 
 ## Hermes upstream rebase CI exception handler
 

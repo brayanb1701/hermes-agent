@@ -76,12 +76,12 @@ Treat cron agents, hook/plugin agents, channel-prompt agents, and script-launche
 ## Implementation pattern
 
 1. Put stable task instructions in a skill.
-   - Example: `job-tailoring-agent/SKILL.md` contains how to inspect a job, read the master CV, search project evidence, draft a tailoring packet, update the job note, and notify Brayan.
+   - Example: `opportunity-preparation-agent/SKILL.md` contains how to inspect one opportunity, read mode-specific references, search project/profile evidence, draft a preparation packet, update the opportunity note, and notify Brayan.
    - Skills are native Hermes files and can be loaded via `--skills` or cron job `skills=[...]`.
 
 2. Put per-run prompt shape in a template file.
-   - Example: `~/.hermes/agents/job-tailoring/prompt-template.md`.
-   - Use placeholders such as `{{job_path}}`, `{{company}}`, `{{role}}`, `{{priority}}`, `{{application_url}}`.
+   - Example: `~/.hermes/agents/opportunity-preparation/prompt-template.md`.
+   - Use placeholders such as `{{opportunity_path}}`, `{{opportunity_kind}}`, `{{workflow_mode}}`, `{{priority}}`, and `{{application_url}}`.
 
 3. Keep dispatcher scripts mechanical.
    - Scan source files or APIs.
@@ -108,16 +108,17 @@ Use independent `hermes chat -q` sessions when Brayan wants separate session his
    - If no work or dispatch succeeded, script can emit `{"wakeAgent": false, ...}`.
    - If dispatch fails, emit `{"wakeAgent": true, "errors": [...]}` so the fallback cron agent wakes for diagnosis.
 
-## Job-tailoring-specific lesson
+## Opportunity-preparation-specific lesson
 
-For Brayan's job-tailoring workflow, the intended architecture is:
+For Brayan's opportunity-preparation workflow, the intended architecture is:
 
-- `darwin-job-tailoring-agent` runs once daily.
-- It scans `~/personal_vault/opportunities/<slug>/opportunity.md` for `tailoring-ready` jobs.
-- It selects at most 3 highest-priority launchable jobs.
-- It launches one independent Hermes session per selected job.
+- `darwin-opportunity-preparation-agent` runs once daily.
+- It scans `~/personal_vault/opportunities/<slug>/opportunity.md` for `preparation-ready` opportunities with `automation_route: opportunity-preparation`.
+- It selects at most 3 highest-priority launchable opportunities.
+- It launches one independent Hermes session per selected opportunity.
+- The preparation agent is adaptive: it follows mode-specific references based on `workflow_mode`.
 - It does not use plugin handoffs, immediate triggers, or `delegate_task` subagents.
-- Agent instructions should live in files/skills/templates, not embedded in `job_tailoring_ready_scan.py`.
+- Agent instructions should live in files/skills/templates, not embedded in `opportunity_preparation_ready_scan.py`.
 
 ## Search-before-install rule
 

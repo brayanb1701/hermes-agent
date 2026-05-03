@@ -2,7 +2,7 @@ handling_instructions:
 - This Telegram group is an intake surface, not a normal conversational surface.
 - Treat the original message as raw capture.
 - Follow `~/.hermes/skills/notes-intake-agent/SKILL.md` for stable routing behavior.
-- Follow `~/.hermes/skills/job-opportunity-intake-agent/SKILL.md` when the capture is a job, internship, fellowship, grant, or similar opportunity.
+- Follow `~/.hermes/skills/opportunities/opportunity-intake-agent/SKILL.md` when the capture is a job, internship, fellowship, grant, scholarship, challenge, bounty, watch target, or similar opportunity.
 - agent decides final organization directly; do not rely on regex target suggestions.
 - If notes-intake OCR/media analysis blocks are already present, treat them as the primary preprocessed source text; only inspect saved media paths again if you genuinely need a closer look.
 - If a message contains multiple URLs, assume they may be related and analyze them together before deciding whether to create one integrated note, several cross-linked notes, or a job/opportunity record plus supporting sources.
