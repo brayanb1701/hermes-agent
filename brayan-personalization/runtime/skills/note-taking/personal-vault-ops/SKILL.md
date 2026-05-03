@@ -381,7 +381,7 @@ Use this when Brayan asks whether the personal vault structure is drifting, proj
    - `decisions/` for pending decisions and decision logs
    - `daily/` for reviews/snapshots
    - `inbox/` for transient unprocessed files only, often empty
-6. Opportunity records use the Vault v2 one-folder layout only: `opportunities/<slug>/opportunity.md` plus `opportunities/<slug>/application/tailoring-packet.md`, `tailored-cv.md`, and `application-draft.md` when needed.
+6. Opportunity records use the Vault v2 one-folder layout only: `opportunities/<slug>/opportunity.md` plus `opportunities/<slug>/application/preparation-packet.md` and optional companion files such as `tailored-cv.md`, `application-draft.md`, `proposal-draft.md`, or `submission-checklist.md` when needed.
 7. When auditing `inbox/`, inspect actual files under the folder. `inbox/README.md` is policy only and should not be treated as work.
 8. Passive resources such as implementation cookbooks, domain/hosting tools, pricing/free-tier references, or utility catalogs should be filed as references, not P0/P1 pending reading or projects, unless Brayan explicitly wants an active extraction/build sprint.
 9. For a vault-maintenance/auditor agent, start report-only. It may detect wrong-folder notes, unsupported frontmatter, duplicates, orphan/broken links, project notes missing next actions, and references misclassified as active queues. It must not move/delete/archive notes or change priorities without approval.
@@ -462,11 +462,11 @@ This skill is the class-level umbrella for Brayan's vault operations. Detailed f
 - `references/decision-reminders-agent.md` — pending-decision reminder behavior.
 - `references/topic-recommendations-agent.md` — recurring recommendation balance and durable recommendation updates.
 - `references/vault-structure-auditor-agent.md` — report-only Vault v2 structure audit behavior and approval boundaries.
-- `references/job-application-vault-workflow.md` — end-to-end CV/source preservation, opportunity intake, and job-tailoring system.
-- `references/job-opportunity-intake-agent.md` — detailed opportunity-record statuses, form inspection, blocked-page rescue, grants/challenges/scholarship handling.
-- `references/job-tailoring-agent.md` — one-job tailoring session behavior, packet creation, queue audits, and semantic mismatch repairs.
+- `references/opportunity-preparation-vault-workflow.md` — end-to-end profile/source preservation, opportunity intake, routing, and preparation automation.
+- `references/opportunity-intake-agent.md` — detailed opportunity-record statuses, form/source inspection, routing metadata, and opportunity-kind handling.
+- `references/opportunity-preparation-agent.md` — adaptive one-opportunity preparation behavior, mode-specific packet creation, queue audits, and review boundaries.
 
-When a request clearly matches one of those subdomains, use this skill's vault invariants first, then read the reference for detailed legacy procedure. Do not recreate separate top-level micro-skills for those agents.
+When a request clearly matches one of those subdomains, use this skill's vault invariants first, then read the reference for detailed procedure. Do not recreate separate top-level micro-skills for those agents.
 
 ## Pitfalls
 - Do not overwrite raw source material
