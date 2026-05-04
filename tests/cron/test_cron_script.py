@@ -254,7 +254,7 @@ class TestBuildJobPromptWithScript:
         assert "## Script Output" not in prompt
         assert "Simple job." in prompt
 
-    def test_script_empty_output_noted(self, cron_env):
+    def test_script_empty_output_skips_prompt(self, cron_env):
         from cron.scheduler import _build_job_prompt
 
         script = cron_env / "scripts" / "noop.py"
@@ -265,8 +265,7 @@ class TestBuildJobPromptWithScript:
             "script": str(script),
         }
         prompt = _build_job_prompt(job)
-        assert "no output" in prompt.lower()
-        assert "Check status." in prompt
+        assert prompt is None
 
 
 class TestCronjobToolScript:
