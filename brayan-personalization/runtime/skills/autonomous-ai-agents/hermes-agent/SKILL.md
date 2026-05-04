@@ -604,6 +604,20 @@ hermes curator rollback --list
 # hermes curator rollback --id <snapshot> -y
 ```
 
+When auditing curator damage or proposing cleanup, stay report-only unless Brayan explicitly approves edits. Inspect, in this order:
+1. `~/.hermes/skills/.curator_state`, `~/.hermes/logs/curator/*/REPORT.md`, and `run.json` for exact run time, tool calls, archived/created/patched skills, and claimed recovery path.
+2. `hermes curator rollback --list`; do not trust report claims about snapshots until this shows actual backups.
+3. `~/.hermes/skills/.usage.json` for created/pinned/patch timestamps, but treat usage counters as metadata, not value judgments.
+4. Git history in `~/.hermes/hermes-agent` for `brayan-personalization/runtime/skills` and `brayan-personalization/runtime/config.yaml` to separate curator changes from later manual/session changes.
+5. Active cron jobs, gateway channel prompts, scripts using `--skills`, agent prompt templates, and config strings before declaring any skill safe to archive/absorb.
+
+For Brayan's setup, source-of-truth rules after the Apr 30 curator incident:
+- Top-level operational skills loaded by cron/gateway/scripts are authoritative and should remain top-level + pinned until their activation surfaces are consciously migrated.
+- Umbrella skills such as `personal-vault-ops` and `darwin-personal-automation` should carry architecture, invariants, routing, and pointers; they should not keep full duplicated copies of active operational `SKILL.md` files where those copies can drift.
+- `references/` files are appropriate for subordinate mode-specific procedures or non-authoritative historical notes. If a reference mirrors an active top-level skill, prefer replacing it with a short pointer/stub to the canonical skill rather than maintaining two full runbooks.
+- When a pinned local skill needs an approved edit, use `hermes curator unpin <skill>`, patch it, then `hermes curator pin <skill>` and verify status; do not keep retrying `skill_manage` against a pinned skill.
+- Never re-enable or run curator mutating mode until it can prove a dry-run plan, activation-surface impact analysis, actual backup availability, and explicit approval for any archive/absorb operation affecting pinned or cron-referenced skills.
+
 ### Editing pinned local skills
 When a pinned local skill needs an approved edit, do not ask Brayan to run curator commands manually. Use the CLI directly:
 ```bash
