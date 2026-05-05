@@ -613,7 +613,9 @@ When auditing curator damage or proposing cleanup, stay report-only unless Braya
 
 For Brayan's setup, source-of-truth rules after the Apr 30 curator incident:
 - Top-level operational skills loaded by cron/gateway/scripts are authoritative and should remain top-level + pinned until their activation surfaces are consciously migrated.
-- Umbrella skills such as `personal-vault-ops` and `darwin-personal-automation` should carry architecture, invariants, routing, and pointers; they should not keep full duplicated copies of active operational `SKILL.md` files where those copies can drift.
+- Grouping canonical operational skills into category folders is safe when the skill names remain globally unique and directory names match the frontmatter `name:`. Hermes recursively discovers `SKILL.md` files under `~/.hermes/skills`, so cron/agents can usually keep referencing the bare skill name (for example `opportunity-preparation-agent`) rather than the route (`opportunities/opportunity-preparation-agent`). Use path-style names only for debugging/disambiguation.
+- Pinning is currently per skill name in `.usage.json`, not per folder. `hermes curator pin opportunities/` is not a native protection mechanism; pin every operational skill individually. Pinning an umbrella skill protects that skill's own folder/support files from `skill_manage`, but it does not pin sibling skills in the same category folder.
+- When grouping operational skills, preserve the frontmatter `name`, update active direct path mentions in agent prompts/cron/scripts/skills, then verify both `skills_list(category=...)` and `skill_view(<bare-name>)`. Cron skill lists should normally stay as bare names to minimize activation-surface churn.
 - `references/` files are appropriate for subordinate mode-specific procedures or non-authoritative historical notes. If a reference mirrors an active top-level skill, prefer replacing it with a short pointer/stub to the canonical skill rather than maintaining two full runbooks.
 - When a pinned local skill needs an approved edit, use `hermes curator unpin <skill>`, patch it, then `hermes curator pin <skill>` and verify status; do not keep retrying `skill_manage` against a pinned skill.
 - Never re-enable or run curator mutating mode until it can prove a dry-run plan, activation-surface impact analysis, actual backup availability, and explicit approval for any archive/absorb operation affecting pinned or cron-referenced skills.
@@ -629,6 +631,8 @@ hermes curator status
 Verify the patched content and that the skill is pinned again before reporting done.
 
 If several related pinned skills or synced reference copies need the same content change, unpin all affected skills first, patch the canonical/top-level skill plus any bundled reference copies, then repin and run the personalization sync if the runtime bundle should preserve the change.
+
+When a pinned skill update is required during a skill-library review, do not stop after `skill_manage` reports pinned. Use `hermes curator unpin <skill-name>`, patch the skill, then `hermes curator pin <skill-name>` and verify. If the update is to a cron-loaded operational skill, keep the patch concise and scoped to durable lessons from the session.
 
 ### Gateway issues
 Check logs first. On some installs there is no `gateway.log`; use `~/.hermes/logs/agent.log`, `~/.hermes/logs/errors.log`, and systemd journal instead:
@@ -751,7 +755,7 @@ When Brayan wants to fix Hermes framework bugs and possibly contribute them upst
 
 Before coding, read the repo-local `CONTRIBUTING.md`, `AGENTS.md`, `.github/PULL_REQUEST_TEMPLATE.md`, and relevant workflows. Keep PRs one logical change each, add regression tests for bug fixes, use Conventional Commits, run the repo's canonical `scripts/run_tests.sh`, and include reproduction steps, platform tested, and cross-platform/process-management considerations in the PR body. Keep runtime personalization, vault edits, local config, cron state, sessions, and private IDs out of upstream PR branches.
 
-For the full workspace setup/checklist, see `references/upstream-pr-workspace.md`. For a reusable checklist when diagnosing degraded responses from Brayan's personalized branch, see `references/brayan-personalized-branch-quality-audit.md`.
+For the full workspace setup/checklist, see `references/upstream-pr-workspace.md`. For a reusable checklist when diagnosing degraded responses from Brayan's personalized branch, see `references/brayan-personalized-branch-quality-audit.md`. For a concrete upstream-rebase CI exception involving transient GitHub DNS plus a stale cron empty-script-output test, see `references/hermes-upstream-rebase-ci-2026-05-04.md`.
 
 ### Adding a Tool (3 files)
 

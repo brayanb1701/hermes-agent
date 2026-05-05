@@ -1,79 +1,90 @@
 ---
 name: vault-workflow-migrations
-description: Plan and execute scoped migrations of Brayan's personal-vault workflows, templates, dashboards, skills, and automation without over-migrating unrelated records.
-version: 1.0.0
+description: Plan and execute scoped migrations of Brayan's personal-vault workflows, templates, dashboards, skills, scripts, and automation without over-migrating unrelated records.
+version: 1.1.0
 author: Darwin
 license: MIT
 ---
 
 # Vault Workflow Migrations
 
-Use this skill when Brayan asks to rename, generalize, migrate, or audit an existing workflow in `~/personal_vault`, especially when the change touches templates, dashboards, opportunity records, Hermes skills, cron jobs, or runtime scripts.
+Use this skill when Brayan asks to rename, generalize, migrate, consolidate, or audit an existing workflow in `~/personal_vault`, especially when the change touches vault schema, templates, dashboards, Hermes skills, cron jobs, agent prompts, or runtime scripts.
 
-This is a class-level migration skill. For normal vault filing/routing, use `personal-vault-ops`. For the active opportunity pipeline, use `opportunity-intake-agent`, `opportunity-preparation-agent`, and `opportunity-preparation-vault-workflow` when available.
+This is a class-level migration skill. It should stay reusable across migration types. Keep one-time migration details in `references/` or vault `_meta/tmp_analysis/` / archive notes, not in the main `SKILL.md`.
+
+For normal vault filing/routing, use `personal-vault-ops`. For domain-specific active workflows, load the relevant operational skill as well, such as opportunity intake/preparation skills when the migration touches opportunities.
 
 ## Core rule
 
 Scope before editing. Brayan often wants a targeted migration, not a vault-wide rewrite. If he names exclusions or a subset, enforce that boundary exactly.
 
-## General workflow
+## Migration workflow
 
 1. Orient with:
    - `~/personal_vault/_meta/schema.md`
    - `~/personal_vault/_meta/index.md`
    - `~/personal_vault/_meta/log.md`
    - the active workflow/template/dashboard files being changed
-   - affected Hermes skills/scripts/cron files if automation changes
-2. Inventory the records/files that match the requested migration scope.
-3. Explicitly list exclusions before editing.
-4. Apply metadata/template/file-name changes only to in-scope records.
-5. Keep already-reviewable records in their current review state unless the content is actually inadequate.
-6. Update dashboards and logs in the same pass when the workflow's visible queue changes.
-7. Validate with deterministic checks and report uncommitted changes.
+   - affected Hermes skills, agent prompts, scripts, cron jobs, and config when automation changes
+2. Define the migration contract before editing:
+   - goal
+   - in-scope folders/files/records
+   - explicit exclusions
+   - old terms/paths/fields to retire
+   - new canonical terms/paths/fields
+   - compatibility policy: clean cutover vs temporary bridge
+3. Inventory matching records/files and classify them as:
+   - active source of truth
+   - generated output/cache/history
+   - historical archive/migration note
+   - unrelated false positive
+4. Apply changes only to in-scope active files.
+5. Preserve review state/status unless the migration itself proves the content is inadequate.
+6. Update visible indexes, dashboards, routing matrices, templates, and logs in the same pass when the workflow's public surface changes.
+7. Update activation surfaces atomically when automation depends on the migrated paths or names:
+   - Hermes skills
+   - agent prompt templates
+   - scripts
+   - cron job skill lists/prompts/scripts
+   - config.yaml values
+   - personalization/runtime bundle copies when relevant
+8. Validate deterministically before reporting done.
 
-## Opportunity preparation migration pattern
+## Reference handling
 
-Use this when converting old job/tailoring opportunity records to the broader opportunity/preparation workflow.
+Use supporting files for concrete cases instead of baking one migration's details into this main skill.
 
-- Prefer the general terms `opportunity`, `preparation`, and `preparation-packet.md`.
-- Use `status: preparation-ready` only for records that should be picked up by the preparation dispatcher.
-- If an opportunity already has good review material, keep `status: awaiting-review` and set `automation_route: none`; do not relaunch the preparation agent just because field names changed.
-- Rename `application/tailoring-packet.md` to `application/preparation-packet.md` only for records included in the migration scope.
-- Replace retired frontmatter like `tailoring_packet` with `preparation_packet`.
-- Preserve `workflow_mode: cv-tailoring` when the opportunity is genuinely CV-heavy; `cv-tailoring` is still a valid mode even though the overall workflow is called preparation.
-- For grants or short-form opportunities with an existing `application/application-draft.md`, create a lightweight `application/preparation-packet.md` that links the draft and records the review decision instead of duplicating content.
-- Do not migrate explicitly excluded records except for narrow metadata Brayan explicitly requests, such as adding `Kind` to dashboard rows.
+- `references/opportunity-preparation-v2-awaiting-review-migration.md` — concrete case notes for the opportunity-preparation migration. Treat it as historical/example context, not the default migration policy.
 
-## Dashboard migration rule
+When a migration creates reusable lessons, promote only the general rule into this `SKILL.md`. Keep dates, record names, one-off exclusions, and case-specific field mappings in a reference or vault migration note.
 
-When touching `opportunities/dashboard.md`:
+## Dashboard / index migration rule
 
-- Use a single `Kind` column populated from `opportunity_kind` unless Brayan asks otherwise.
-- Do not add `Kind / Mode` as the main dashboard label; `workflow_mode` belongs in frontmatter/agent context.
-- Preserve priority order: exact `P0`, mixed/ranged `P0/P1` or `P0-P1`, exact `P1`, mixed/ranged `P1/P2` or `P1-P2`, exact `P2`, mixed/ranged `P2/P3` or `P2-P3`, exact `P3`.
-- Within the same priority bucket, preserve existing order unless deadline/urgency clearly justifies moving a row.
-- Never remove existing dashboard rows unless the opportunity is explicitly archived/closed.
+When touching any dashboard, index, or queue:
 
-## References
-
-- `references/opportunity-preparation-v2-awaiting-review-migration.md` — concrete case notes for migrating only awaiting-review opportunities to the preparation workflow while preserving review state and excluding named records.
+- Preserve the dashboard's intended ordering semantics unless Brayan explicitly changes them.
+- Do not remove rows/items unless the source record is explicitly archived, closed, deleted, or out of scope by the migration contract.
+- Prefer a single clear user-facing label over combined labels that mix internal workflow fields with review-facing categories.
+- Verify generated tables by inspecting data rows, not only headers/separators.
 
 ## Validation checklist
 
 Before reporting done:
 
-1. Run `git diff --check` in `~/personal_vault`.
+1. Run `git diff --check` in `~/personal_vault` if the vault changed.
 2. If Hermes runtime/personalization changed, run `git diff --check` in the Hermes personalization checkout too.
 3. Compile affected Python scripts with `python3 -m py_compile`.
-4. Dry-run affected scanners, e.g. `python3 ~/.hermes/scripts/opportunity_preparation_ready_scan.py --dry-run`.
-5. Search in-scope folders for retired terms/fields.
-6. Verify dashboard rows have valid classification cells. If a quick table validator flags the header row because it starts with `| Priority`, inspect actual data rows before treating it as a failure.
-7. Report dirty git state precisely; do not assume unrelated uncommitted files are mistakes.
+4. Dry-run affected scanners/dispatchers when available.
+5. Search in-scope active files for retired terms, fields, and paths.
+6. Search activation surfaces for old skill/path names when skills, scripts, or cron jobs moved.
+7. Verify dashboards/indexes still point to existing files.
+8. Report dirty git state precisely; do not assume unrelated uncommitted files are mistakes.
 
 ## Pitfalls
 
 - Do not turn a targeted migration into a mass edit.
-- Do not downgrade `awaiting-review` records to `preparation-ready` unless the existing packet/draft is actually unusable.
-- Do not preserve obsolete field names for compatibility when Brayan has approved a clean rename.
-- Do not blindly replace every instance of `tailoring`; some terms, such as `workflow_mode: cv-tailoring`, may remain semantically correct.
-- Do not modify pinned skills directly. If the right umbrella skill is pinned, either ask Brayan to unpin it for a patch or create a broader migration skill only when it adds reusable class-level value.
+- Do not preserve obsolete field names for compatibility when Brayan has approved a clean cutover.
+- Do not blindly replace every instance of a retired term; some historical notes, examples, or mode names may remain semantically correct.
+- Do not migrate generated logs, old cron outputs, session transcripts, or historical audit files unless the user explicitly asks.
+- Do not modify pinned skills directly. If a pinned skill needs an approved patch, unpin it, patch it, repin it, and verify the pin is restored.
+- Do not leave completed migration/design analyses in active orientation paths where future agents may treat stale plans as current instructions.
