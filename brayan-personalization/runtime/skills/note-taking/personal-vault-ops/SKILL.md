@@ -43,8 +43,8 @@ Do not split them mentally into separate systems unless Brayan asks.
 - `concepts/` — durable reusable ideas/models that are not passive tool references.
 - `queries/` — active reading/research/watch/practice queues and saved syntheses.
 - `references/` — passive tools/resources/cookbooks/pricing/infrastructure references used when needed.
-- `projects/` — true actionable execution efforts only; each project has `projects/<slug>/README.md`.
-- `opportunities/` — jobs, fellowships, grants, scholarships, challenges, bounties, funding leads, and co-located application materials.
+- `projects/` — true actionable execution efforts only; each project has `projects/<slug>/README.md`; finished projects are registered in `projects/finished.md` and meaningful finished projects normally have `projects/<slug>/closeout.md`.
+- `opportunities/` — jobs, fellowships, grants, scholarships, challenges, bounties, funding leads, and co-located application materials; finished opportunities are registered in `opportunities/finished.md`.
 - `profile/` — canonical CV, bio, portfolio, and application profile sources.
 - `decisions/` — pending decisions and decision logs.
 - `daily/` — reviews and snapshots.
@@ -68,6 +68,11 @@ For the reusable setup pattern, see `references/project-workspace-control-layer.
 - `domains/economy/economy-map.md`
 - `domains/opportunities/opportunities-map.md`
 - `_meta/dashboards/project-dashboard.md`
+- `projects/finished.md`
+- `opportunities/dashboard.md`
+- `opportunities/finished.md`
+- `_meta/workflows/projects/project-closing-workflow.md`
+- `_meta/workflows/opportunities/opportunity-closing-workflow.md`
 - `projects/darwin-improvement/README.md`
 - `queries/topic-recommendations.md`
 
@@ -92,6 +97,9 @@ For the reusable setup pattern, see `references/project-workspace-control-layer.
 - Keep domain notes as navigation hubs, not giant dumps.
 - Avoid polluting durable notes with low-confidence OCR output or raw scraps.
 - When maintaining `opportunities/dashboard.md`, keep the table sorted as Brayan's review queue: exact `P0`, mixed/ranged `P0/P1` or `P0-P1`, exact `P1`, mixed/ranged `P1/P2` or `P1-P2`, exact `P2`, mixed/ranged `P2/P3` or `P2-P3`, then exact `P3`.
+- When Brayan says a project or opportunity is finished, awarded, rejected, expired, closed, archived, submitted/no-longer-actionable, or asks for a final result/postmortem/retrospective, use the dedicated closing workflow before editing records: `_meta/workflows/projects/project-closing-workflow.md` for projects and `_meta/workflows/opportunities/opportunity-closing-workflow.md` for opportunities.
+- Active/current dashboards should not silently accumulate finalized items. Finished projects go to `projects/finished.md`; finished opportunities go to `opportunities/finished.md`. Status tracks workflow state; `result_status`, `result_type`, and `result_summary` track final outcome.
+- When closing opportunities with linked projects, classify the project check as `not-needed`, `continue-project`, `close-project`, or `needs-review` rather than assuming the project ends automatically.
 - When removing duplicate binary uploads from `inbox/` after promotion to `raw/assets/`, verify byte identity first with hashes/checksums, then update any raw source note that points at the transient `inbox/` path.
 
 ## Current architecture docs
