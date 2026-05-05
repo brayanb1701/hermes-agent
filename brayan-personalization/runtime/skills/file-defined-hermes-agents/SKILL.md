@@ -20,8 +20,12 @@ This is a procedural design skill, not an umbrella for operational runbooks. For
 
 ## References
 
-- `references/brayan-current-agent-organization.md` — current live organization of Brayan's recurring/specialized Hermes agents, skills, prompt templates, scripts, and cron skill bindings.
+- `references/brayan-current-agent-organization.md` — current live organization of Brayan's recurring/specialized Hermes agents, skills, prompt templates, scripts, and cron skill bindings, including retired automation/design skills that should not be recreated.
 - `references/opportunity-preparation-agent-pattern.md` — concrete example of the independent-session fanout pattern for the opportunity-preparation workflow.
+
+When reviewing the skill library after an automation-refactor session, patch this skill or its references if the session changed agent organization, uncovered an overlap, or revealed a retirement/verification pitfall.
+
+After editing this skill or its references in Brayan's live runtime, sync the personalization bundle from `/home/brayan/.hermes/hermes-agent` and run `git diff --check` so the change survives reinstall/update workflows.
 
 ## Design principle
 
@@ -109,6 +113,21 @@ Use independent `hermes chat -q` sessions when Brayan wants separate session his
    - If no work exists or dispatch succeeded cleanly, script can emit `{"wakeAgent": false, ...}`.
    - If dispatch fails, emit `{"wakeAgent": true, "errors": [...]}` so the fallback cron agent wakes for diagnosis.
 
+## Retiring overlapping automation guidance
+
+When two automation/design skills overlap, prefer one class-level procedural skill plus references over parallel umbrella skills. Before deleting or absorbing a skill:
+
+1. Inventory activation surfaces first: cron jobs, config/channel prompts, scripts, agents, plugins, and skill references.
+2. Move durable reusable procedure into the class-level `SKILL.md`.
+3. Move Brayan-specific runtime inventory, historical/session-specific details, or concrete workflow examples into `references/`.
+4. Delete the redundant skill only after active activation surfaces no longer reference it.
+5. Verify both absence and resolution:
+   - `skill_view("<deleted-skill>")` should fail.
+   - canonical replacement skills should still load by bare name.
+   - `skills_list(category="<old-category>")` should not show an accidental empty/stale category.
+   - searches over live skills and synced personalization bundle should not show stale references.
+6. If `skill_manage(action="delete")` says the skill is not found but stale metadata remains, inspect and clean `~/.hermes/skills/.usage.json` carefully, then sync the personalization bundle.
+
 ## Search-before-install rule
 
 Before installing a plugin to solve this pattern:
@@ -159,6 +178,7 @@ After implementing/refactoring:
 
 - Do not embed long natural-language task prompts in Python scripts if the workflow is meant to be maintained as an agent.
 - Do not maintain duplicate runbooks in multiple skills; use canonical operational skills and references.
+- Do not leave stale `.usage.json` metadata for a retired skill; it can keep deleted skills looking active to curator/status tooling.
 - Do not install third-party orchestration plugins before showing Brayan what they do.
 - Do not use `delegate_task` when the explicit requirement is one independent session per item.
 - Do not create immediate-trigger/plugin handoff behavior when Brayan wants low-frequency cron cadence.

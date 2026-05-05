@@ -36,6 +36,10 @@ General design skill:
 
 - `file-defined-hermes-agents` — `~/.hermes/skills/file-defined-hermes-agents/SKILL.md`
 
+Retired automation/design skills:
+
+- `darwin-personal-automation` — retired and absorbed into `file-defined-hermes-agents`; do not recreate unless there is a genuinely new class-level purpose.
+
 Vault support skill:
 
 - `personal-vault-ops` — `~/.hermes/skills/note-taking/personal-vault-ops/SKILL.md`
@@ -100,4 +104,4 @@ Current recurring cron jobs load canonical skills by bare name:
 - Keep Brayan-specific runtime inventory here, not in the main `file-defined-hermes-agents` body.
 - Keep cron skill lists as bare names unless disambiguation becomes necessary.
 - If a skill moves category, preserve the frontmatter `name:` and verify `skill_view(<bare-name>)` still resolves.
-- If an automation is retired, remove its cron/script/template references and update this file in the same cleanup.
+- If an automation is retired, remove its cron/script/template references, clean stale `.usage.json` metadata if necessary, sync the personalization bundle, and update this file in the same cleanup.
