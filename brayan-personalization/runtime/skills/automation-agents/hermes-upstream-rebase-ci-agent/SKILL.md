@@ -43,7 +43,7 @@ When this exception agent has repaired a failed rebase or otherwise needs to com
 
 ```bash
 /home/brayan/.hermes/hermes-agent/venv/bin/python \
-  /home/brayan/.hermes/skills/hermes-upstream-rebase-ci-agent/scripts/finalize_rebase_push.py \
+  /home/brayan/.hermes/skills/automation-agents/hermes-upstream-rebase-ci-agent/scripts/finalize_rebase_push.py \
   --apply
 ```
 
@@ -51,14 +51,14 @@ For diagnosis without pushing:
 
 ```bash
 /home/brayan/.hermes/hermes-agent/venv/bin/python \
-  /home/brayan/.hermes/skills/hermes-upstream-rebase-ci-agent/scripts/finalize_rebase_push.py
+  /home/brayan/.hermes/skills/automation-agents/hermes-upstream-rebase-ci-agent/scripts/finalize_rebase_push.py
 ```
 
 For full verification without pushing:
 
 ```bash
 /home/brayan/.hermes/hermes-agent/venv/bin/python \
-  /home/brayan/.hermes/skills/hermes-upstream-rebase-ci-agent/scripts/finalize_rebase_push.py \
+  /home/brayan/.hermes/skills/automation-agents/hermes-upstream-rebase-ci-agent/scripts/finalize_rebase_push.py \
   --check
 ```
 
@@ -74,7 +74,7 @@ Do not bypass finalizer refusals. The finalizer intentionally hard-codes repo, b
 ## Verification commands
 Use the repo venv and clear repo-level pytest addopts where needed. These commands are for validating repairs or script/skill changes; they are not an instruction to rerun the pre-run script itself.
 ```bash
-/home/brayan/.hermes/hermes-agent/venv/bin/python -m py_compile ~/.hermes/scripts/hermes_upstream_rebase_ci.py /home/brayan/.hermes/hermes-agent/scripts/sync-brayan-personalization.py /home/brayan/.hermes/hermes-agent/scripts/apply-brayan-personalization.py /home/brayan/.hermes/skills/hermes-upstream-rebase-ci-agent/scripts/finalize_rebase_push.py
+/home/brayan/.hermes/hermes-agent/venv/bin/python -m py_compile ~/.hermes/scripts/hermes_upstream_rebase_ci.py /home/brayan/.hermes/hermes-agent/scripts/sync-brayan-personalization.py /home/brayan/.hermes/hermes-agent/scripts/apply-brayan-personalization.py /home/brayan/.hermes/skills/automation-agents/hermes-upstream-rebase-ci-agent/scripts/finalize_rebase_push.py
 /home/brayan/.hermes/hermes-agent/venv/bin/python -m pytest tests/gateway/test_notes_intake_pipeline.py tests/plugins/test_notes_preprocessor_intake.py tests/cron/test_cron_script.py::TestScriptWakeGate -q -o 'addopts='
 /home/brayan/.hermes/hermes-agent/venv/bin/python -m pytest tests/cron/test_cron_script.py tests/tools/test_cronjob_tools.py tests/hermes_cli/test_cron.py -q -o 'addopts='
 /home/brayan/.local/bin/hermes config check
