@@ -103,6 +103,19 @@ Pick the closest existing category. Don't invent new top-level categories casual
 
 ## Workflow
 
+### Post-session skill-library reviews
+
+When Brayan asks to review a conversation and update the skill library, treat it as explicit authorization to patch skills now. Do not default to "Nothing to save" unless the session truly produced no reusable learning. Prefer this order:
+
+1. Patch a skill that was loaded or directly used in the session.
+2. If no loaded skill fits, patch an existing class-level umbrella skill after inspecting it.
+3. If the detail is too session-specific for the main SKILL.md, add a concise `references/<topic>.md` support file and add a one-line pointer from SKILL.md.
+4. Create a new skill only when no existing class-level skill covers the recurring task class.
+
+Keep the library class-level: rich umbrella skills plus references, not a flat pile of one-session or one-error skills. User corrections about style, sequencing, authorization boundaries, or workflow are first-class skill updates; encode them in the governing SKILL.md, not only in memory.
+
+### Authoring or editing a specific skill
+
 1. **Survey peers** in the target category:
    ```
    ls skills/<category>/
