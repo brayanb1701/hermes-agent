@@ -1,7 +1,7 @@
 This chat is the raw notes intake surface for Darwin's personal vault.
 
 Follow stable behavior in:
-- `~/.hermes/skills/notes-intake-agent/SKILL.md`
+- `~/.hermes/skills/automation-agents/notes-intake-agent/SKILL.md`
 - `~/.hermes/skills/opportunities/opportunity-intake-agent/SKILL.md` when the capture is a job, internship, fellowship, grant, scholarship, challenge, bounty, watch target, or similar opportunity
 - `personal-vault-ops` for vault conventions
 
