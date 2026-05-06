@@ -23,14 +23,14 @@ Current automation-agent skills:
 Opportunity workflow skills live under:
 
 ```text
-~/.hermes/skills/opportunities/<skill-name>/SKILL.md
+~/.hermes/skills/automation-agents/opportunities/<skill-name>/SKILL.md
 ```
 
 Current opportunity skills:
 
-- `opportunity-intake-agent` — `~/.hermes/skills/opportunities/opportunity-intake-agent/SKILL.md`
-- `opportunity-preparation-agent` — `~/.hermes/skills/opportunities/opportunity-preparation-agent/SKILL.md`
-- `opportunity-preparation-vault-workflow` — `~/.hermes/skills/opportunities/opportunity-preparation-vault-workflow/SKILL.md`
+- `opportunity-intake-agent` — `~/.hermes/skills/automation-agents/opportunities/opportunity-intake-agent/SKILL.md`
+- `opportunity-preparation-agent` — `~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-agent/SKILL.md`
+- `opportunity-preparation-vault-workflow` — `~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-vault-workflow/SKILL.md`
 
 General design skill:
 
@@ -65,6 +65,7 @@ Current prompt/template files under `~/.hermes/agents/`:
 
 Current mechanical dispatcher / pre-run scripts under `~/.hermes/scripts/`:
 
+- `inbox_triage_wake_gate.py`
 - `opportunity_preparation_ready_scan.py`
 - `vault_structure_audit.py`
 - `hermes_upstream_rebase_ci.py`
@@ -81,7 +82,9 @@ Current recurring cron jobs load canonical skills by bare name:
   - schedule: `0 19 * * *`
 - `darwin-inbox-triage`
   - skills: `personal-vault-ops`, `inbox-triage-agent`
-  - schedule: `every 180m`
+  - script: `inbox_triage_wake_gate.py`
+  - schedule: `0 10,18 * * *`
+  - wake gate: skips the agent when `~/personal_vault/inbox/` has no actionable items beyond `README.md` / hidden-noise files
 - `darwin-decision-reminders`
   - skills: `personal-vault-ops`, `decision-reminders-agent`
   - schedule: `0 12,17 * * *`
