@@ -28,10 +28,12 @@ Propose 3-5 recommendations balanced across:
 - Darwin improvement
 - creative exploration
 
+When the daily review identifies a board/reset problem, stale deadlines, passed gates, or active-dashboard drift, treat cleanup/final-state classification as a legitimate high-leverage build/project recommendation. Protecting the priority system can matter more than opening new research topics.
+
 ## Quality bar
 Prefer topics that compound Brayan's skill, agency, earning potential, or durable knowledge. Avoid random trivia.
 
-Append only strong reusable recommendations to `~/personal_vault/queries/topic-recommendations.md`; do not spam the file with weak one-offs.
+Append only strong reusable recommendations to `~/personal_vault/queries/topic-recommendations.md`; do not spam the file with weak one-offs. If today's daily review materially changes pressure/ordering, it is valid to append a new set even when some themes repeat from yesterday; make the delta explicit instead of producing novelty for its own sake.
 
 ## Run procedure
 1. After the required reads, check whether today's daily review exists under `~/personal_vault/daily/YYYY-MM-DD.md`; if present, use it as the pressure/priority signal so recommendations reflect current deadlines and blockers rather than repeating older sets.

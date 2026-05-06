@@ -1,6 +1,6 @@
 {
   "_portable_note": "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by scripts/sync-brayan-personalization.py. Secrets are not included.",
-  "updated_at": "2026-05-05T15:14:03+00:00",
+  "updated_at": "2026-05-06T05:27:32+00:00",
   "jobs": [
     {
       "id": "1e387ba82595",
@@ -77,7 +77,7 @@
     {
       "id": "b5b791cd972b",
       "name": "darwin-inbox-triage",
-      "prompt": "You are Darwin running Brayan's inbox triage cron agent. Read and follow `~/.hermes/agents/inbox-triage/prompt-template.md`; stable behavior lives in `~/.hermes/skills/automation-agents/inbox-triage-agent/SKILL.md`. Keep this cron prompt intentionally tiny so prompt changes are tracked in files.",
+      "prompt": "You are Darwin running Brayan's wake-gated inbox triage cron agent. The pre-run script `inbox_triage_wake_gate.py` is the wake gate: if `~/personal_vault/inbox/` has no actionable items, it returns `wakeAgent: false` and this agent is skipped. If this prompt is running, actionable inbox items were found in Script Output. Read and follow `~/.hermes/agents/inbox-triage/prompt-template.md`; stable behavior lives in `~/.hermes/skills/automation-agents/inbox-triage-agent/SKILL.md`. Keep the inbox transient: preserve raw source material, route items into the correct durable vault locations, and remove only verified duplicates.",
       "skills": [
         "personal-vault-ops",
         "inbox-triage-agent"
@@ -86,13 +86,13 @@
       "model": null,
       "provider": null,
       "base_url": null,
-      "script": null,
+      "script": "inbox_triage_wake_gate.py",
       "schedule": {
-        "kind": "interval",
-        "minutes": 180,
-        "display": "every 180m"
+        "kind": "cron",
+        "expr": "0 10,18 * * *",
+        "display": "0 10,18 * * *"
       },
-      "schedule_display": "every 180m",
+      "schedule_display": "0 10,18 * * *",
       "repeat": {
         "times": null,
         "completed": 0
@@ -107,8 +107,13 @@
       "last_status": null,
       "last_error": null,
       "last_delivery_error": null,
-      "deliver": "local",
-      "origin": null
+      "deliver": "telegram:875925495",
+      "origin": null,
+      "enabled_toolsets": [
+        "file",
+        "terminal"
+      ],
+      "no_agent": false
     },
     {
       "id": "65b0c66d08ee",
@@ -149,7 +154,7 @@
     {
       "id": "edfaeb3aed5d",
       "name": "darwin-opportunity-preparation-agent",
-      "prompt": "You are Darwin, Brayan's opportunity-preparation cron dispatcher reporter/fallback. The attached pre-run script `opportunity_preparation_ready_scan.py` is the primary dispatcher: it scans `~/personal_vault/opportunities/*/opportunity.md` for `status: preparation-ready` plus `automation_route: opportunity-preparation`, skips records with an existing `application/preparation-packet.md`, and launches up to three independent Hermes sessions using `personal-vault-ops` and `opportunity-preparation-agent`.\n\nYour job is fallback-only:\n- Read the script output injected into this cron run.\n- If `wakeAgent` is false and there are no errors, stay concise: report no action needed only if a response is required by the scheduler.\n- If errors occurred, diagnose the dispatcher/runtime issue and tell Brayan exactly what needs repair.\n- Do not process opportunities yourself in this parent cron session.\n- Do not submit applications, forms, public PRs/posts, grants, bounty reports, payments, or paid compute actions.\n\nRelevant files:\n- Workflow: `~/personal_vault/_meta/workflows/opportunities/opportunity-preparation-agent-automation.md`\n- Prompt template: `~/.hermes/agents/opportunity-preparation/prompt-template.md`\n- Skill: `~/.hermes/skills/opportunities/opportunity-preparation-agent/SKILL.md`\n- Script: `~/.hermes/scripts/opportunity_preparation_ready_scan.py`",
+      "prompt": "You are Darwin, Brayan's opportunity-preparation cron dispatcher reporter/fallback. The attached pre-run script `opportunity_preparation_ready_scan.py` is the primary dispatcher: it scans `~/personal_vault/opportunities/*/opportunity.md` for `status: preparation-ready` plus `automation_route: opportunity-preparation`, skips records with an existing `application/preparation-packet.md`, and launches up to three independent Hermes sessions using `personal-vault-ops` and `opportunity-preparation-agent`.\n\nYour job is fallback-only:\n- Read the script output injected into this cron run.\n- If `wakeAgent` is false and there are no errors, stay concise: report no action needed only if a response is required by the scheduler.\n- If errors occurred, diagnose the dispatcher/runtime issue and tell Brayan exactly what needs repair.\n- Do not process opportunities yourself in this parent cron session.\n- Do not submit applications, forms, public PRs/posts, grants, bounty reports, payments, or paid compute actions.\n\nRelevant files:\n- Workflow: `~/personal_vault/_meta/workflows/opportunities/opportunity-preparation-agent-automation.md`\n- Prompt template: `~/.hermes/agents/opportunity-preparation/prompt-template.md`\n- Skill: `~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-agent/SKILL.md`\n- Script: `~/.hermes/scripts/opportunity_preparation_ready_scan.py`",
       "skills": [
         "personal-vault-ops",
         "opportunity-preparation-agent"
