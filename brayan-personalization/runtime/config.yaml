@@ -355,7 +355,7 @@ telegram:
     '-1003960601334': 'This chat is the raw notes intake surface for Darwin''s personal
       vault. Follow the file-defined notes intake prompt at `~/.hermes/agents/notes-intake/prompt-template.md`.
       Stable behavior lives in `~/.hermes/skills/notes-intake-agent/SKILL.md`; opportunity
-      intake behavior lives in `~/.hermes/skills/opportunities/opportunity-intake-agent/SKILL.md`.
+      intake behavior lives in `~/.hermes/skills/automation-agents/opportunities/opportunity-intake-agent/SKILL.md`.
       Keep this channel prompt intentionally small so prompt changes are tracked in
       files.
 

@@ -110,8 +110,10 @@ Use independent `hermes chat -q` sessions when Brayan wants separate session his
    - Parent prompt can be fallback-only: inspect script output, diagnose errors, repair only inside the workflow boundary, and report concise status.
 
 6. Wake-gate to avoid wasted model calls.
+   - For normal Hermes cron jobs with `script` and `no_agent=false`, the scheduler runs the script before building the LLM prompt. If stdout JSON contains `{"wakeAgent": false}` or `{"ready_count": 0}`, the agent is skipped entirely; if stdout is non-empty and wake is allowed, it is injected as `## Script Output` context.
    - If no work exists or dispatch succeeded cleanly, script can emit `{"wakeAgent": false, ...}`.
    - If dispatch fails, emit `{"wakeAgent": true, "errors": [...]}` so the fallback cron agent wakes for diagnosis.
+   - Reserve `no_agent=true` for pure watchdog/reporting scripts where the script output itself is the final delivery; use `no_agent=false` when the script is only a gate/context collector for a real agent.
 
 ## Retiring overlapping automation guidance
 
@@ -168,7 +170,9 @@ After implementing/refactoring:
 - Dry-run output shows selected items, max count, wake gate, and error count.
 - Prompt instructions are absent or minimal in script code.
 - Agent behavior lives in skill/template/context files.
-- Cron job points at the intended script, schedule, skills, delivery, and enabled state.
+- Cron job points at the intended script, schedule, skills, delivery, enabled toolsets, and enabled state.
+- When using the `cronjob` update tool, preserve explicit delivery (`deliver`) and toolsets in the update call; otherwise defaults may silently change user-visible delivery behavior.
+- Trigger the cron once only when safe, then inspect the latest `~/.hermes/cron/output/<job_id>/...` file to verify whether the wake gate skipped the LLM or woke the agent.
 - Bare skill names resolve with `skill_view(<name>)` after any category move.
 - `hermes config check` passes when Hermes runtime/config changed.
 - No plugin was installed or enabled without Brayan's approval.
@@ -182,4 +186,7 @@ After implementing/refactoring:
 - Do not install third-party orchestration plugins before showing Brayan what they do.
 - Do not use `delegate_task` when the explicit requirement is one independent session per item.
 - Do not create immediate-trigger/plugin handoff behavior when Brayan wants low-frequency cron cadence.
+- When converting an interval cron to fixed daily times, use a standard cron expression such as `0 10,18 * * *` rather than another interval schedule, and scan active runtime/bundle/vault docs for stale old cadence strings while excluding historical cron output/session logs.
+- Do not omit `deliver` when updating an existing cron job through tools; verify delivery after update because a partial update can reset it to `local`.
+- If a wake gate reports an empty queue, verify both the script output (`wakeAgent=false` / `ready_count=0`) and the resulting cron output doc that says the agent was skipped; this proves no model call was spent.
 - Do not overuse Hermes profiles unless the agent truly needs separate config/memory/state; profiles are powerful but heavier than skills/templates.

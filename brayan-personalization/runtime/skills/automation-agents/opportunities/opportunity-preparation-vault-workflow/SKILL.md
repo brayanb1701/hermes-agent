@@ -32,8 +32,8 @@ Orient with:
 - Preparation packets: `~/personal_vault/opportunities/<slug>/application/preparation-packet.md`
 - Dispatcher/scanner script: `~/.hermes/scripts/opportunity_preparation_ready_scan.py`
 - Preparation prompt template: `~/.hermes/agents/opportunity-preparation/prompt-template.md`
-- Intake skill: `~/.hermes/skills/opportunities/opportunity-intake-agent/SKILL.md`
-- Preparation skill: `~/.hermes/skills/opportunities/opportunity-preparation-agent/SKILL.md`
+- Intake skill: `~/.hermes/skills/automation-agents/opportunities/opportunity-intake-agent/SKILL.md`
+- Preparation skill: `~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-agent/SKILL.md`
 - Current daily dispatcher cron: `darwin-opportunity-preparation-agent`
 
 ## Opportunity intake workflow
