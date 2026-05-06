@@ -10,7 +10,7 @@ Dispatcher-only responsibilities:
 6. Emit wake-gated JSON for the parent cron job.
 
 Stable agent behavior lives in:
-- ~/.hermes/skills/opportunities/opportunity-preparation-agent/SKILL.md
+- ~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-agent/SKILL.md
 - ~/.hermes/agents/opportunity-preparation/prompt-template.md
 """
 from __future__ import annotations
