@@ -176,7 +176,7 @@ hermes cron remove ID       Delete a job
 hermes cron status          Scheduler status
 ```
 
-When changing an existing recurring job, first list jobs and identify the exact job ID by name/skills/delivery, then update the schedule and immediately list again to verify `schedule`, `enabled`, and `next_run_at`. Multi-time daily schedules can use standard cron hour lists, e.g. `0 12,17 * * *` for noon and 5pm daily; prefer this over interval schedules like `every 240m` when the user asks for fixed clock times.
+When changing an existing recurring job, first list jobs and identify the exact job ID by name/skills/delivery, then update the schedule and immediately list again to verify `schedule`, `enabled`, `next_run_at`, `deliver`, `script`, and `enabled_toolsets`. Multi-time daily schedules can use standard cron hour lists, e.g. `0 12,17 * * *` for noon and 5pm daily; prefer this over interval schedules like `every 240m` when the user asks for fixed clock times. If using a script as a wake gate with `no_agent=false`, stdout JSON `{"wakeAgent": false}` or `{"ready_count": 0}` skips the LLM run; trigger once only when safe and inspect the latest `~/.hermes/cron/output/<job_id>/` markdown to confirm whether the agent was skipped or woke.
 
 ### Webhooks
 
@@ -406,6 +406,63 @@ Tool changes take effect on `/reset` (new session). They do NOT apply mid-conver
 
 ---
 
+## Security & Privacy Toggles
+
+Common "why is Hermes doing X to my output / tool calls / commands?" toggles — and the exact commands to change them. Most of these need a fresh session (`/reset` in chat, or start a new `hermes` invocation) because they're read once at startup.
+
+### Secret redaction in tool output
+
+Secret redaction is **off by default** — tool output (terminal stdout, `read_file`, web content, subagent summaries, etc.) passes through unmodified. If the user wants Hermes to auto-mask strings that look like API keys, tokens, and secrets before they enter the conversation context and logs:
+
+```bash
+hermes config set security.redact_secrets true       # enable globally
+```
+
+**Restart required.** `security.redact_secrets` is snapshotted at import time — toggling it mid-session (e.g. via `export HERMES_REDACT_SECRETS=*** from a tool call) will NOT take effect for the running process. Tell the user to run `hermes config set security.redact_secrets true` in a terminal, then start a new session. This is deliberate — it prevents an LLM from flipping the toggle on itself mid-task.
+
+Disable again with:
+```bash
+hermes config set security.redact_secrets false
+```
+
+### PII redaction in gateway messages
+
+Separate from secret redaction. When enabled, the gateway hashes user IDs and strips phone numbers from the session context before it reaches the model:
+
+```bash
+hermes config set privacy.redact_pii true    # enable
+hermes config set privacy.redact_pii false   # disable (default)
+```
+
+### Command approval prompts
+
+By default (`approvals.mode: manual`), Hermes prompts the user before running shell commands flagged as destructive (`rm -rf`, `git reset --hard`, etc.). The modes are:
+
+- `manual` — always prompt (default)
+- `smart` — use an auxiliary LLM to auto-approve low-risk commands, prompt on high-risk
+- `off` — skip all approval prompts (equivalent to `--yolo`)
+
+```bash
+hermes config set approvals.mode smart       # recommended middle ground
+hermes config set approvals.mode off         # bypass everything (not recommended)
+```
+
+Per-invocation bypass without changing config:
+- `hermes --yolo …`
+- `export HERMES_YOLO_MODE=1`
+
+Note: YOLO / `approvals.mode: off` does NOT turn off secret redaction. They are independent.
+
+### Shell hooks allowlist
+
+Some shell-hook integrations require explicit allowlisting before they fire. Managed via `~/.hermes/shell-hooks-allowlist.json` — prompted interactively the first time a hook wants to run.
+
+### Disabling the web/browser/image-gen tools
+
+To keep the model away from network or media tools entirely, open `hermes tools` and toggle per-platform. Takes effect on next session (`/reset`). See the Tools & Skills section above.
+
+---
+
 ## Voice & Transcription
 
 ### STT (Voice → Text)
@@ -537,6 +594,95 @@ terminal(command="tmux new-session -d -s resumed 'hermes --resume 20260225_14305
 
 ---
 
+## Durable & Background Systems
+
+Four systems run alongside the main conversation loop. Quick reference
+here; full developer notes live in `AGENTS.md`, user-facing docs under
+`website/docs/user-guide/features/`.
+
+### Delegation (`delegate_task`)
+
+Synchronous subagent spawn — the parent waits for the child's summary
+before continuing its own loop. Isolated context + terminal session.
+
+- **Single:** `delegate_task(goal, context, toolsets)`.
+- **Batch:** `delegate_task(tasks=[{goal, ...}, ...])` runs children in
+  parallel, capped by `delegation.max_concurrent_children` (default 3).
+- **Roles:** `leaf` (default; cannot re-delegate) vs `orchestrator`
+  (can spawn its own workers, bounded by `delegation.max_spawn_depth`).
+- **Not durable.** If the parent is interrupted, the child is
+  cancelled. For work that must outlive the turn, use `cronjob` or
+  `terminal(background=True, notify_on_complete=True)`.
+
+Config: `delegation.*` in `config.yaml`.
+
+### Cron (scheduled jobs)
+
+Durable scheduler — `cron/jobs.py` + `cron/scheduler.py`. Drive it via
+the `cronjob` tool, the `hermes cron` CLI (`list`, `add`, `edit`,
+`pause`, `resume`, `run`, `remove`), or the `/cron` slash command.
+
+- **Schedules:** duration (`"30m"`, `"2h"`), "every" phrase
+  (`"every monday 9am"`), 5-field cron (`"0 9 * * *"`), or ISO timestamp.
+- **Per-job knobs:** `skills`, `model`/`provider` override, `script`
+  (pre-run data collection; `no_agent=True` makes the script the whole
+  job), `context_from` (chain job A's output into job B), `workdir`
+  (run in a specific dir with its `AGENTS.md` / `CLAUDE.md` loaded),
+  multi-platform delivery.
+- **Invariants:** 3-minute hard interrupt per run, `.tick.lock` file
+  prevents duplicate ticks across processes, cron sessions pass
+  `skip_memory=True` by default, and cron deliveries are framed with a
+  header/footer instead of being mirrored into the target gateway
+  session (keeps role alternation intact).
+
+User docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/cron
+
+### Curator (skill lifecycle)
+
+Background maintenance for agent-created skills. Tracks usage, marks
+idle skills stale, archives stale ones, keeps a pre-run tar.gz backup
+so nothing is lost.
+
+- **CLI:** `hermes curator <verb>` — `status`, `run`, `pause`, `resume`,
+  `pin`, `unpin`, `archive`, `restore`, `prune`, `backup`, `rollback`.
+- **Slash:** `/curator <subcommand>` mirrors the CLI.
+- **Scope:** only touches skills with `created_by: "agent"` provenance.
+  Bundled + hub-installed skills are off-limits. **Never deletes** —
+  max destructive action is archive. Pinned skills are exempt from
+  every auto-transition and every LLM review pass.
+- **Telemetry:** sidecar at `~/.hermes/skills/.usage.json` holds
+  per-skill `use_count`, `view_count`, `patch_count`,
+  `last_activity_at`, `state`, `pinned`.
+
+Config: `curator.*` (`enabled`, `interval_hours`, `min_idle_hours`,
+`stale_after_days`, `archive_after_days`, `backup.*`).
+User docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/curator
+
+### Kanban (multi-agent work queue)
+
+Durable SQLite board for multi-profile / multi-worker collaboration.
+Users drive it via `hermes kanban <verb>`; dispatcher-spawned workers
+see a focused `kanban_*` toolset gated by `HERMES_KANBAN_TASK` so the
+schema footprint is zero outside worker processes.
+
+- **CLI verbs (common):** `init`, `create`, `list` (alias `ls`),
+  `show`, `assign`, `link`, `unlink`, `comment`, `complete`, `block`,
+  `unblock`, `archive`, `tail`. Less common: `watch`, `stats`, `runs`,
+  `log`, `dispatch`, `daemon`, `gc`.
+- **Worker toolset:** `kanban_show`, `kanban_complete`, `kanban_block`,
+  `kanban_heartbeat`, `kanban_comment`, `kanban_create`, `kanban_link`.
+- **Dispatcher** runs inside the gateway by default
+  (`kanban.dispatch_in_gateway: true`) — reclaims stale claims,
+  promotes ready tasks, atomically claims, spawns assigned profiles.
+  Auto-blocks a task after ~5 consecutive spawn failures.
+- **Isolation:** board is the hard boundary (workers get
+  `HERMES_KANBAN_BOARD` pinned in env); tenant is a soft namespace
+  within a board for workspace-path + memory-key isolation.
+
+User docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/kanban
+
+---
+
 ## Troubleshooting
 
 ### Voice not working
@@ -587,6 +733,23 @@ Decision path:
 2. `hermes skills config` — check platform enablement
 3. Load explicitly: `/skill name` or `hermes -s name`
 
+### Auditing bundled/local skill drift against upstream
+
+When Brayan asks whether skill changes “not created by us” came from an update or whether they match the latest main branch, do a report-only audit unless he explicitly approves edits. `hermes skills check` only checks hub-installed skills; it can say “No hub-installed skills to check” even when runtime/bundled copies under `~/.hermes/skills` or `brayan-personalization/runtime/skills` differ from official bundled skills.
+
+Use the repo checkout, fetch first, and compare the right surfaces:
+```bash
+cd ~/.hermes/hermes-agent
+git status --short --branch
+git remote -v
+git fetch upstream main
+git fetch origin brayan/personal-hermes-customizations
+hermes skills check
+```
+Then, for each changed skill path in the personalization bundle, map `brayan-personalization/runtime/skills/<category>/<skill>/...` to upstream `skills/<category>/<skill>/...` when that upstream path exists. Compare four states separately: live runtime file, working-tree personalization bundle, `HEAD` bundle snapshot, and `upstream/main` bundled skill. A good quick probe is `git diff --shortstat HEAD -- <bundle-path>`, `git diff --shortstat $(git merge-base HEAD upstream/main)..upstream/main -- <upstream-path>`, and byte equality against `git show upstream/main:<upstream-path>`.
+
+Report which files already equal `upstream/main`, which are upstream updates synced into the personalization bundle, and which require a careful merge because they contain Brayan-specific local rules. Watch for stale local `main`: Brayan's local/fork `main` can lag far behind official `upstream/main`, so use `upstream/main` as the official latest baseline, not local `main` or `origin/main`, unless the user explicitly asks about the fork baseline.
+
 ### Curator / automatic skill reorganization
 
 For Brayan's setup, do **not** assume the skill curator should be active. Brayan found automatic curator consolidation/reorganization stressful because it disrupted his manually created skill organization. If asked to disable it, act directly and verify:
@@ -614,8 +777,10 @@ When auditing curator damage or proposing cleanup, stay report-only unless Braya
 For Brayan's setup, source-of-truth rules after the Apr 30 curator incident:
 - Top-level operational skills loaded by cron/gateway/scripts are authoritative and should remain top-level + pinned until their activation surfaces are consciously migrated.
 - Grouping canonical operational skills into category folders is safe when the skill names remain globally unique and directory names match the frontmatter `name:`. Hermes recursively discovers `SKILL.md` files under `~/.hermes/skills`, so cron/agents can usually keep referencing the bare skill name (for example `opportunity-preparation-agent`) rather than the route (`opportunities/opportunity-preparation-agent`). Use path-style names only for debugging/disambiguation.
+- Nested category folders are discoverable, but category reporting/filtering is not uniform across surfaces. `skill_view(<bare-name>)`, cron `skills: [...]`, and `hermes --skills <bare-name>` can resolve nested skills by recursively scanning for `SKILL.md`; however `skills_list(category=...)` currently reports only the first path component as `category` (for example a skill under `automation-agents/opportunities/foo/` appears under `automation-agents`, not `automation-agents/opportunities`). The prompt-builder/system skills index may preserve deeper category paths. When reorganizing, verify with both `skills_list(category=<top-level>)` and `skill_view(<bare-name>)`, and do not rely on subcategory filters alone.
 - Pinning is currently per skill name in `.usage.json`, not per folder. `hermes curator pin opportunities/` is not a native protection mechanism; pin every operational skill individually. Pinning an umbrella skill protects that skill's own folder/support files from `skill_manage`, but it does not pin sibling skills in the same category folder.
-- When grouping operational skills, preserve the frontmatter `name`, update active direct path mentions in agent prompts/cron/scripts/skills, then verify both `skills_list(category=...)` and `skill_view(<bare-name>)`. Cron skill lists should normally stay as bare names to minimize activation-surface churn.
+- When grouping operational skills, preserve the frontmatter `name`, update active direct path mentions in agent prompts/cron/scripts/skills/config and related vault workflow/architecture notes, then verify both `skills_list(category=...)` and `skill_view(<bare-name>)`. Cron skill lists should normally stay as bare names to minimize activation-surface churn.
+- For Brayan's runtime-personalization setup, skill moves are a two-surface migration: update live `~/.hermes/skills/...` first, then update/sync the bundle under `~/.hermes/hermes-agent/brayan-personalization/runtime/skills/...` on `brayan/personal-hermes-customizations`. After the move, scan live Hermes runtime, the personalization bundle/source checkout, cron jobs, config, scripts, and `~/personal_vault` for stale route strings; exclude historical logs/cron output unless the user explicitly asks to rewrite history. Run `skill_view(<bare-name>)`, `hermes skills list`, `hermes config check`, and any touched dispatcher script's dry-run/py_compile. If `scripts/sync-brayan-personalization.py` is run, immediately inspect `git status` because it may also capture unrelated concurrent runtime drift; do not clean or commit unrelated changes without explicit approval.
 - `references/` files are appropriate for subordinate mode-specific procedures or non-authoritative historical notes. If a reference mirrors an active top-level skill, prefer replacing it with a short pointer/stub to the canonical skill rather than maintaining two full runbooks.
 - When a pinned local skill needs an approved edit, use `hermes curator unpin <skill>`, patch it, then `hermes curator pin <skill>` and verify status; do not keep retrying `skill_manage` against a pinned skill.
 - Never re-enable or run curator mutating mode until it can prove a dry-run plan, activation-surface impact analysis, actual backup availability, and explicit approval for any archive/absorb operation affecting pinned or cron-referenced skills.
