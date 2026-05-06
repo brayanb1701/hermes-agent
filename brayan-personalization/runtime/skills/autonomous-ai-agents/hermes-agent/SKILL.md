@@ -750,6 +750,8 @@ Then, for each changed skill path in the personalization bundle, map `brayan-per
 
 Report which files already equal `upstream/main`, which are upstream updates synced into the personalization bundle, and which require a careful merge because they contain Brayan-specific local rules. Watch for stale local `main`: Brayan's local/fork `main` can lag far behind official `upstream/main`, so use `upstream/main` as the official latest baseline, not local `main` or `origin/main`, unless the user explicitly asks about the fork baseline.
 
+When Brayan explicitly asks to update `autonomous-ai-agents/hermes-agent` with upstream changes while preserving local rules, treat the live skill as `ours`, the last committed personalization bundle as `base`, and `upstream/main:skills/autonomous-ai-agents/hermes-agent/SKILL.md` as `theirs`. Prefer section-level merging over blindly overwriting: copy new upstream class sections (for example "Security & Privacy Toggles" or "Durable & Background Systems") into the live skill, but preserve Brayan-specific operational sections such as personalization-branch workflow, curator constraints, gateway/runtime quirks, and local skill-drift auditing. After editing, verify there are no conflict markers, sync live runtime into `brayan-personalization/runtime`, verify live and bundled skill copies match, then include that synced bundle in the same Hermes personalization commit.
+
 ### Curator / automatic skill reorganization
 
 For Brayan's setup, do **not** assume the skill curator should be active. Brayan found automatic curator consolidation/reorganization stressful because it disrupted his manually created skill organization. If asked to disable it, act directly and verify:
