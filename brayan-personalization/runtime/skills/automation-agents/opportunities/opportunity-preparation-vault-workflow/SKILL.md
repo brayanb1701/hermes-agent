@@ -48,6 +48,19 @@ For each new opportunity:
 6. Set `status: preparation-ready` only when a specific target has enough details for the adaptive preparation agent.
 7. Stop before external action unless Brayan explicitly approves the exact action.
 
+## Retrofitting existing opportunity records
+
+Use this when older `opportunity.md` files predate the adaptive preparation template or routing fields.
+
+1. Respect current review state: skip semantic recategorization for records already marked `awaiting-review` unless Brayan explicitly asks to update them; they already have review material and should not be relaunched casually.
+2. For each non-`awaiting-review` record, add or normalize: `opportunity_kind`, `workflow_mode`, `primary_artifact_focus`, `cv_relevance`, `automation_route`, and `preparation_packet: null`.
+3. Replace old `tailoring_packet` frontmatter on non-review records with `preparation_packet`; keep support links such as `strategy_note`, `sprint_note`, and `project_support` separate.
+4. Choose `preparation-ready` only for specific, launchable targets with enough current information. Keep broad boards, watch surfaces, blocked/generic portals, and role-choice-needed records at `researched` or `captured` with `automation_route: manual-review` or `none`.
+5. Add a short routing-update section/status-log entry in each changed record explaining the new kind/mode/route and the blocker or next action.
+6. Update `opportunities/dashboard.md` in the same pass for any changed status, kind, priority, or deadline; preserve the six-column table and escaped wikilink aliases.
+7. Validate all opportunity frontmatter parses as YAML. Common pitfall: unquoted colons in values such as `role: Internship: Data Management and Analytics` or `role: Board: A, B` break YAML; quote those scalar values even on skipped records if validation discovers them.
+8. Run `python3 -m py_compile ~/.hermes/scripts/opportunity_preparation_ready_scan.py` and `~/.hermes/scripts/opportunity_preparation_ready_scan.py --dry-run` to verify launchable selection before reporting readiness.
+
 ## Independent-session preparation workflow
 
 Trigger path:
