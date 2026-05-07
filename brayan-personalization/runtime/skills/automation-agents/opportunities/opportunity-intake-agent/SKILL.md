@@ -80,6 +80,7 @@ When uncertain, choose the earliest defensible status and record the blocker.
 - Scholarships: `workflow_mode: scholarship-planning`; focus on eligibility, documents, deadline table, transcript/passport/language/recommender blockers.
 - Bounties: `workflow_mode: bounty-execution`; focus on scope, rules, evidence, disclosure/report checklist, safety/legal boundaries.
 - Broad boards/future cycles: `workflow_mode: watch-monitoring` or `research-only`; usually keep `status: researched` until a specific target is chosen.
+- High-interest future-cycle opportunities can still be `preparation-ready` with `workflow_mode: watch-monitoring` when Brayan explicitly wants the preparation agent to produce an early planning packet. Example: a future internship where the near-term bottleneck is research-group/faculty path mapping and proof-of-work project planning, not immediate CV tailoring. In that case keep `opportunity_kind` as the real kind such as `internship`, set `cv_relevance: strategic`, and make `primary_artifact_focus` the path/project roadmap plus trigger conditions for later `cv-tailoring`.
 
 
 ## Dashboard update requirement
