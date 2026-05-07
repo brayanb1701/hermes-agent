@@ -176,7 +176,13 @@ hermes cron remove ID       Delete a job
 hermes cron status          Scheduler status
 ```
 
-When changing an existing recurring job, first list jobs and identify the exact job ID by name/skills/delivery, then update the schedule and immediately list again to verify `schedule`, `enabled`, `next_run_at`, `deliver`, `script`, and `enabled_toolsets`. Multi-time daily schedules can use standard cron hour lists, e.g. `0 12,17 * * *` for noon and 5pm daily; prefer this over interval schedules like `every 240m` when the user asks for fixed clock times. If using a script as a wake gate with `no_agent=false`, stdout JSON `{"wakeAgent": false}` or `{"ready_count": 0}` skips the LLM run; trigger once only when safe and inspect the latest `~/.hermes/cron/output/<job_id>/` markdown to confirm whether the agent was skipped or woke.
+When changing an existing recurring job, first list jobs and identify the exact job ID by name/skills/delivery, then update the schedule and immediately list again to verify `schedule`, `enabled`, `next_run_at`, `deliver`, `script`, `no_agent`, and `enabled_toolsets`. Multi-time daily schedules can use standard cron hour lists, e.g. `0 12,17 * * *` for noon and 5pm daily; prefer this over interval schedules like `every 240m` when the user asks for fixed clock times.
+
+Cron script modes are distinct:
+- `script` with normal agent mode (`no_agent=false` / omitted): the script runs as a pre-check/data collector. Stdout JSON `{"wakeAgent": false}` or `{"ready_count": 0}` skips the LLM run; otherwise stdout is injected into the agent prompt. This is the wake-gate pattern.
+- `no_agent=true` / `--no-agent`: the script IS the job. No LLM/AIAgent/tokens are used. Non-empty stdout is delivered verbatim to the configured `deliver` target (e.g. gateway/Telegram/local), empty stdout is silent, `{"wakeAgent": false}` is also silent, and non-zero exit/timeout sends an error alert. Use this for deterministic watchdogs/pollers/alerts; use normal agent mode when reasoning, summarizing, drafting, or decision-making is needed.
+
+If using a script gate, trigger once only when safe and inspect the latest `~/.hermes/cron/output/<job_id>/` markdown to confirm whether the job was silent, delivered script output, or woke the agent.
 
 ### Webhooks
 
