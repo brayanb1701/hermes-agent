@@ -1,27 +1,40 @@
 {
+  "automation-agents/opportunities/opportunity-preparation-agent": {
+    "archived_at": null,
+    "created_at": "2026-05-07T16:00:30.340049+00:00",
+    "created_by": null,
+    "last_patched_at": null,
+    "last_used_at": "2026-05-07T16:00:52.633492+00:00",
+    "last_viewed_at": "2026-05-07T16:00:52.631469+00:00",
+    "patch_count": 0,
+    "pinned": false,
+    "state": "active",
+    "use_count": 3,
+    "view_count": 3
+  },
   "daily-review-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:11:06.973711+00:00",
     "last_patched_at": null,
-    "last_used_at": "2026-05-07T14:25:25.691331+00:00",
-    "last_viewed_at": "2026-05-05T02:54:37.968431+00:00",
+    "last_used_at": "2026-05-08T14:00:13.769506+00:00",
+    "last_viewed_at": "2026-05-08T14:00:13.768241+00:00",
     "patch_count": 0,
     "pinned": false,
     "state": "active",
-    "use_count": 7,
-    "view_count": 4
+    "use_count": 9,
+    "view_count": 5
   },
   "decision-reminders-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:11:07.416991+00:00",
     "last_patched_at": null,
-    "last_used_at": "2026-05-06T22:00:18.894859+00:00",
-    "last_viewed_at": "2026-05-06T22:00:18.893274+00:00",
+    "last_used_at": "2026-05-07T22:00:24.944569+00:00",
+    "last_viewed_at": "2026-05-07T22:00:24.943079+00:00",
     "patch_count": 0,
     "pinned": false,
     "state": "active",
-    "use_count": 14,
-    "view_count": 11
+    "use_count": 17,
+    "view_count": 13
   },
   "file-defined-hermes-agents": {
     "archived_at": null,
@@ -87,48 +100,48 @@
     "archived_at": null,
     "created_at": "2026-05-03T04:10:09.953165+00:00",
     "last_patched_at": "2026-05-07T04:48:54.773792+00:00",
-    "last_used_at": "2026-05-07T04:48:39.271098+00:00",
+    "last_used_at": "2026-05-07T16:00:21.424346+00:00",
     "last_viewed_at": "2026-05-07T04:48:58.082050+00:00",
     "patch_count": 9,
     "pinned": false,
     "state": "active",
-    "use_count": 9,
+    "use_count": 13,
     "view_count": 10
   },
   "opportunity-preparation-vault-workflow": {
     "archived_at": null,
     "created_at": "2026-05-03T04:16:20.890173+00:00",
-    "last_patched_at": "2026-05-06T23:26:44.496269+00:00",
-    "last_used_at": "2026-05-06T23:20:02.897554+00:00",
-    "last_viewed_at": "2026-05-06T23:20:02.894549+00:00",
-    "patch_count": 1,
+    "last_patched_at": "2026-05-07T22:08:31.392634+00:00",
+    "last_used_at": "2026-05-07T22:08:17.920380+00:00",
+    "last_viewed_at": "2026-05-07T22:08:17.917907+00:00",
+    "patch_count": 3,
     "pinned": false,
     "state": "active",
-    "use_count": 7,
-    "view_count": 7
+    "use_count": 10,
+    "view_count": 10
   },
   "personal-vault-ops": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.168633+00:00",
     "last_patched_at": "2026-05-05T06:12:31.836403+00:00",
-    "last_used_at": "2026-05-07T14:25:25.651795+00:00",
-    "last_viewed_at": "2026-05-07T04:45:43.800173+00:00",
+    "last_used_at": "2026-05-08T14:00:14.790627+00:00",
+    "last_viewed_at": "2026-05-08T14:00:14.786850+00:00",
     "patch_count": 16,
     "pinned": false,
     "state": "active",
-    "use_count": 88,
-    "view_count": 81
+    "use_count": 102,
+    "view_count": 87
   },
   "topic-recommendations-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:11:10.877619+00:00",
     "last_patched_at": "2026-05-06T00:04:34.091531+00:00",
-    "last_used_at": "2026-05-07T00:00:59.293836+00:00",
+    "last_used_at": "2026-05-08T00:00:02.083658+00:00",
     "last_viewed_at": "2026-05-07T00:00:59.291940+00:00",
     "patch_count": 1,
     "pinned": false,
     "state": "active",
-    "use_count": 9,
+    "use_count": 10,
     "view_count": 7
   },
   "vault-structure-auditor-agent": {
