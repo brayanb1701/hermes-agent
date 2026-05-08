@@ -85,6 +85,21 @@ The preparation packet should include:
 - manual blockers and review checklist
 - recommended next action
 
+## Updating existing application materials
+
+Use this when Brayan is actively applying and asks for targeted edits to an existing opportunity packet, tailored CV, or form-answer drafts.
+
+1. Locate the exact opportunity folder under `~/personal_vault/opportunities/<slug>/` and read `opportunity.md`, the relevant `application/` files, and `profile/cv-master.md` or source-pack notes as needed.
+2. Apply only the requested changes to existing artifacts unless Brayan asks for broader tailoring. For employment-history changes, keep dates/order internally consistent across the tailored CV and any new answer files.
+3. For form fields such as achievements, duties, or reason for leaving, create a focused `application/<descriptive-name>.md` draft with paste-ready long answers plus shorter variants for tight form limits.
+4. For motivation letters / cover letters that must be pasted into a plain-text web form, create both:
+   - `application/letter-of-motivation.md` with frontmatter, sources, character count, and the draft in a fenced `text` block for review.
+   - `application/letter-of-motivation.txt` containing only the exact plain text to paste. Avoid bullets, tables, Markdown emphasis, headings, and other style elements in the `.txt` body. Check the field's maximum character count with a script/tool and record `character_count` and `max_character_count` in the MD frontmatter.
+5. Keep the tone natural and human for motivation letters: direct, specific, mission-aware, and grounded in Brayan's actual profile evidence; avoid generic AI-cover-letter phrasing and do not invent eligibility, secured recommendations, visa feasibility, or domain experience.
+6. Link any new application draft from the existing `application/preparation-packet.md` `outputs` and source-links area so the packet remains the opportunity's review hub.
+7. Update `updated:` dates on changed markdown frontmatter using the live date, then verify by rereading the relevant sections and searching for stale/contradictory strings.
+8. Validate changed YAML frontmatter when practical. If Python `yaml` is unavailable, Ruby's stdlib YAML can be used only when command execution approval is acceptable; otherwise quote potentially ambiguous frontmatter scalar values and verify by rereading/diffing.
+
 ## Current policy boundary
 
 Allowed: intake, extraction, prioritization, source/form/rule inspection, tailored/adaptive draft preparation, reviewer notification.
