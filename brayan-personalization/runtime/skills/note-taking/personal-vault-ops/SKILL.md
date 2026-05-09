@@ -134,6 +134,19 @@ When working with the vault:
 6. Update index/log if the structure changed.
 7. Verify by rereading changed files and searching for key links/slugs.
 
+## Application/profile support writing
+
+When drafting support material from `profile/` or `opportunities/<slug>/application/` for recommenders, applications, or profile packets:
+
+- Respect Brayan's requested language, but preserve official names/titles in their original form unless he explicitly asks for translation. Examples: `International Physicists' Tournament`, `Colombian Physicists' Tournament`, `Industrial University of Santander`, `Computer Systems Engineering`, `Physics`, `Geo2Code I Hackathon`, `Co-Afina 2023 Hackathon`.
+- If the recipient only needs a source list or recommender input, default to concise bullets, not a polished long letter. Include only the requested scope; if Brayan says no professional experience, exclude all professional roles and keep academic items only.
+- For recommender-letter drafts, avoid putting words too strongly in the recommender's mouth. Prefer a simple data section, relationship context, optional points the recommender may mention, then a short editable draft.
+- If Brayan asks for a recommender/support draft to match another letter's style, inspect the actual saved source first. For a local PDF, extract text with `pdftotext <file.pdf> -` when available, then mirror its level of formality, header layout, paragraph length, and closing rather than inventing a new style.
+- When adding a translation or second-language version to an existing draft, reread the current saved source text first and mirror Brayan's latest edits closely. Do not translate from an earlier assistant version or reintroduce phrasing Brayan softened/removed.
+- If Brayan requests a plain-text application/support file, save `.txt` with no frontmatter or markdown formatting.
+- If Brayan requests a quick PDF application/support letter, create an editable HTML source alongside the PDF and render with `weasyprint` when available; verify with `file <pdf>` and `pdftotext <pdf> - | head -c ...` to catch missing text/layout issues.
+- When Brayan provides corrected grades or profile facts during an application-material task, update the canonical `profile/cv-master.md` first and any directly active tailored materials that depend on it.
+
 ## Related canonical skills
 
 These are listed for discovery only, load the canonical skill directly by bare name when needed.
