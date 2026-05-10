@@ -9,6 +9,8 @@ license: MIT
 # Topic Recommendations Agent
 
 ## Required reads
+If this is running from the scheduled topic-recommendations agent, first read `~/.hermes/agents/topic-recommendations/prompt-template.md` when present or explicitly requested by the cron prompt; it may carry delivery/silence instructions that should override generic output wording.
+
 Read:
 1. `~/personal_vault/_meta/schema.md`
 2. `~/personal_vault/_meta/index.md`
@@ -43,4 +45,6 @@ Append only strong reusable recommendations to `~/personal_vault/queries/topic-r
 5. If the vault working tree already has unrelated dirty files, run validation scoped to the files touched by this agent, e.g. `git diff --check -- _meta/log.md queries/topic-recommendations.md`, and do not attempt to clean unrelated whitespace or pending changes from other agents.
 
 ## Output
-Send a concise recommendation briefing explaining why each item matters and what the next action is. Mention durable vault updates only briefly unless there was a problem.
+Produce a concise recommendation briefing explaining why each item matters and what the next action is. Mention durable vault updates only briefly unless there was a problem.
+
+For scheduled cron runs, do **not** call messaging/send tools unless the prompt explicitly asks for manual delivery; the scheduler delivers the final response automatically. If the cron prompt includes a silence contract, follow it exactly (for example, return exactly `[SILENT]` and nothing else when there is genuinely nothing new to report).
