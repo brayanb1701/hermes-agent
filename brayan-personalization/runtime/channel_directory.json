@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-09T10:33:00.045002",
+  "updated_at": "2026-05-10T10:11:48.803338",
   "platforms": {
     "telegram": [
       {
@@ -25,6 +25,7 @@
     "email": [],
     "sms": [],
     "dingtalk": [],
+    "msgraph_webhook": [],
     "feishu": [],
     "wecom": [],
     "wecom_callback": [],

@@ -71,6 +71,10 @@ The finalizer emits JSON designed for agent use. On failure, inspect and report:
 
 Do not bypass finalizer refusals. The finalizer intentionally hard-codes repo, branch, remotes, clean-tree checks, upstream containment, verification commands, and exact `--force-with-lease=<ref>:<observed-origin-sha>` push semantics.
 
+## Known conflict patterns
+
+- `tests/cron/test_cron_script.py` empty-script-output conflicts can be caused by upstream removing stale tests while Brayan's branch preserves updated cron wake-gate behavior. Current intended behavior: `_run_job_script()` returns `(True, "")` for empty stdout, normal agent-mode `run_job()` treats empty script stdout as silent/`[SILENT]`, and `_build_job_prompt()` returns `None` for an empty successful pre-run script rather than injecting a "no output" prompt. When resolving a rebase conflict around `test_script_empty_output_noted` / `test_script_empty_output_skips_prompt`, preserve the `assert prompt is None` expectation if `cron/scheduler.py` still implements the empty-output skip at `_build_job_prompt()`.
+
 ## Verification commands
 Use the repo venv and clear repo-level pytest addopts where needed. These commands are for validating repairs or script/skill changes; they are not an instruction to rerun the pre-run script itself.
 ```bash
