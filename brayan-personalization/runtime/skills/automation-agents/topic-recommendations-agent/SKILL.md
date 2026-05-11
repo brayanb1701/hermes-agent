@@ -43,6 +43,7 @@ Append only strong reusable recommendations to `~/personal_vault/queries/topic-r
 3. If adding a durable recommendation set, update the `updated:` date in `queries/topic-recommendations.md` and append a concise entry to `~/personal_vault/_meta/log.md`.
 4. Verify the new set by searching for the date/slug and reading the changed section.
 5. If the vault working tree already has unrelated dirty files, run validation scoped to the files touched by this agent, e.g. `git diff --check -- _meta/log.md queries/topic-recommendations.md`, and do not attempt to clean unrelated whitespace or pending changes from other agents.
+6. When the target files are already dirty from previous agents or same-day runs, inspect `git diff -- queries/topic-recommendations.md _meta/log.md` before patching. Preserve existing uncommitted entries, append only the new dated set/log entry, and verify the exact inserted section by searching/reading it. In the final briefing, mention only this run's durable update, not the whole pre-existing diff.
 
 ## Output
 Produce a concise recommendation briefing explaining why each item matters and what the next action is. Mention durable vault updates only briefly unless there was a problem.
