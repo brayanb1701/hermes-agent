@@ -6,7 +6,6 @@ arxiv:e71ad0cc7e6df2dcb3ef09537752ee54
 ascii-art:3aea656d9b8fb9d054ce37565e704a04
 ascii-video:2c8277458b2ef50421ce44debb9d81ad
 audiocraft-audio-generation:c207bdbf300ea5c42decc9cb6a596d1c
-axolotl:3f933484fadc0509b6f68e98848b9480
 baoyu-comic:8ff68387b01dea27ce049837ae9ecc47
 baoyu-infographic:53edf7d1b9398d62f4ccb0755e27913e
 blogwatcher:3f30bdd408c771501b94fab9289579c6
@@ -22,7 +21,6 @@ dspy:64659f5eba8f127700fa931f58175f01
 evaluating-llms-harness:ac24cf5202db5b024b3079023797a0f6
 excalidraw:149a572d2069ee3de2951352725a8b19
 findmy:1d7dd3ae39cf25357a374c6bfb956442
-fine-tuning-with-trl:7c7156942fbcef900e8a46035cc9a21b
 gif-search:d02d7fb065dfc143c079f15b8d8af1a7
 github-auth:c58654476268579b4cfa5953bb4160d0
 github-code-review:b771855b5c56b5e3a2546167a51667ba
@@ -40,7 +38,7 @@ humanizer:6645b341862575f452e86139c5c71ce9
 ideation:8cfdaafa9abda023643427110c8c3073
 imessage:f545da0f5cc64dd9ee1ffd2b7733a11b
 jupyter-live-kernel:352c43dc28428592abbc8c91cb5ce295
-kanban-orchestrator:258fe3caab0344cd38183adbcc88ac86
+kanban-orchestrator:2e2c4cec493471ad1ae60411154e1617
 kanban-worker:10b924972a7e68103162eaea70e092a2
 linear:ab7a5dbd4001e31e2bd888d86ab699f8
 llama-cpp:0991055ce47146735f0ed02d7658a254
@@ -58,7 +56,6 @@ obsidian:be02894afa45a908623ad6f9b7594199
 ocr-and-documents:294f438e9a6425c0305bfa894a2116aa
 opencode:d2a166c7f2c74f6e47d548ed1290c458
 openhue:ce1dd061d7f49d4752a4c0711ad2666c
-outlines:f573f040a5dfa94b2e5941c433735151
 p5js:5f09fa1cb8494c93bc2f5bcbd34a2ead
 pixel-art:39562dfa3598566fc09280c054ef0ede
 plan:50c4df52eb6b0932649a444bc9984e0a
@@ -82,7 +79,6 @@ systematic-debugging:a02cf3ccd7b79909137ac1af46d01ed6
 teams-meeting-pipeline:810d4862830d1eb3daccf898f7c5ee85
 test-driven-development:31fb75eff421db47e527bce28c493df3
 touchdesigner-mcp:0664ded9138795d5518def4d16037650
-unsloth:c11d9b5748b315f14d46f1460cd7ad85
 webhook-subscriptions:b1ffc6d6a3cf3f59ea8eb7dcd178c555
 weights-and-biases:8f0e1ee92fdf7b42a1dad448176d7c64
 writing-plans:ebe31eb58f7a09a7cd8fad4d422b9d3b
