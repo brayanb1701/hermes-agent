@@ -32,6 +32,8 @@ Propose 3-5 recommendations balanced across:
 
 When the daily review identifies a board/reset problem, stale deadlines, passed gates, or active-dashboard drift, treat cleanup/final-state classification as a legitimate high-leverage build/project recommendation. Protecting the priority system can matter more than opening new research topics.
 
+When a time-boxed resource window has passed (for example expired compute credits), do not keep recommending launch/run-card execution as if the window were still open. Pivot the recommendation to final-state classification (spent/skipped/unknown), cognitive-leak cleanup in the decision register/dashboard, and the nearest replacement leverage path if one exists (such as a still-live compute grant or proof-bundle opportunity).
+
 ## Quality bar
 Prefer topics that compound Brayan's skill, agency, earning potential, or durable knowledge. Avoid random trivia.
 
