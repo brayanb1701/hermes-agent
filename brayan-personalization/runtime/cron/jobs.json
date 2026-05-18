@@ -1,6 +1,6 @@
 {
   "_portable_note": "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by scripts/sync-brayan-personalization.py. Secrets are not included.",
-  "updated_at": "2026-05-18T17:18:49+00:00",
+  "updated_at": "2026-05-18T22:25:40+00:00",
   "jobs": [
     {
       "id": "1e387ba82595",
@@ -409,6 +409,49 @@
         "file",
         "terminal"
       ]
+    },
+    {
+      "id": "c77f4c0f5cd9",
+      "name": "darwin-opportunity-closing-agent",
+      "prompt": "You are Darwin, Brayan's opportunity-closing cron dispatcher reporter/fallback.\n\nThe attached pre-run script `opportunity_closeout_scan.py` scans for live `opportunities/*/closeout-input.md` files and launches independent Hermes sessions for each selected closeout.\n\nIf the script output says `wakeAgent: false` or `ready_count: 0`, stay silent / provide no extra work.\n\nIf the script output reports launched sessions, errors, or non-launchable closeout inputs that need attention, summarize concisely for Brayan and diagnose only inside the opportunity closeout workflow boundary.\n\nDo not close opportunities directly in this parent cron session unless the dispatcher failed before launching and the fix is a trivial mechanical retry. The real closeout behavior belongs to independent sessions using `opportunity-closing-agent`.",
+      "skills": [
+        "personal-vault-ops",
+        "opportunity-closing-agent"
+      ],
+      "skill": "personal-vault-ops",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "opportunity_closeout_scan.py",
+      "no_agent": false,
+      "context_from": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "30 11 * * *",
+        "display": "30 11 * * *"
+      },
+      "schedule_display": "30 11 * * *",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-05-18T17:25:32.142018-05:00",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "telegram:875925495",
+      "origin": null,
+      "enabled_toolsets": [
+        "file",
+        "terminal"
+      ],
+      "workdir": null
     }
   ]
 }
