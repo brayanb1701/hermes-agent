@@ -55,6 +55,7 @@ Scope before editing. Brayan often wants a targeted migration, not a vault-wide 
 Use supporting files for concrete cases instead of baking one migration's details into this main skill.
 
 - `references/opportunity-preparation-v2-awaiting-review-migration.md` — concrete case notes for the opportunity-preparation migration. Treat it as historical/example context, not the default migration policy.
+- `references/opportunity-project-lifecycle-state-diagnosis.md` — reusable diagnosis notes for auditing/refining opportunity and project lifecycle state models, including file-driven closeout-input patterns and common dashboard/frontmatter drift.
 
 When a migration creates reusable lessons, promote only the general rule into this `SKILL.md`. Keep dates, record names, one-off exclusions, and case-specific field mappings in a reference or vault migration note.
 
@@ -65,6 +66,8 @@ When touching any dashboard, index, or queue:
 - Preserve the dashboard's intended ordering semantics unless Brayan explicitly changes them.
 - Do not remove rows/items unless the source record is explicitly archived, closed, deleted, or out of scope by the migration contract.
 - Prefer a single clear user-facing label over combined labels that mix internal workflow fields with review-facing categories.
+- Keep root `README.md` files as orientation surfaces unless Brayan explicitly asks to make one a dashboard. If a dedicated `dashboard.md` exists, tables/queues/current-state lists should live there; the root README should explain folder purpose, record shape, and canonical links.
+- When separating README-vs-dashboard roles, update both content and classification surfaces: frontmatter tags, `_meta/index` dashboard sections, log wording, skills, agent prompts, and audit scripts as applicable.
 - Verify generated tables by inspecting data rows, not only headers/separators.
 
 ## Validation checklist
@@ -87,4 +90,5 @@ Before reporting done:
 - Do not blindly replace every instance of a retired term; some historical notes, examples, or mode names may remain semantically correct.
 - Do not migrate generated logs, old cron outputs, session transcripts, or historical audit files unless the user explicitly asks.
 - Do not modify pinned skills directly. If a pinned skill needs an approved patch, unpin it, patch it, repin it, and verify the pin is restored.
+- Do not overcorrect from a path/layout migration into generalized structural rules. First update the canonical schema; then keep skills/docs lightweight by pointing to the schema instead of restating exact root files, allowlists, or “do not create X under Y” prohibitions everywhere.
 - Do not leave completed migration/design analyses in active orientation paths where future agents may treat stale plans as current instructions.

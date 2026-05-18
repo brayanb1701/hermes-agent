@@ -99,6 +99,8 @@ For the reusable setup pattern, see `references/project-workspace-control-layer.
 - When maintaining `opportunities/dashboard.md`, keep the table sorted as Brayan's review queue: exact `P0`, mixed/ranged `P0/P1` or `P0-P1`, exact `P1`, mixed/ranged `P1/P2` or `P1-P2`, exact `P2`, mixed/ranged `P2/P3` or `P2-P3`, then exact `P3`.
 - When Brayan says a project or opportunity is finished, awarded, rejected, expired, closed, archived, submitted/no-longer-actionable, or asks for a final result/postmortem/retrospective, use the dedicated closing workflow before editing records: `_meta/workflows/projects/project-closing-workflow.md` for projects and `_meta/workflows/opportunities/opportunity-closing-workflow.md` for opportunities.
 - Active/current dashboards should not silently accumulate finalized items. Finished projects go to `projects/finished.md`; finished opportunities go to `opportunities/finished.md`. Status tracks workflow state; `result_status`, `result_type`, and `result_summary` track final outcome.
+- Treat `_meta/schema.md` as the source of truth for vault structure. Skills should point to schema and encode behavior; avoid duplicating exact structural policy or turning a one-path migration into broad placement prohibitions unless schema itself says so.
+- Keep root `README.md` files as lightweight orientation pages, not operational dashboards. For projects and opportunities, active/current tables belong in `dashboard.md`, finalized records in `finished.md`, and root READMEs should explain folder purpose, record shape, and canonical links.
 - When closing opportunities with linked projects, classify the project check as `not-needed`, `continue-project`, `close-project`, or `needs-review` rather than assuming the project ends automatically.
 - When removing duplicate binary uploads from `inbox/` after promotion to `raw/assets/`, verify byte identity first with hashes/checksums, then update any raw source note that points at the transient `inbox/` path.
 
@@ -182,10 +184,11 @@ Use this when initializing or maintaining git/GitHub tracking for `~/personal_va
    - `git status --short --branch`
    - `git remote -v`
 3. Keep `.gitignore` conservative for editor/cache/secrets noise.
-4. Run a basic pre-push scan for obvious private keys/token patterns; report it as a basic pattern scan, not proof of no secrets.
-5. If raw assets include personal documents, note that the private GitHub repo is the privacy boundary.
-6. Record meaningful infrastructure changes in `_meta/log.md` before committing when possible.
-7. Verify after push that the repo is private, remote points to `git@github.com:brayanb1701/personal-vault.git`, and branch tracks `origin/main`.
+4. For broad vault-state commits, group the commit message around the origin of the changes: daily/recommendation automation, opportunity/application preparation, profile/CV corrections, audits, or manual vault maintenance. Prefer one clear vault commit over many tiny chronology commits when Brayan asks to commit the current state.
+5. Run a basic pre-push scan for obvious private keys/token patterns; report it as a basic pattern scan, not proof of no secrets. If PDFs/binaries are included, explicitly say whether the scan skipped them.
+6. If raw assets include personal documents, note that the private GitHub repo is the privacy boundary.
+7. Record meaningful infrastructure changes in `_meta/log.md` before committing when possible.
+8. Verify after push that the repo is private, remote points to `git@github.com:brayanb1701/personal-vault.git`, and branch tracks `origin/main` with a clean worktree.
 
 ## Pitfalls
 
