@@ -57,7 +57,7 @@ Before mutating final state, validate:
 - The closeout input frontmatter has `status: pending` unless this is an interactive manual repair of a paused input.
 - `proposed_status` is `applied` or `archived`.
 - `proposed_status: applied` normally has `proposed_result_status: submitted` plus a submission date or an explicit `unknown` submission date.
-- `proposed_status: archived` must not use `proposed_result_status: submitted`.
+- `proposed_status: archived` uses inactive outcomes such as `awarded`, `rejected`, `expired`, `no-submission`, `withdrawn`, `superseded`, or `unknown`.
 - Result evidence/source is present or explicitly unknown; do not invent it.
 - The project closeout check is one of `not-needed`, `continue-project`, `close-project`, or `needs-review`.
 
@@ -67,9 +67,9 @@ If facts conflict, prefer pausing for Brayan over guessing.
 
 If the input lacks required facts or has inconsistent proposed state:
 
-1. Do not finalize the opportunity.
-2. Do not remove it from `opportunities/dashboard.md`.
-3. Do not add it to `opportunities/finished.md`.
+1. Leave the opportunity final state unchanged.
+2. Leave `opportunities/dashboard.md` unchanged.
+3. Leave `opportunities/finished.md` unchanged.
 4. Update the closeout input frontmatter to `status: paused`.
 5. Append a clear `## Missing information / pause reason` section listing exact missing fields and conflicts.
 6. Append a processing-log line with the date.
@@ -109,7 +109,7 @@ When facts are sufficient:
 
 - Both `applied` and `archived` leave `opportunities/dashboard.md`.
 - Both enter `opportunities/finished.md`.
-- Do not split finished opportunities into separate applied/archived registers; use the single register with Status and Result columns.
+- Use the single finished-opportunities register with Status and Result columns.
 - Preserve the dashboard priority ordering for remaining rows.
 
 ## Project check semantics
@@ -152,7 +152,7 @@ Before finishing:
 - closeout input was read first and preserved;
 - opportunity note final state is `applied` or `archived`, or input is `paused` with missing info;
 - `automation_route: none` is set on finalized records;
-- `status: archived` is not paired with `result_status: submitted`;
+- submitted closeouts use `status: applied` with `result_status: submitted`;
 - finalized row is absent from `opportunities/dashboard.md`;
 - finalized row is present in `opportunities/finished.md`;
 - `_meta/log.md` has a concise entry for successful closeout;
