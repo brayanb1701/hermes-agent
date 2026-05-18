@@ -53,7 +53,7 @@ automation_route: opportunity-preparation|manual-review|none
 preparation_packet: null
 ```
 
-Use `automation_route: opportunity-preparation` only when the opportunity is intended for the adaptive preparation agent. Use `manual-review` when Brayan must choose a track/role/program first. Use `none` for archived, purely informational, or not-worth-processing records.
+`automation_route` means the next deterministic automation route. Use `automation_route: opportunity-preparation` only when the opportunity is intended for the adaptive preparation agent and is launchable as `preparation-ready`. Use `manual-review` when Brayan must choose a track/role/program first. Use `none` for archived, purely informational, or not-worth-processing records.
 
 ## Canonical opportunity statuses
 
@@ -82,6 +82,16 @@ When uncertain, choose the earliest defensible status and record the blocker.
 - Broad boards/future cycles: `workflow_mode: watch-monitoring` or `research-only`; usually keep `status: researched` until a specific target is chosen.
 - High-interest future-cycle opportunities can still be `preparation-ready` with `workflow_mode: watch-monitoring` when Brayan explicitly wants the preparation agent to produce an early planning packet. Example: a future internship where the near-term bottleneck is research-group/faculty path mapping and proof-of-work project planning, not immediate CV tailoring. In that case keep `opportunity_kind` as the real kind such as `internship`, set `cv_relevance: strategic`, and make `primary_artifact_focus` the path/project roadmap plus trigger conditions for later `cv-tailoring`.
 
+
+## Closeout scaffold requirement
+
+After creating a new opportunity folder or materially updating an existing one, run the deterministic scaffold helper:
+
+```bash
+python3 ~/.hermes/scripts/opportunity_scaffold.py --opportunity <absolute path to opportunity.md>
+```
+
+The helper creates/ensures `closeout-input.example.md`. Do not hand-write the example file manually. Do not create `closeout-input.md` during intake; live closeout inputs are reserved for the closeout workflow.
 
 ## Dashboard update requirement
 
