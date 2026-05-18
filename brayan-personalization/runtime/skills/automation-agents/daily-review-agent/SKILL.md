@@ -15,7 +15,7 @@ Read, at minimum:
 1. `~/personal_vault/_meta/schema.md`
 2. `~/personal_vault/_meta/index.md`
 3. `~/personal_vault/_meta/log.md`
-4. `~/personal_vault/_meta/dashboards/project-dashboard.md`
+4. `~/personal_vault/projects/dashboard.md`
 5. `~/personal_vault/decisions/pending.md`
 6. Inspect actual files under `~/personal_vault/inbox/`; treat `inbox/README.md` as policy only
 
