@@ -28,25 +28,25 @@
     "archived_at": null,
     "created_at": "2026-04-30T08:11:07.416991+00:00",
     "last_patched_at": null,
-    "last_used_at": "2026-05-18T17:00:20.682036+00:00",
+    "last_used_at": "2026-05-18T22:00:21.014223+00:00",
     "last_viewed_at": "2026-05-15T22:00:29.371364+00:00",
     "patch_count": 0,
     "pinned": false,
     "state": "active",
-    "use_count": 41,
+    "use_count": 42,
     "view_count": 20
   },
   "file-defined-hermes-agents": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.176418+00:00",
-    "last_patched_at": "2026-05-18T17:13:25.192145+00:00",
-    "last_used_at": "2026-05-18T16:24:03.040187+00:00",
-    "last_viewed_at": "2026-05-18T16:24:03.038332+00:00",
-    "patch_count": 16,
+    "last_patched_at": "2026-05-18T22:06:57.706293+00:00",
+    "last_used_at": "2026-05-18T22:16:56.333007+00:00",
+    "last_viewed_at": "2026-05-18T22:16:56.330317+00:00",
+    "patch_count": 20,
     "pinned": false,
     "state": "active",
-    "use_count": 27,
-    "view_count": 27
+    "use_count": 33,
+    "view_count": 33
   },
   "hermes-upstream-rebase-ci-agent": {
     "archived_at": null,
@@ -76,49 +76,49 @@
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.119080+00:00",
     "last_patched_at": null,
-    "last_used_at": "2026-05-05T02:54:37.966796+00:00",
-    "last_viewed_at": "2026-05-05T02:54:37.964784+00:00",
+    "last_used_at": "2026-05-18T19:45:08.554302+00:00",
+    "last_viewed_at": "2026-05-18T19:45:08.551949+00:00",
     "patch_count": 0,
     "pinned": false,
     "state": "active",
-    "use_count": 1,
-    "view_count": 2
+    "use_count": 2,
+    "view_count": 3
   },
   "opportunity-intake-agent": {
     "archived_at": null,
     "created_at": "2026-05-03T04:16:20.407472+00:00",
     "last_patched_at": "2026-05-07T04:48:52.747757+00:00",
-    "last_used_at": "2026-05-18T17:15:45.845873+00:00",
-    "last_viewed_at": "2026-05-18T17:15:45.842796+00:00",
+    "last_used_at": "2026-05-18T22:16:50.048874+00:00",
+    "last_viewed_at": "2026-05-18T22:16:50.046663+00:00",
     "patch_count": 1,
     "pinned": false,
     "state": "active",
-    "use_count": 10,
-    "view_count": 11
+    "use_count": 13,
+    "view_count": 14
   },
   "opportunity-preparation-agent": {
     "archived_at": null,
     "created_at": "2026-05-03T04:10:09.953165+00:00",
     "last_patched_at": "2026-05-07T04:48:54.773792+00:00",
-    "last_used_at": "2026-05-18T17:15:45.877320+00:00",
-    "last_viewed_at": "2026-05-18T17:15:45.874790+00:00",
+    "last_used_at": "2026-05-18T22:16:50.031040+00:00",
+    "last_viewed_at": "2026-05-18T22:16:50.028647+00:00",
     "patch_count": 9,
     "pinned": false,
     "state": "active",
-    "use_count": 19,
-    "view_count": 13
+    "use_count": 29,
+    "view_count": 23
   },
   "personal-vault-ops": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.168633+00:00",
-    "last_patched_at": "2026-05-18T17:13:30.377178+00:00",
-    "last_used_at": "2026-05-18T17:00:20.668816+00:00",
-    "last_viewed_at": "2026-05-18T16:24:03.031945+00:00",
-    "patch_count": 21,
+    "last_patched_at": "2026-05-18T22:07:06.791509+00:00",
+    "last_used_at": "2026-05-18T22:16:50.020917+00:00",
+    "last_viewed_at": "2026-05-18T22:16:50.017346+00:00",
+    "patch_count": 27,
     "pinned": false,
     "state": "active",
-    "use_count": 171,
-    "view_count": 117
+    "use_count": 181,
+    "view_count": 126
   },
   "topic-recommendations-agent": {
     "archived_at": null,
@@ -135,25 +135,25 @@
   "vault-structure-auditor-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.153716+00:00",
-    "last_patched_at": null,
-    "last_used_at": "2026-05-17T15:00:16.697875+00:00",
-    "last_viewed_at": "2026-04-30T08:07:22.153730+00:00",
-    "patch_count": 0,
+    "last_patched_at": "2026-05-18T19:48:57.377516+00:00",
+    "last_used_at": "2026-05-18T19:41:31.612042+00:00",
+    "last_viewed_at": "2026-05-18T19:41:31.605467+00:00",
+    "patch_count": 2,
     "pinned": false,
     "state": "active",
-    "use_count": 2,
-    "view_count": 1
+    "use_count": 4,
+    "view_count": 3
   },
   "vault-workflow-migrations": {
     "archived_at": null,
     "created_at": "2026-05-03T06:02:29.562235+00:00",
-    "last_patched_at": "2026-05-03T06:02:30.573226+00:00",
-    "last_used_at": "2026-05-05T05:43:17.514523+00:00",
-    "last_viewed_at": "2026-05-05T05:43:17.512374+00:00",
-    "patch_count": 2,
+    "last_patched_at": "2026-05-18T19:48:38.253928+00:00",
+    "last_used_at": "2026-05-18T22:16:56.341574+00:00",
+    "last_viewed_at": "2026-05-18T22:16:56.339799+00:00",
+    "patch_count": 8,
     "pinned": false,
     "state": "active",
-    "use_count": 3,
-    "view_count": 3
+    "use_count": 8,
+    "view_count": 8
   }
 }

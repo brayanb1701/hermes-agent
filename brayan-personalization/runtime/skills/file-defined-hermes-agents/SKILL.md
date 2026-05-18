@@ -80,6 +80,15 @@ Treat cron agents, hook/plugin agents, channel-prompt agents, and script-launche
 
 ## Implementation pattern
 
+When a new recurring/specialized workflow is being designed, explicitly account for every file-defined-agent surface before calling the design complete:
+
+- stable behavior skill under `~/.hermes/skills/.../<agent-skill>/SKILL.md`;
+- prompt template under `~/.hermes/agents/<agent-name>/prompt-template.md`;
+- mechanical dispatcher/scanner script under `~/.hermes/scripts/`;
+- cron job or activation surface, with skills/script/delivery/toolsets verified;
+- deterministic helper scripts for repetitive scaffolding tasks that should not depend on the LLM hand-writing boilerplate;
+- vault workflow/template/register docs when the workflow mutates Brayan's personal vault.
+
 1. Put stable task instructions in a skill.
    - Example: `opportunity-preparation-agent` contains how to inspect one opportunity, read mode-specific references, search project/profile evidence, draft a preparation packet, update the opportunity note, and notify Brayan.
    - Skills are native Hermes files and can be loaded via `--skills` or cron job `skills=[...]`.
@@ -117,15 +126,16 @@ Use independent `hermes chat -q` sessions when Brayan wants separate session his
 
 ## Retiring overlapping automation guidance
 
-When two automation/design skills overlap, prefer one class-level procedural skill plus references over parallel umbrella skills. For vault/workflow automation, first check whether the process is already documented in `~/personal_vault/_meta/workflows/`, `_meta/architecture/`, or `_meta/schema.md`; if the durable process exists there and active behavior is already split across operational agent skills, do not preserve the redundant skill as a reference just to keep it. Retire it and update the live organization reference instead.
+## Retiring overlapping automation guidance
 
-Before deleting or absorbing a skill:
+When two automation/design skills overlap, prefer one class-level procedural skill plus references over parallel umbrella skills. Before deleting or absorbing a skill:
 
 1. Inventory activation surfaces first: cron jobs, config/channel prompts, scripts, agents, plugins, and skill references.
 2. Move durable reusable procedure into the class-level `SKILL.md`.
-3. Move Brayan-specific runtime inventory, historical/session-specific details, or concrete workflow examples into `references/`.
-4. Delete the redundant skill only after active activation surfaces no longer reference it.
-5. Verify both absence and resolution:
+3. Move Brayan-specific runtime inventory or concrete workflow examples into `references/` only when they are likely to be useful again.
+4. If the retired skill is fully redundant and the durable process is already documented elsewhere, remove it cleanly instead of preserving a tombstone/"retired skill" entry. Brayan prefers not to keep retirement notes that add no operational value.
+5. Delete the redundant skill only after active activation surfaces no longer reference it.
+6. Verify both absence and resolution:
    - `skill_view("<deleted-skill>")` should fail.
    - canonical replacement skills should still load by bare name.
    - `skills_list(category="<old-category>")` should not show an accidental empty/stale category.
