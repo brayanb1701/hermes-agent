@@ -99,7 +99,7 @@ After creating or materially updating an opportunity record, update `~/personal_
 
 - Add a row for new opportunities and update existing rows when status, priority, deadline, kind, or next action changes.
 - Keep the dashboard sorted by Brayan's review priority order: exact `P0`, mixed/ranged `P0/P1` or `P0-P1`, exact `P1`, mixed/ranged `P1/P2` or `P1-P2`, exact `P2`, mixed/ranged `P2/P3` or `P2-P3`, then exact `P3`. Within the same tier, sort by urgency/deadline when known.
-- Use one compact classification column: `Kind`. Do not add a combined `Kind / Mode` column. `workflow_mode` belongs in the opportunity frontmatter and agent context, not as the primary dashboard label.
+- Use one compact dashboard classification column: `Kind`. Keep `workflow_mode` in the opportunity frontmatter and agent context.
 - Preserve useful existing dashboard notes/manual blockers; do not drop Brayan-facing review context while reordering.
 
 ## Preparation readiness
