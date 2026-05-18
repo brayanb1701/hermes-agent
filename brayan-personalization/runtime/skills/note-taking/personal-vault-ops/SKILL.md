@@ -37,13 +37,13 @@ Do not split them mentally into separate systems unless Brayan asks.
 
 ## Folder roles
 
-- `_meta/` — vault operating layer: schema, index, routing, log, architecture, workflows, principles, guides, templates, dashboards, audits, and migration history.
+- `_meta/` — vault operating layer: schema, index, routing, log, architecture, workflows, principles, guides, templates, audits, and migration history.
 - `raw/` — immutable source material, assets, papers, articles, transcripts, and original captures.
 - `domains/` — navigation hubs by area.
 - `concepts/` — durable reusable ideas/models that are not passive tool references.
 - `queries/` — active reading/research/watch/practice queues and saved syntheses.
 - `references/` — passive tools/resources/cookbooks/pricing/infrastructure references used when needed.
-- `projects/` — true actionable execution efforts only; each project has `projects/<slug>/README.md`; finished projects are registered in `projects/finished.md` and meaningful finished projects normally have `projects/<slug>/closeout.md`.
+- `projects/` — project hubs and project-level indexes; each actual project has `projects/<slug>/README.md`; finished projects are registered in `projects/finished.md` and meaningful finished projects normally have `projects/<slug>/closeout.md`.
 - `opportunities/` — jobs, fellowships, grants, scholarships, challenges, bounties, funding leads, and co-located application materials; finished opportunities are registered in `opportunities/finished.md`.
 - `profile/` — canonical CV, bio, portfolio, and application profile sources.
 - `decisions/` — pending decisions and decision logs.
@@ -67,7 +67,7 @@ For the reusable setup pattern, see `references/project-workspace-control-layer.
 - `domains/creative/creative-map.md`
 - `domains/economy/economy-map.md`
 - `domains/opportunities/opportunities-map.md`
-- `_meta/dashboards/project-dashboard.md`
+- `projects/dashboard.md`
 - `projects/finished.md`
 - `opportunities/dashboard.md`
 - `opportunities/finished.md`
