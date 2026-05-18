@@ -59,6 +59,8 @@ Use supporting files for concrete cases instead of baking one migration's detail
 
 When a migration creates reusable lessons, promote only the general rule into this `SKILL.md`. Keep dates, record names, one-off exclusions, and case-specific field mappings in a reference or vault migration note.
 
+Schema notes should stay compact and structural. Put workflow-specific policy in `_meta/workflows/`, runtime behavior in skills. In active canonical docs, prefer stating the chosen policy directly over repeating rejected alternatives.
+
 ## Dashboard / index migration rule
 
 When touching any dashboard, index, or queue:
@@ -78,10 +80,12 @@ Before reporting done:
 2. If Hermes runtime/personalization changed, run `git diff --check` in the Hermes personalization checkout too.
 3. Compile affected Python scripts with `python3 -m py_compile`.
 4. Dry-run affected scanners/dispatchers when available.
-5. Search in-scope active files for retired terms, fields, and paths.
-6. Search activation surfaces for old skill/path names when skills, scripts, or cron jobs moved.
-7. Verify dashboards/indexes still point to existing files.
-8. Report dirty git state precisely; do not assume unrelated uncommitted files are mistakes.
+5. When a migration creates or changes deterministic generated artifacts from templates, inspect at least one generated file after application and verify the rendered frontmatter/body are canonical. Do not rely only on dry-run counts; template notes with their own frontmatter can accidentally render that metadata into generated records.
+6. Search in-scope active files for retired terms, fields, and paths.
+   - For dashboard/README split work, include section-aware checks: a link can be valid under `## Projects` but invalid under `## Dashboards`; frontmatter tags like `dashboard` can also be stale even when the link itself remains valid.
+7. Search activation surfaces for old skill/path names when skills, scripts, or cron jobs moved.
+8. Verify dashboards/indexes still point to existing files.
+9. Report dirty git state precisely; do not assume unrelated uncommitted files are mistakes.
 
 ## Pitfalls
 

@@ -89,6 +89,8 @@ When a new recurring/specialized workflow is being designed, explicitly account 
 - deterministic helper scripts for repetitive scaffolding tasks that should not depend on the LLM hand-writing boilerplate;
 - vault workflow/template/register docs when the workflow mutates Brayan's personal vault.
 
+If Brayan says an implementation plan is missing “the agent with its associated skill,” treat that as a design gap: add the skill, prompt-template, scanner/dispatcher, cron binding, and verification steps to the plan, not just more prose in the vault docs.
+
 1. Put stable task instructions in a skill.
    - Example: `opportunity-preparation-agent` contains how to inspect one opportunity, read mode-specific references, search project/profile evidence, draft a preparation packet, update the opportunity note, and notify Brayan.
    - Skills are native Hermes files and can be loaded via `--skills` or cron job `skills=[...]`.
@@ -180,6 +182,7 @@ After implementing/refactoring:
 - Script compiles: `python -m py_compile ~/.hermes/scripts/<script>.py`.
 - Dry-run does not launch sessions unless explicitly requested.
 - Dry-run output shows selected items, max count, wake gate, and error count.
+- For deterministic scaffold/template helpers, inspect at least one generated artifact after applying, not just dry-run JSON. Verify the rendered file has the intended real frontmatter/body shape and not a fenced template block or the template note's own metadata.
 - Prompt instructions are absent or minimal in script code.
 - Agent behavior lives in skill/template/context files.
 - Cron job points at the intended script, schedule, skills, delivery, enabled toolsets, and enabled state.
