@@ -86,9 +86,9 @@ automation_route: none
 preparation_packet: [[opportunities/<stem>/application/preparation-packet]]
 ```
 
-Add a concise status-log line for packet creation and preserve original source details. 
+Add a concise status-log line for packet creation and preserve original source details. Keep human next action in the packet, opportunity body, and status log.
 
-Do not write to retired legacy packet fields; use `preparation_packet` and `application/preparation-packet.md` in the v2 preparation workflow.
+Use `preparation_packet` and `application/preparation-packet.md`.
 
 ## Evidence and truthfulness rules
 
