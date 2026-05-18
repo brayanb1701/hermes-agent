@@ -31,7 +31,7 @@ Required execution:
 4. Read the canonical CV only when the selected mode needs CV/profile material.
 5. Inspect the source/application/submission URL if the opportunity note lacks form, rule, or artifact details.
 6. Create/update `~/personal_vault/opportunities/{{stem}}/application/preparation-packet.md` and any useful companion files.
-7. Update the source opportunity note to `awaiting-review` and link `preparation_packet`.
+7. Update the source opportunity note to `status: awaiting-review`, `automation_route: none`, and link `preparation_packet`.
 8. Append a concise vault log entry.
 9. Notify Brayan with the packet path, opportunity kind/mode, main recommendation, and manual blockers.
 
