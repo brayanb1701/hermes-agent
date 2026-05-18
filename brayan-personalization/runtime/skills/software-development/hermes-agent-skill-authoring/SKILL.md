@@ -60,7 +60,22 @@ metadata:
 - Full SKILL.md: ≤ 100,000 chars (enforced as `MAX_SKILL_CONTENT_CHARS`, ~36k tokens).
 - Peer skills in `software-development/` sit at **8-14k chars**. Aim for that range. If you're pushing past 20k, split into `references/*.md` and reference them from SKILL.md.
 
-## Dynamic Skill Context
+## Inline shell preloading
+
+Hermes can preprocess `!`cmd`` snippets in `SKILL.md` when `skills.inline_shell=true`; `skills.inline_shell_timeout` is in seconds. Use this sparingly to save predictable tool calls by injecting compact dynamic context before the model sees the skill.
+
+Good candidates:
+- high-use operational skills that almost always begin with the same read-only probe, such as `date +%F`, `git status --short --branch`, existence checks for today's daily note, or a compact JSON inventory of cron/agent/script names.
+- audit/refactor umbrella skills where a summarized inventory is always the first step.
+
+Avoid:
+- large file dumps, broad searches, network calls, tests, package installs, writes, `git fetch`, `git rebase`, or anything destructive.
+- task-specific searches whose terms/paths come from the user's request.
+- preloading validation commands that are only meaningful after edits; the output will be stale.
+
+Prefer one compact JSON/line-oriented summary over several snippets. Keep snippets read-only, deterministic, and below the configured timeout. If a session produces an inline-shell audit report, save detailed candidates under the relevant vault `_meta/tmp_analysis/` or a skill `references/` file rather than bloating the main skill.
+
+## Peer-Matched Structure
 
 Hermes supports optional inline shell preprocessing in SKILL.md. When `skills.inline_shell` is enabled, snippets written as `!`cmd`` are executed before the model sees the skill and replaced with their output.
 
