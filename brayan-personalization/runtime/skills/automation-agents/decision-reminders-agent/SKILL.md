@@ -11,7 +11,7 @@ license: MIT
 ## Required reads
 Read:
 1. `~/personal_vault/decisions/pending.md`
-2. `~/personal_vault/_meta/dashboards/project-dashboard.md`
+2. `~/personal_vault/projects/dashboard.md`
 3. `~/personal_vault/inbox/README.md`
 
 ## Behavior
