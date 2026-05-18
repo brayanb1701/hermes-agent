@@ -126,6 +126,30 @@ hermes skills browse        Browse all available skills
 hermes skills tap add REPO  Add a GitHub repo as skill source
 ```
 
+### Skill Inline Shell Preprocessing
+
+Hermes can pre-execute inline shell snippets inside SKILL.md before the model sees the skill. This is useful for small dynamic context such as dates, git branch/status, tool versions, or generated local metadata.
+
+Syntax in skill content:
+```markdown
+Current date: !`date +%F`
+Current branch: !`git -C ${HERMES_SKILL_DIR} branch --show-current`
+```
+
+Config:
+```bash
+hermes config set skills.inline_shell true       # enable; off by default
+hermes config set skills.inline_shell_timeout 5  # optional per-snippet timeout
+```
+
+Operational details:
+- Only the exact single-line form `!`cmd`` is expanded; a plain line starting with `!` is not enough.
+- Snippets run through `bash -c` with the skill directory as cwd.
+- Output is stdout trimmed; if stdout is empty and stderr exists, stderr is used.
+- Output is capped at roughly 4000 chars and each snippet has a timeout.
+- This bypasses normal terminal-tool approval prompts, so keep it disabled unless the skill source is trusted and prefer read-only deterministic snippets.
+- `skill_view(..., file_path=...)` reads linked files raw; inline shell preprocessing is for main skill content / activated skill messages.
+
 ### MCP Servers
 
 ```
