@@ -117,7 +117,9 @@ Use independent `hermes chat -q` sessions when Brayan wants separate session his
 
 ## Retiring overlapping automation guidance
 
-When two automation/design skills overlap, prefer one class-level procedural skill plus references over parallel umbrella skills. Before deleting or absorbing a skill:
+When two automation/design skills overlap, prefer one class-level procedural skill plus references over parallel umbrella skills. For vault/workflow automation, first check whether the process is already documented in `~/personal_vault/_meta/workflows/`, `_meta/architecture/`, or `_meta/schema.md`; if the durable process exists there and active behavior is already split across operational agent skills, do not preserve the redundant skill as a reference just to keep it. Retire it and update the live organization reference instead.
+
+Before deleting or absorbing a skill:
 
 1. Inventory activation surfaces first: cron jobs, config/channel prompts, scripts, agents, plugins, and skill references.
 2. Move durable reusable procedure into the class-level `SKILL.md`.

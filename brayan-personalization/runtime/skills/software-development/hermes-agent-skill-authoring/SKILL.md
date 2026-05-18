@@ -60,6 +60,25 @@ metadata:
 - Full SKILL.md: ≤ 100,000 chars (enforced as `MAX_SKILL_CONTENT_CHARS`, ~36k tokens).
 - Peer skills in `software-development/` sit at **8-14k chars**. Aim for that range. If you're pushing past 20k, split into `references/*.md` and reference them from SKILL.md.
 
+## Dynamic Skill Context
+
+Hermes supports optional inline shell preprocessing in SKILL.md. When `skills.inline_shell` is enabled, snippets written as `!`cmd`` are executed before the model sees the skill and replaced with their output.
+
+Use this sparingly for trusted, read-only, deterministic context:
+
+```markdown
+Current date: !`date +%F`
+Tool version: !`python --version`
+Repo status: !`git -C ${HERMES_SKILL_DIR} status --short`
+```
+
+Authoring rules:
+- The exact syntax is single-line `!`cmd``; multiline commands are not supported.
+- Commands run with the skill directory as cwd, through `bash -c`.
+- Output is truncated, timed out, and inlined into the main skill content.
+- Do not put destructive, network-heavy, credential-printing, or approval-sensitive commands in skills.
+- Assume inline shell is off by default; write skills so they remain useful when snippets are not expanded, or document the config requirement clearly.
+
 ## Peer-Matched Structure
 
 Every in-repo skill follows roughly:
