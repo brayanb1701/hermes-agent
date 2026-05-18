@@ -162,7 +162,6 @@ These are listed for discovery only, load the canonical skill directly by bare n
 - `vault-structure-auditor-agent` — report-only Vault v2 structure audit behavior and approval boundaries.
 - `opportunity-intake-agent` — opportunity-record creation/status/routing behavior.
 - `opportunity-preparation-agent` — adaptive one-opportunity preparation behavior.
-- `opportunity-preparation-vault-workflow` — opportunity profile/source preservation and application-material conventions.
 - `vault-workflow-migrations` — scoped migrations of vault workflows/templates/dashboards/skills/automation.
 
 ## Supporting references
