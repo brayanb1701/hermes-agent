@@ -30,6 +30,7 @@ Current opportunity skills:
 
 - `opportunity-intake-agent` — `~/.hermes/skills/automation-agents/opportunities/opportunity-intake-agent/SKILL.md`
 - `opportunity-preparation-agent` — `~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-agent/SKILL.md`
+- `opportunity-closing-agent` — `~/.hermes/skills/automation-agents/opportunities/opportunity-closing-agent/SKILL.md`
 
 General design skill:
 
@@ -55,6 +56,7 @@ Current prompt/template files under `~/.hermes/agents/`:
 - `topic-recommendations/prompt-template.md`
 - `vault-structure-auditor/prompt-template.md`
 - `opportunity-preparation/prompt-template.md`
+- `opportunity-closing/prompt-template.md`
 - `hermes-upstream-rebase-ci/prompt-template.md`
 - `autoresearch-commander/README.md`
 - `autoresearch-commander/mission-template.md`
@@ -66,6 +68,8 @@ Current mechanical dispatcher / pre-run scripts under `~/.hermes/scripts/`:
 
 - `inbox_triage_wake_gate.py`
 - `opportunity_preparation_ready_scan.py`
+- `opportunity_scaffold.py`
+- `opportunity_closeout_scan.py`
 - `vault_structure_audit.py`
 - `hermes_upstream_rebase_ci.py`
 
@@ -91,6 +95,10 @@ Current recurring cron jobs load canonical skills by bare name:
   - skills: `personal-vault-ops`, `opportunity-preparation-agent`
   - script: `opportunity_preparation_ready_scan.py`
   - schedule: `0 11 * * *`
+- `darwin-opportunity-closing-agent`
+  - skills: `personal-vault-ops`, `opportunity-closing-agent`
+  - script: `opportunity_closeout_scan.py`
+  - schedule: `30 11 * * *`
 - `hermes-upstream-rebase-ci`
   - skills: `hermes-agent`, `systematic-debugging`, `personal-vault-ops`, `hermes-upstream-rebase-ci-agent`
   - script: `hermes_upstream_rebase_ci.py`

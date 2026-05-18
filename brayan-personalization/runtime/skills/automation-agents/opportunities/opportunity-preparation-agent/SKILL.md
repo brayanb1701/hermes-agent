@@ -82,10 +82,11 @@ After creating the packet, update the source opportunity note:
 
 ```yaml
 status: awaiting-review
+automation_route: none
 preparation_packet: [[opportunities/<stem>/application/preparation-packet]]
 ```
 
-Add a concise status-log line for packet creation and preserve original source details.
+Add a concise status-log line for packet creation and preserve original source details. 
 
 Do not write to retired legacy packet fields; use `preparation_packet` and `application/preparation-packet.md` in the v2 preparation workflow.
 
@@ -143,6 +144,7 @@ Before finishing a preparation session:
 - source/form/rules were inspected or access failure documented
 - packet file exists at `application/preparation-packet.md`
 - source note has `status: awaiting-review`
+- source note has `automation_route: none`
 - source note links `preparation_packet`
 - `_meta/log.md` has a concise entry
 - Brayan was notified or notification failure was clearly recorded

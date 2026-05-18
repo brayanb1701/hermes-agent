@@ -49,10 +49,12 @@ The script is the first-pass inventory, not the whole audit. It checks:
 - frontmatter `type`, `status`, and `area` values;
 - project-folder drift according to the schema/script allowlist;
 - project notes missing next-action wording;
+- project state drift such as dashboard status/area mismatches, dashboard-only statuses not supported by schema, active projects without explicit completion/stop conditions, and paused projects without resume conditions;
 - active references to retired Vault v1 paths;
 - retired Vault v1 paths still existing on disk;
 - broken wikilinks;
 - opportunity records with packet/status inconsistency;
+- opportunity state drift such as expired active dashboard rows, dashboard/frontmatter priority/status/kind mismatches, `awaiting-review` records without a clear review object/preparation packet/material link, stale `preparation-ready` records with existing packets, and active pending decisions whose deadlines passed;
 - passive references accidentally treated as active queue items;
 - semantic folder-role mismatches such as reference notes outside `references/` or tool/resource catalogs left under `concepts/`;
 - git status at audit time.
