@@ -14,9 +14,9 @@ Use this skill for scheduled or manual audits of Brayan's personal vault structu
 
 Keep Vault v2 clean and semantically consistent:
 
-- `projects/` = true execution projects only, one folder per project with `README.md`.
-- `opportunities/` = one folder per opportunity, with `opportunity.md` and optional `application/` materials.
-- `_meta/` = schema, workflows, architecture, guides, templates, logs, dashboards, audits, principles.
+- `projects/` = project hubs and project-level indexes; each actual project is one folder with `README.md`.
+- `opportunities/` = opportunity-level indexes plus one folder per opportunity with `opportunity.md` and optional `application/` materials.
+- `_meta/` = schema, workflows, architecture, guides, templates, logs, audits, principles.
 - `profile/` = CV/bio/portfolio/application support.
 - `decisions/` = pending decisions and decision logs.
 - `references/` = passive shelf resources.
@@ -47,7 +47,7 @@ The script is the first-pass inventory, not the whole audit. It checks:
 
 - files by top-level folder;
 - frontmatter `type`, `status`, and `area` values;
-- notes in `projects/` that are not `projects/<slug>/README.md` project hubs;
+- project-folder drift according to the schema/script allowlist;
 - project notes missing next-action wording;
 - active references to retired Vault v1 paths;
 - retired Vault v1 paths still existing on disk;

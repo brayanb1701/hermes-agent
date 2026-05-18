@@ -21,7 +21,7 @@ TODAY = date.today().isoformat()
 REPORT_PATH = AUDIT_DIR / f"{TODAY}-vault-structure-audit.md"
 
 ALLOWED_TYPES = {
-    "raw-source", "concept", "principle", "reference", "project", "opportunity-record",
+    "raw-source", "concept", "principle", "reference", "project", "project-closeout", "opportunity-record",
     "preparation-packet", "application-draft", "profile", "workflow", "guide", "architecture",
     "domain", "query", "decision-register", "daily", "template", "index", "audit", "comparison",
 }
@@ -48,6 +48,8 @@ IGNORE_PREFIXES = (
     "_meta/migration_v2_vault/",
     "_meta/audits/",
 )
+PROJECT_ROOT_FILES = {"projects/README.md", "projects/dashboard.md", "projects/finished.md"}
+OPPORTUNITY_ROOT_FILES = {"opportunities/README.md", "opportunities/dashboard.md", "opportunities/finished.md"}
 
 
 def rel(path: Path) -> str:
@@ -86,7 +88,8 @@ def build_note_index(notes: list[Path]) -> tuple[set[str], dict[str, list[str]]]
 
 
 def resolve_wikilink(target: str, paths: set[str], by_stem: dict[str, list[str]]) -> bool:
-    target = target.split("#", 1)[0].split("|", 1)[0].strip()
+    # Markdown tables escape Obsidian alias separators as \|; treat both | and \| as alias separators.
+    target = target.split("#", 1)[0].replace("\\|", "|").split("|", 1)[0].strip()
     if not target:
         return True
     if "{{" in target or "}}" in target or "<" in target or ">" in target:
@@ -175,12 +178,17 @@ def main() -> None:
         elif top == "raw" and not r.startswith("raw/assets/") and typ and typ != "raw-source":
             semantic_location_issues.append((r, "raw/ notes should preserve source material with type: raw-source"))
 
-        if r.startswith("projects/") and r != "projects/README.md":
+        if r.startswith("projects/") and r not in PROJECT_ROOT_FILES:
             parts = Path(r).parts
             if len(parts) != 3 or parts[-1] != "README.md" or typ != "project":
                 wrong_project_files.append(r)
             if typ == "project" and not re.search(r"next action|next_action|next actions", text, re.I):
                 project_missing_next.append(r)
+
+        # Canonical opportunities root files are intentionally allowed. Individual opportunity
+        # records remain one folder per opportunity under opportunities/<slug>/opportunity.md.
+        if r.startswith("opportunities/") and r in OPPORTUNITY_ROOT_FILES:
+            pass
 
         if not r in IGNORE_OLD_PATH_IN and not r.startswith(IGNORE_PREFIXES):
             for pattern in OLD_PATH_PATTERNS:
