@@ -30,7 +30,6 @@ Current opportunity skills:
 
 - `opportunity-intake-agent` — `~/.hermes/skills/automation-agents/opportunities/opportunity-intake-agent/SKILL.md`
 - `opportunity-preparation-agent` — `~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-agent/SKILL.md`
-- `opportunity-preparation-vault-workflow` — `~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-vault-workflow/SKILL.md`
 
 General design skill:
 
