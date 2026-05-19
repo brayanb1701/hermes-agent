@@ -11,13 +11,15 @@ license: MIT
 Use this when the daily `hermes-upstream-rebase-ci` cron wakes because the pre-run script emitted `wakeAgent: true`.
 
 ## Context
-- Repository: `/home/brayan/.hermes/hermes-agent`
+- Live executable checkout: `/home/brayan/.hermes/hermes-agent`
+- Isolated CI worktree used by the pre-run script: `/home/brayan/.hermes/worktrees/hermes-upstream-rebase-ci`
 - Target branch: `brayan/personal-hermes-customizations`
 - Fork origin: `git@github.com:brayanb1701/hermes-agent.git`
 - Official upstream: `git@github.com:NousResearch/hermes-agent.git`
 - Workflow doc: `~/personal_vault/_meta/workflows/hermes/hermes-fork-update-workflow.md`
 - Pre-run wake-gate script: `~/.hermes/scripts/hermes_upstream_rebase_ci.py`
   - The scheduler runs this before the agent is created.
+  - Normal rebases/tests happen in the isolated worktree, not in the live gateway checkout.
   - If it emits `wakeAgent: false`, no LLM agent runs.
   - If it emits `wakeAgent: true` or errors, its JSON/stdout is injected into the cron prompt for diagnosis.
   - Do not rerun it casually from the exception agent; inspect its injected output/current logs first. Rerun only when deliberately re-testing the whole pre-run automation after repairs.
@@ -28,7 +30,7 @@ Use this when the daily `hermes-upstream-rebase-ci` cron wakes because the pre-r
 2. Follow systematic debugging: identify the exact failure stage before fixing anything.
 3. Preserve Brayan's source customizations. Do not run `git reset --hard upstream/main` unless there is a deliberate reason and the customization commit is safely recoverable.
 4. Before changing Hermes base code, ask whether the improvement/fix can be done via plugin, config, skill, script, or vault workflow. Prefer those unless base-code change is genuinely required.
-5. Resolve rebase conflicts or test failures if present.
+5. Resolve rebase conflicts or test failures if present. If the script reports the isolated worktree path, fix the worktree, not the live checkout.
 6. Run focused verification from the script/doc.
 7. If verification passes and branch is healthy, push only the personalization branch. For normal no-conflict script runs, `~/.hermes/scripts/hermes_upstream_rebase_ci.py` may push directly. For exception-agent/manual-repair runs, do **not** run direct terminal `git push --force-with-lease ...`; use the skill-owned finalizer script below. Never push personalization to `origin/main`.
 8. Prefer programmatic recovery before manual edits: inspect the script output, let the script use `git rerere`/`rerere.autoupdate` and `GIT_EDITOR=true git rebase --continue` when conflicts have already been resolved, and only manually resolve genuinely new conflicts or failing tests.
@@ -73,7 +75,7 @@ Do not bypass finalizer refusals. The finalizer intentionally hard-codes repo, b
 
 ## Known failure modes
 
-- A failed rebase in the live checkout can break the already-running gateway without a clean restart. The scheduler/gateway process may have imported some modules before the rebase, then lazily import other modules after files changed, producing mixed old/new code errors such as `TypeError: ContextCompressor.__init__() got an unexpected keyword argument 'abort_on_summary_failure'`. A Telegram `/new` or new session will not help because the process/module state is wrong, not the conversation. Do **not** restart the gateway while conflict markers remain in source files; first resolve/abort the rebase so `gateway/run.py` compiles, then restart and verify `hermes gateway status` plus recent logs. Longer-term, prefer running upstream rebases in an isolated worktree or ensuring the live gateway is restarted only after the checkout is clean and verified.
+- A failed rebase in the live checkout can break the already-running gateway without a clean restart. The scheduler/gateway process may have imported some modules before the rebase, then lazily import other modules after files changed, producing mixed old/new code errors such as `TypeError: ContextCompressor.__init__() got an unexpected keyword argument 'abort_on_summary_failure'`. A Telegram `/new` or new session will not help because the process/module state is wrong, not the conversation. The cron pre-run script is now hardened to perform rebases/tests in `/home/brayan/.hermes/worktrees/hermes-upstream-rebase-ci` instead of mutating the live checkout. If the live checkout ever is mid-conflict, do **not** restart the gateway while conflict markers remain in source files; first resolve/abort the live rebase so `gateway/run.py` compiles, then restart and verify `hermes gateway status` plus recent logs.
 
 ## Known conflict patterns
 
