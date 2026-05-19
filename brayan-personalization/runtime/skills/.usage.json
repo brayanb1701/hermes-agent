@@ -28,12 +28,12 @@
     "archived_at": null,
     "created_at": "2026-04-30T08:11:07.416991+00:00",
     "last_patched_at": null,
-    "last_used_at": "2026-05-18T22:00:21.014223+00:00",
+    "last_used_at": "2026-05-19T17:00:53.235000+00:00",
     "last_viewed_at": "2026-05-15T22:00:29.371364+00:00",
     "patch_count": 0,
     "pinned": false,
     "state": "active",
-    "use_count": 42,
+    "use_count": 43,
     "view_count": 20
   },
   "file-defined-hermes-agents": {
@@ -51,14 +51,14 @@
   "hermes-upstream-rebase-ci-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.090129+00:00",
-    "last_patched_at": "2026-05-09T15:36:38.748689+00:00",
-    "last_used_at": "2026-05-09T15:36:43.941224+00:00",
-    "last_viewed_at": "2026-05-09T15:36:43.937483+00:00",
-    "patch_count": 8,
+    "last_patched_at": "2026-05-19T21:45:00.846788+00:00",
+    "last_used_at": "2026-05-19T21:45:05.601213+00:00",
+    "last_viewed_at": "2026-05-19T21:45:05.598650+00:00",
+    "patch_count": 9,
     "pinned": false,
     "state": "active",
-    "use_count": 6,
-    "view_count": 7
+    "use_count": 9,
+    "view_count": 9
   },
   "inbox-triage-agent": {
     "archived_at": null,
@@ -138,12 +138,12 @@
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.168633+00:00",
     "last_patched_at": "2026-05-19T05:10:20.527309+00:00",
-    "last_used_at": "2026-05-19T14:05:08.973951+00:00",
+    "last_used_at": "2026-05-19T17:00:53.223743+00:00",
     "last_viewed_at": "2026-05-19T14:05:08.970407+00:00",
     "patch_count": 30,
     "pinned": false,
     "state": "active",
-    "use_count": 193,
+    "use_count": 195,
     "view_count": 136
   },
   "topic-recommendations-agent": {
