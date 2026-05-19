@@ -114,6 +114,8 @@ When facts are sufficient:
 
 ## Project check semantics
 
+When the closeout input or linked records mention projects, classify project impact as `not-needed`, `continue-project`, `close-project`, or `needs-review`. If the classification is `close-project`, create or fill that project's `/home/brayan/projects/<slug>/PROJECT_CLOSEOUT.md` when facts are sufficient, or notify Brayan with missing fields. Do not directly close the project from the opportunity-closing agent unless all project-closeout facts are already sufficient and the project workflow explicitly permits it.
+
 Classify linked project implications as:
 
 - `not-needed`: no linked project or only passive support.
