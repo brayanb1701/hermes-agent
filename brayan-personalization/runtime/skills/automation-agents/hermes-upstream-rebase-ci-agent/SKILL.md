@@ -71,6 +71,10 @@ The finalizer emits JSON designed for agent use. On failure, inspect and report:
 
 Do not bypass finalizer refusals. The finalizer intentionally hard-codes repo, branch, remotes, clean-tree checks, upstream containment, verification commands, and exact `--force-with-lease=<ref>:<observed-origin-sha>` push semantics.
 
+## Known failure modes
+
+- A failed rebase in the live checkout can break the already-running gateway without a clean restart. The scheduler/gateway process may have imported some modules before the rebase, then lazily import other modules after files changed, producing mixed old/new code errors such as `TypeError: ContextCompressor.__init__() got an unexpected keyword argument 'abort_on_summary_failure'`. A Telegram `/new` or new session will not help because the process/module state is wrong, not the conversation. Do **not** restart the gateway while conflict markers remain in source files; first resolve/abort the rebase so `gateway/run.py` compiles, then restart and verify `hermes gateway status` plus recent logs. Longer-term, prefer running upstream rebases in an isolated worktree or ensuring the live gateway is restarted only after the checkout is clean and verified.
+
 ## Known conflict patterns
 
 - `tests/cron/test_cron_script.py` empty-script-output conflicts can be caused by upstream removing stale tests while Brayan's branch preserves updated cron wake-gate behavior. Current intended behavior: `_run_job_script()` returns `(True, "")` for empty stdout, normal agent-mode `run_job()` treats empty script stdout as silent/`[SILENT]`, and `_build_job_prompt()` returns `None` for an empty successful pre-run script rather than injecting a "no output" prompt. When resolving a rebase conflict around `test_script_empty_output_noted` / `test_script_empty_output_skips_prompt`, preserve the `assert prompt is None` expectation if `cron/scheduler.py` still implements the empty-output skip at `_build_job_prompt()`.
