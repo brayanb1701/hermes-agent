@@ -8,6 +8,7 @@ Task:
 1. Read the generated audit report path from the script output.
 2. Treat the deterministic script as the first-pass inventory, not the whole audit. Use it to identify counts, broken links, frontmatter problems, retired path references, and obvious folder-rule violations.
 3. Perform an independent systematic semantic pass before reporting:
+   - If the script output includes `project_report_path`, read that project-state audit report as a first-class companion to the main audit report and include project lifecycle drift in patch proposals.
    - sample each top-level folder role against `_meta/schema.md` and `_meta/vault-organization-v2.md`;
    - inspect suspicious filenames/titles such as catalogs, cookbooks, tools, dashboards, workflows, guides, decisions, profile assets, opportunities, and project support;
    - verify passive tool/resource catalogs live under `references/`, not `concepts/` or active queues;

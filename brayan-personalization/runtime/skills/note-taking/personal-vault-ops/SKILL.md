@@ -57,6 +57,13 @@ When Brayan starts a real coding/research project, keep runnable repositories an
 
 The vault `projects/<slug>/README.md` remains the documentation/control layer: objective, constraints, success levels, links to live workspaces, decisions, stop conditions, and postmortem. For autonomous experiment commanders, link live files such as `FEEDBACK.md`, `COMMANDER_STATUS.md`, and `EXPERIMENTS.tsv` from the vault project note instead of copying bulky logs into the vault.
 
+For project lifecycle/workspace-control design, keep two layers distinct:
+
+- Vault layer: `~/personal_vault/projects/<slug>/README.md`, dashboards/registers, workflow docs, and final closeout records.
+- Workspace layer: `/home/brayan/projects/<slug>/` for active development, runtime artifacts, and live status/change files.
+
+For active coding/research projects, prefer a required workspace control pair from activation onward: `PROJECT_STATUS.md` for the current snapshot and `PROJECT_CHANGELOG.md` for chronological, parser-friendly updates. Do not rely on the vault README alone to infer live project state.
+
 For the reusable setup pattern, see `references/project-workspace-control-layer.md`.
 
 ## Important hubs
@@ -100,7 +107,7 @@ For the reusable setup pattern, see `references/project-workspace-control-layer.
 - When Brayan says a project or opportunity is finished, awarded, rejected, expired, closed, archived, submitted/no-longer-actionable, or asks for a final result/postmortem/retrospective, use the dedicated closing workflow before editing records: `_meta/workflows/projects/project-closing-workflow.md` for projects and `_meta/workflows/opportunities/opportunity-closing-workflow.md` for opportunities.
 - For automation-ready finalization, prefer an explicit item-level input file such as `closeout-input.md` or `final-result-input.md` containing the outcome/evidence/blockers over relying only on trigger phrases. The closing workflow should then fold that input into the canonical opportunity record or project closeout, update dashboards/registers/decisions, and preserve the input when it contains user wording/evidence or when the domain workflow says preservation is canonical.
 - For opportunity closeout specifically, preserve processed `opportunities/<slug>/closeout-input.md` as part of the opportunity evidence trail and mark it complete/processed rather than deleting it; `closeout-input.example.md` is only a scaffold/guide and should be ignored by closeout scanners.
-- Active/current dashboards should not silently accumulate finalized items. Finished projects go to `projects/finished.md`; finished opportunities go to `opportunities/finished.md`. Status tracks workflow state; `result_status`, `result_type`, and `result_summary` track final outcome.
+- Active/current dashboards should not silently accumulate finalized items. Finished projects go to `projects/finished.md`; finished opportunities go to `opportunities/finished.md`. For project lifecycle design, keep `projects/dashboard.md` focused on active projects; seed and paused projects belong in a backlog/incubation-style surface or their own project notes, not mixed into the active table. Status tracks workflow state; `result_status`, `result_type`, and `result_summary` track final outcome.
 - Treat `_meta/schema.md` as the source of truth for vault structure. Skills should point to schema and encode behavior; avoid duplicating exact structural policy or turning a one-path migration into broad placement prohibitions unless schema itself says so.
 - Keep root `README.md` files as lightweight orientation pages, not operational dashboards. For projects and opportunities, active/current tables belong in `dashboard.md`, finalized records in `finished.md`, and root READMEs should explain folder purpose, record shape, and canonical links.
 - When closing opportunities with linked projects, classify the project check as `not-needed`, `continue-project`, `close-project`, or `needs-review` rather than assuming the project ends automatically.
