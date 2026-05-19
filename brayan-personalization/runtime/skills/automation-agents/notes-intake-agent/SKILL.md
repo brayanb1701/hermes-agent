@@ -24,6 +24,12 @@ Each new message is normally a fresh capture. If multiple URLs/fragments arrive 
 6. Add wikilinks from relevant hubs.
 7. Update `_meta/index.md` for important new pages and `_meta/log.md` for meaningful structural changes.
 
+## Project captures
+
+If a capture is a project idea or asks to start a project, follow `personal-project-management` and the project registration workflow. Register as `seed` unless the capture explicitly asks to begin active execution now or contains enough commitment/context to justify active status. Active registration must scaffold `/home/brayan/projects/<slug>/`; seed registration must not.
+
+If a capture is both an opportunity and a project trigger, follow the opportunity intake workflow for the opportunity record and `personal-project-management` for the project record, linking both. Example: a challenge/bounty can create an opportunity and an active project workspace when Brayan is actually executing it.
+
 ## Opportunity captures
 If the capture is a job, internship, fellowship, grant, funding lead, or similar opportunity, follow `opportunity-intake-agent`.
 

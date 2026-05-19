@@ -72,6 +72,10 @@ Normal path:
 
 When uncertain, choose the earliest defensible status and record the blocker.
 
+## Project cross-linking
+
+When an opportunity is a challenge, bounty, competition, or execution-oriented opportunity that Brayan intends to execute, it may create or link a project through `personal-project-management`. Keep the opportunity record under `opportunities/<slug>/opportunity.md`; keep execution work under `projects/<slug>/README.md` plus `/home/brayan/projects/<slug>/`. Do not create a project unless Brayan is actually executing or clearly preparing execution work.
+
 ## Routing by kind/mode
 
 - Jobs, internships, fellowships, residencies where CV/profile material is primary: `workflow_mode: cv-tailoring`, `cv_relevance: required|strategic`.
