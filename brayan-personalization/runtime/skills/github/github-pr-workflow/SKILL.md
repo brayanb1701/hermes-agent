@@ -78,6 +78,12 @@ Branch naming conventions:
 
 Use the agent's file tools (`write_file`, `patch`) to make changes, then commit. Stage only the files that belong to the requested change. If the working tree has unrelated changes, inspect them first and remember Brayan may have other active Hermes sessions; do not assume they are noise. Either leave them unstaged and call them out, or commit them separately only when Brayan confirms they are intentional.
 
+When Brayan asks to commit/push current state across multiple repos, keep the history legible:
+- Make one coherent commit per repository or logical surface, not one giant cross-repo narrative.
+- Before committing broad dirty trees, run a basic staged text secret-pattern scan and clearly state its limits; do not claim binaries/PDFs were proven clean if they were skipped.
+- Use commit bodies with 2-4 bullets explaining the origin/class of changes, especially for automation-generated vault/runtime snapshots.
+- Push the exact tracked branch/ref for each repo, then verify `git status --short --branch` is clean and synced before reporting.
+
 ```bash
 # Stage specific files
 git add src/auth.py src/models/user.py tests/test_auth.py

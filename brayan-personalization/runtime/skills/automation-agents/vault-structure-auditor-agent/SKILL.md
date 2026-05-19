@@ -25,6 +25,10 @@ Keep Vault v2 clean and semantically consistent:
 - `raw/` = immutable source material.
 - `inbox/` = transient unprocessed manual files only.
 
+## Project lifecycle audit integration
+
+The general vault audit now includes project-lifecycle audit output from `~/.hermes/scripts/project_state_audit.py`. When the script output contains `project_report_path`, read that report together with the main vault-structure report before proposing fixes. Include project lifecycle issues such as active-dashboard drift, seed/backlog drift, missing active workspaces/control files, pending closeout/reopen handoffs, and skill-reference drift in patch proposals.
+
 ## Required reads
 
 1. `~/personal_vault/_meta/schema.md`

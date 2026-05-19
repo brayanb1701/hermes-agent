@@ -270,6 +270,20 @@ git commit -m "type: description"
 **Bad:** "Create the model file"
 **Good:** "Create: `src/models/user.py`"
 
+## Cross-system drift-prevention plans
+
+When writing plans that span a knowledge vault, live runtime assets, scheduled jobs, and a source-controlled personalization bundle, include an explicit drift-prevention section. Future implementers should not have to infer how to keep the layers synchronized.
+
+Include:
+- source-of-truth layers and their roles;
+- exact state-transition surfaces that must be updated together;
+- runtime files, prompt templates, scripts, cron bindings, and skill updates;
+- personalization/runtime bundle sync steps after live verification;
+- dry-run/compile/audit commands for every deterministic script;
+- current dirty-state checks and a rule not to clean unrelated concurrent edits.
+
+For Brayan's Hermes/vault work specifically, plans touching `~/.hermes/skills`, `~/.hermes/agents`, `~/.hermes/scripts`, or cron should call out the sync to `~/.hermes/hermes-agent/brayan-personalization/runtime/...` on `brayan/personal-hermes-customizations` as a required phase, not a footnote.
+
 ## Execution Handoff
 
 After saving the plan, offer the execution approach:

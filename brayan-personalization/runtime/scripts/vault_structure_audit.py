@@ -7,6 +7,7 @@ emits compact JSON for a Hermes cron/agent to summarize.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import subprocess
@@ -50,6 +51,24 @@ IGNORE_PREFIXES = (
 )
 PROJECT_ROOT_FILES = {"projects/README.md", "projects/dashboard.md", "projects/finished.md"}
 OPPORTUNITY_ROOT_FILES = {"opportunities/README.md", "opportunities/dashboard.md", "opportunities/finished.md"}
+
+
+def configure_vault(vault: Path) -> None:
+    global VAULT, AUDIT_DIR, REPORT_PATH
+    VAULT = vault
+    AUDIT_DIR = VAULT / "_meta" / "audits"
+    REPORT_PATH = AUDIT_DIR / f"{TODAY}-vault-structure-audit.md"
+
+
+def run_project_audit() -> dict:
+    script = HOME / ".hermes" / "scripts" / "project_state_audit.py"
+    if not script.exists():
+        return {"error": f"missing project audit script: {script}"}
+    try:
+        out = subprocess.check_output(["python3", str(script), "--vault", str(VAULT), "--json"], text=True, timeout=120)
+        return json.loads(out)
+    except Exception as exc:
+        return {"error": repr(exc)}
 
 
 def rel(path: Path) -> str:
@@ -110,12 +129,16 @@ def resolve_wikilink(target: str, paths: set[str], by_stem: dict[str, list[str]]
 
 def git_status() -> str:
     try:
-        return subprocess.check_output(["git", "status", "--short", "--branch"], cwd=VAULT, text=True, timeout=20)
+        return subprocess.check_output(["git", "status", "--short", "--branch"], cwd=VAULT, text=True, timeout=20, stderr=subprocess.STDOUT)
     except Exception as exc:
         return f"git status unavailable: {exc!r}"
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--vault", default=str(VAULT), help="Vault path for testability")
+    args = parser.parse_args()
+    configure_vault(Path(args.vault).expanduser().resolve())
     AUDIT_DIR.mkdir(parents=True, exist_ok=True)
     notes = all_notes()
     paths, by_stem = build_note_index(notes)
@@ -244,6 +267,9 @@ def main() -> None:
         "old_paths_existing": old_paths_existing,
     }
     issue_count = sum(len(v) for v in issues.values())
+    project_audit = run_project_audit()
+    project_issue_count = int(project_audit.get("issue_count") or (1 if project_audit.get("error") else 0))
+    combined_issue_count = issue_count + project_issue_count
 
     def bullet_list(items, formatter=str, limit=50) -> str:
         if not items:
@@ -272,7 +298,10 @@ Report-only deterministic audit. This script proposes fixes but does not move/de
 
 - Markdown notes: {len(notes)}
 - Issue count: {issue_count}
+- Project lifecycle issue count: {project_issue_count}
+- Combined issue count: {combined_issue_count}
 - Report path: `{rel(REPORT_PATH)}`
+- Project-state report path: `{project_audit.get("report_path", "unavailable")}`
 
 ## Counts by top-level folder
 
@@ -318,6 +347,13 @@ Report-only deterministic audit. This script proposes fixes but does not move/de
 ### Retired paths still existing on disk
 {bullet_list(old_paths_existing, lambda x: f"`{x}`")}
 
+## Project lifecycle audit integration
+
+- Project issue count: {project_issue_count}
+- Project report path: `{project_audit.get("report_path", "unavailable")}`
+- Project top issue summary: `{json.dumps(project_audit.get("top_issue_summary", {}), ensure_ascii=False)}`
+- Project audit error: `{project_audit.get("error", "")}`
+
 ## Patch proposal policy
 
 A follow-up agent may propose exact patches for these findings, but must not delete raw material, archive active P0/P1 work, rewrite application materials, or move large groups of files without Brayan approval.
@@ -330,11 +366,16 @@ A follow-up agent may propose exact patches for these findings, but must not del
 """
     REPORT_PATH.write_text(report, encoding="utf-8")
     print(json.dumps({
-        "wakeAgent": bool(issue_count),
+        "wakeAgent": bool(combined_issue_count),
         "vault": str(VAULT),
         "report_path": str(REPORT_PATH),
         "note_count": len(notes),
         "issue_count": issue_count,
+        "project_issue_count": project_issue_count,
+        "combined_issue_count": combined_issue_count,
+        "project_report_path": project_audit.get("report_path"),
+        "project_top_issue_summary": project_audit.get("top_issue_summary", {}),
+        "project_audit_error": project_audit.get("error"),
         "issue_counts": {k: len(v) for k, v in issues.items()},
         "top_level_counts": dict(sorted(counts_by_top.items())),
     }, ensure_ascii=False, indent=2))
