@@ -8,13 +8,15 @@ Use this reference when Brayan asks to set up a project that has runnable code, 
 - `~/personal_vault/projects/<slug>/README.md` is the project documentation/control note.
 - The vault should link to code/log/status paths instead of becoming a checkout or artifact dump.
 
-## Recommended live files for autonomous experiment projects
+## Recommended live files for active project workspaces
 
 Inside `/home/brayan/projects/<experiment>/`:
 
-- `FEEDBACK.md` — Brayan's live comments/corrections for the running agent. The agent checks this every cycle and before long work.
-- `COMMANDER_STATUS.md` — concise current status, latest plan, blockers, and milestone log.
-- `EXPERIMENTS.tsv` — structured history: timestamp, branch/path, hypothesis, command, status, metric, artifact bytes, runtime, notes.
+- `PROJECT_STATUS.md` — concise current snapshot an agent should read after the vault project README: current objective, status, next action, blockers, active branch/files, and handoff notes.
+- `PROJECT_CHANGELOG.md` — chronological, parser-friendly update log for meaningful project changes; stale-project scripts can use it to detect inactivity before proposing pause/close/review actions.
+- `FEEDBACK.md` — Brayan's live comments/corrections for a running autonomous agent. The agent checks this every cycle and before long work when the project uses that pattern.
+- `COMMANDER_STATUS.md` — optional commander-specific status for autonomous experiment loops; do not use it as the only current-state source if `PROJECT_STATUS.md` exists.
+- `EXPERIMENTS.tsv` — structured experiment history when the project is experiment-heavy: timestamp, branch/path, hypothesis, command, status, metric, artifact bytes, runtime, notes.
 - Additional logs/artifacts as needed, kept out of the vault unless a concise summary/postmortem is promoted.
 
 ## Vault note should include
