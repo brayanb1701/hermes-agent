@@ -6,6 +6,7 @@ arxiv:06b6666b948852e77545c99ef72139db
 ascii-art:3aea656d9b8fb9d054ce37565e704a04
 ascii-video:2c8277458b2ef50421ce44debb9d81ad
 audiocraft-audio-generation:c207bdbf300ea5c42decc9cb6a596d1c
+baoyu-article-illustrator:bfea57e0608ff6010bbbb75238db89e5
 baoyu-comic:8ff68387b01dea27ce049837ae9ecc47
 baoyu-infographic:53edf7d1b9398d62f4ccb0755e27913e
 blogwatcher:3f30bdd408c771501b94fab9289579c6
@@ -28,7 +29,7 @@ github-issues:429ec06cde7578e4ebba451d8106f008
 github-pr-workflow:834e9cd72f18ea4598934d8d253b5858
 github-repo-management:c5c05bc85dfcda2b7ac2f2006be9efe0
 godmode:27f853c53d2a2ef38118a583a9dfb6c4
-google-workspace:db46b2778030ed92d03a8aab727c036c
+google-workspace:97c3ade5668d6eeaf95be1996f57921e
 heartmula:96a5927a5f221065260ddb2e0f1d77ec
 hermes-agent:453f84e7bca3800e204ae1fe94b0af22
 hermes-agent-skill-authoring:d5b8b704b92d44ffa1e44f8b3d795037
@@ -38,8 +39,9 @@ humanizer:6645b341862575f452e86139c5c71ce9
 ideation:8cfdaafa9abda023643427110c8c3073
 imessage:f545da0f5cc64dd9ee1ffd2b7733a11b
 jupyter-live-kernel:352c43dc28428592abbc8c91cb5ce295
+kanban-codex-lane:94b53308d74fe3b55f198b9d9e905cf7
 kanban-orchestrator:335a645935c88361ef2a103dba1fba01
-kanban-worker:381c14fb24d058e1750d1f97aa8d8011
+kanban-worker:6fd207ac56286f7d347b85f9d9a35d68
 linear:ab7a5dbd4001e31e2bd888d86ab699f8
 llama-cpp:0991055ce47146735f0ed02d7658a254
 llm-wiki:ca957fbfecd9e573a1f99db3937a1969
