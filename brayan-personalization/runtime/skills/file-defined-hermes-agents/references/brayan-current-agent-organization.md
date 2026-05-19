@@ -32,6 +32,16 @@ Current opportunity skills:
 - `opportunity-preparation-agent` — `~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-agent/SKILL.md`
 - `opportunity-closing-agent` — `~/.hermes/skills/automation-agents/opportunities/opportunity-closing-agent/SKILL.md`
 
+Project workflow skill lives under:
+
+```text
+~/.hermes/skills/automation-agents/projects/personal-project-management/SKILL.md
+```
+
+Current project-management skill:
+
+- `personal-project-management` — umbrella skill for registration, activation, review, pausing/reopening, closing, and auditing projects.
+
 General design skill:
 
 - `file-defined-hermes-agents` — `~/.hermes/skills/file-defined-hermes-agents/SKILL.md`
@@ -57,6 +67,7 @@ Current prompt/template files under `~/.hermes/agents/`:
 - `vault-structure-auditor/prompt-template.md`
 - `opportunity-preparation/prompt-template.md`
 - `opportunity-closing/prompt-template.md`
+- `project-management/prompt-template.md`
 - `hermes-upstream-rebase-ci/prompt-template.md`
 - `autoresearch-commander/README.md`
 - `autoresearch-commander/mission-template.md`
@@ -70,7 +81,10 @@ Current mechanical dispatcher / pre-run scripts under `~/.hermes/scripts/`:
 - `opportunity_preparation_ready_scan.py`
 - `opportunity_scaffold.py`
 - `opportunity_closeout_scan.py`
-- `vault_structure_audit.py`
+- `project_scaffold.py`
+- `project_review_scan.py`
+- `project_state_audit.py`
+- `vault_structure_audit.py` (includes project-state audit output)
 - `hermes_upstream_rebase_ci.py`
 
 ## Recurring cron bindings
@@ -99,14 +113,18 @@ Current recurring cron jobs load canonical skills by bare name:
   - skills: `personal-vault-ops`, `opportunity-closing-agent`
   - script: `opportunity_closeout_scan.py`
   - schedule: `30 11 * * *`
+- `darwin-project-management-agent`
+  - skills: `personal-vault-ops`, `personal-project-management`
+  - script: `project_review_scan.py`
+  - schedule: `45 11 * * *`
+- `vault-structure-auditor`
+  - skills: `personal-vault-ops`, `vault-structure-auditor-agent`
+  - script: `vault_structure_audit.py` (includes `project_state_audit.py` output)
+  - schedule: `0 10 * * 0`
 - `hermes-upstream-rebase-ci`
   - skills: `hermes-agent`, `systematic-debugging`, `personal-vault-ops`, `hermes-upstream-rebase-ci-agent`
   - script: `hermes_upstream_rebase_ci.py`
   - schedule: `30 9 * * *`
-- `vault-structure-auditor`
-  - skills: `personal-vault-ops`, `vault-structure-auditor-agent`
-  - script: `vault_structure_audit.py`
-  - schedule: `0 10 * * 0`
 
 ## Organization rules
 

@@ -22,6 +22,7 @@ This is a procedural design skill, not an umbrella for operational runbooks. For
 
 - `references/brayan-current-agent-organization.md` — current live organization of Brayan's recurring/specialized Hermes agents, skills, prompt templates, scripts, and cron skill bindings, including retired automation/design skills that should not be recreated.
 - `references/opportunity-preparation-agent-pattern.md` — concrete example of the independent-session fanout pattern for the opportunity-preparation workflow.
+- `references/opportunity-closeout-agent-pattern.md` — design pattern for file-driven opportunity closeout: deterministic input scaffolds, independent closeout sessions, preserved evidence, and dashboard/finished-register updates.
 
 When reviewing the skill library after an automation-refactor session, patch this skill or its references if the session changed agent organization, uncovered an overlap, or revealed a retirement/verification pitfall.
 
@@ -83,6 +84,7 @@ Treat cron agents, hook/plugin agents, channel-prompt agents, and script-launche
 When a new recurring/specialized workflow is being designed, explicitly account for every file-defined-agent surface before calling the design complete:
 
 - stable behavior skill under `~/.hermes/skills/.../<agent-skill>/SKILL.md`;
+- if the workflow has multiple modes/processes but Brayan wants one umbrella skill, add internal support files under that skill's `references/` directory for each process instead of creating a flat list of narrow skills;
 - prompt template under `~/.hermes/agents/<agent-name>/prompt-template.md`;
 - mechanical dispatcher/scanner script under `~/.hermes/scripts/`;
 - cron job or activation surface, with skills/script/delivery/toolsets verified;
@@ -125,8 +127,6 @@ Use independent `hermes chat -q` sessions when Brayan wants separate session his
    - If no work exists or dispatch succeeded cleanly, script can emit `{"wakeAgent": false, ...}`.
    - If dispatch fails, emit `{"wakeAgent": true, "errors": [...]}` so the fallback cron agent wakes for diagnosis.
    - Reserve `no_agent=true` for pure watchdog/reporting scripts where the script output itself is the final delivery; use `no_agent=false` when the script is only a gate/context collector for a real agent.
-
-## Retiring overlapping automation guidance
 
 ## Retiring overlapping automation guidance
 
@@ -197,6 +197,7 @@ After implementing/refactoring:
 
 - Do not embed long natural-language task prompts in Python scripts if the workflow is meant to be maintained as an agent.
 - Do not maintain duplicate runbooks in multiple skills; use canonical operational skills and references.
+- Do not satisfy an umbrella-skill requirement by only adding vault workflow docs. The runtime skill should have a rich `SKILL.md` and, when there are multiple process modes, a `references/` directory that future agents can load through `skill_view` without rereading unrelated vault analysis files.
 - Do not leave stale `.usage.json` metadata for a retired skill; it can keep deleted skills looking active to curator/status tooling.
 - Do not install third-party orchestration plugins before showing Brayan what they do.
 - Do not use `delegate_task` when the explicit requirement is one independent session per item.

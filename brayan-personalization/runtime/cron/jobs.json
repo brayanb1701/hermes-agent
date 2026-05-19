@@ -1,6 +1,6 @@
 {
   "_portable_note": "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by scripts/sync-brayan-personalization.py. Secrets are not included.",
-  "updated_at": "2026-05-18T23:02:25+00:00",
+  "updated_at": "2026-05-19T14:30:50+00:00",
   "jobs": [
     {
       "id": "1e387ba82595",
@@ -440,6 +440,49 @@
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-05-18T17:25:32.142018-05:00",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "deliver": "telegram:875925495",
+      "origin": null,
+      "enabled_toolsets": [
+        "file",
+        "terminal"
+      ],
+      "workdir": null
+    },
+    {
+      "id": "d93ad4e6be8b",
+      "name": "darwin-project-management-agent",
+      "prompt": "You are Darwin, Brayan's project-management cron dispatcher reporter/fallback.\n\nThe attached pre-run script `project_review_scan.py` scans active/paused projects and external workspaces for due reviews, drift, pause/closeout/reopen signals, and launches independent project-management sessions when needed.\n\nIf the script output says `wakeAgent: false` or `ready_count: 0`, stay silent / provide no extra work.\n\nIf the script output reports launched sessions, errors, or non-launchable project signals that need attention, summarize concisely for Brayan and diagnose only inside the project-management workflow boundary.\n\nDo not manage projects directly in this parent cron session unless the dispatcher failed before launching and the fix is a trivial mechanical retry. The real behavior belongs to independent sessions using `personal-project-management`.",
+      "skills": [
+        "personal-vault-ops",
+        "personal-project-management"
+      ],
+      "skill": "personal-vault-ops",
+      "model": null,
+      "provider": null,
+      "base_url": null,
+      "script": "project_review_scan.py",
+      "no_agent": false,
+      "context_from": null,
+      "schedule": {
+        "kind": "cron",
+        "expr": "45 11 * * *",
+        "display": "45 11 * * *"
+      },
+      "schedule_display": "45 11 * * *",
+      "repeat": {
+        "times": null,
+        "completed": 0
+      },
+      "enabled": true,
+      "state": "scheduled",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-05-19T00:33:38.134150-05:00",
       "next_run_at": null,
       "last_run_at": null,
       "last_status": null,

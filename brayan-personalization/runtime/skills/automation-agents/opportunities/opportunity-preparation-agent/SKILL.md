@@ -88,7 +88,7 @@ preparation_packet: [[opportunities/<stem>/application/preparation-packet]]
 
 Add a concise status-log line for packet creation and preserve original source details. Keep human next action in the packet, opportunity body, and status log.
 
-Use `preparation_packet` and `application/preparation-packet.md`.
+Use `preparation_packet` and `application/preparation-packet.md` in the v2 preparation workflow.
 
 ## Evidence and truthfulness rules
 
