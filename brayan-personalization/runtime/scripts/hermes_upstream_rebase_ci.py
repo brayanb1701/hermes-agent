@@ -2,19 +2,20 @@
 """Daily local CI for Brayan's Hermes fork.
 
 This script is intended to run as a Hermes cron pre-run script. It performs a
-safe upstream update check for /home/brayan/.hermes/hermes-agent:
+safe upstream update check for Brayan's Hermes personalization branch while
+protecting the live gateway checkout:
 
-- Fetch official upstream updates and the fork's personalization branch.
-- Fast-forward the local personalization branch from origin if needed.
-- Sync Brayan's current local Hermes personalization bundle into the fork checkout
-  (config template, agents, skills, plugins, scripts, cron definitions), omitting
-  secrets and volatile runtime state.
-- If the personalization snapshot changed, commit it on the personalization branch.
-- Rebase Brayan's personalization branch onto upstream/main so the branch becomes:
-  latest official Hermes + Brayan source changes + latest local personalization snapshot.
-- Run focused regression tests and push only the target personalization branch.
-- If anything needs human/agent repair, emit wakeAgent=true with diagnostic
-  context so the cron job wakes Darwin to investigate.
+- The live executable checkout is /home/brayan/.hermes/hermes-agent.
+- Rebases/tests run in an isolated detached git worktree under
+  /home/brayan/.hermes/worktrees/hermes-upstream-rebase-ci.
+- The worktree starts from the newer compatible base between the live target
+  branch and origin/brayan/personal-hermes-customizations.
+- Brayan's current runtime personalization bundle is synced into that worktree,
+  committed if changed, rebased onto upstream/main, tested, and pushed only to
+  the personalization branch.
+- If a rebase conflict or test failure happens, the broken state stays in the
+  isolated worktree. The live checkout used by the gateway is not left with
+  conflict markers or mixed source files.
 
 It never quotes secrets and operates only on the Hermes source checkout plus the
 source-controlled Brayan personalization bundle.
@@ -24,19 +25,33 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-REPO = Path("/home/brayan/.hermes/hermes-agent")
+LIVE_REPO = Path("/home/brayan/.hermes/hermes-agent")
+WORKTREE = Path("/home/brayan/.hermes/worktrees/hermes-upstream-rebase-ci")
+REPO = WORKTREE
 TARGET_BRANCH = "brayan/personal-hermes-customizations"
-PYTHON = REPO / "venv/bin/python"
+PYTHON = LIVE_REPO / "venv/bin/python"
+RUNTIME_SCRIPT = Path("/home/brayan/.hermes/scripts/hermes_upstream_rebase_ci.py")
 LOG_DIR = Path("/home/brayan/.hermes/logs/hermes-upstream-ci")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 TEST_COMMANDS = [
-    [str(PYTHON), "-m", "py_compile", "scripts/sync-brayan-personalization.py", "scripts/apply-brayan-personalization.py"],
+    [
+        str(PYTHON),
+        "-m",
+        "py_compile",
+        str(RUNTIME_SCRIPT),
+        "scripts/sync-brayan-personalization.py",
+        "scripts/apply-brayan-personalization.py",
+        "gateway/run.py",
+        "agent/agent_init.py",
+        "agent/context_compressor.py",
+    ],
     [
         str(PYTHON),
         "-m",
@@ -100,10 +115,17 @@ def redact(text: str, limit: int = 6000) -> str:
     return redacted
 
 
-def run(cmd: list[str], *, check: bool = False, timeout: int = 300) -> dict[str, Any]:
+def run(
+    cmd: list[str],
+    *,
+    check: bool = False,
+    timeout: int = 300,
+    cwd: Path | None = None,
+) -> dict[str, Any]:
+    run_cwd = cwd or REPO
     proc = subprocess.run(
         cmd,
-        cwd=REPO,
+        cwd=run_cwd,
         text=True,
         capture_output=True,
         timeout=timeout,
@@ -112,6 +134,7 @@ def run(cmd: list[str], *, check: bool = False, timeout: int = 300) -> dict[str,
     )
     result = {
         "cmd": cmd,
+        "cwd": str(run_cwd),
         "returncode": proc.returncode,
         "stdout": redact(proc.stdout),
         "stderr": redact(proc.stderr),
@@ -121,63 +144,38 @@ def run(cmd: list[str], *, check: bool = False, timeout: int = 300) -> dict[str,
     return result
 
 
-def git(*args: str, check: bool = False, timeout: int = 300) -> dict[str, Any]:
-    return run(["git", *args], check=check, timeout=timeout)
-
-
-def configure_git_automation(commands: list[dict[str, Any]]) -> None:
-    """Enable Git helpers that make repeated rebases less manual.
-
-    rerere records conflict resolutions. If upstream produces the same conflict
-    again, Git can reuse the prior resolution instead of waking the agent for
-    the same manual edit. autoupdate stages reused resolutions so the script can
-    continue the rebase non-interactively when all conflicts were resolved.
-    """
-    for key, value in (("rerere.enabled", "true"), ("rerere.autoupdate", "true")):
-        result = git("config", key, value)
-        commands.append(result)
-
-
-def unmerged_paths() -> list[str]:
-    result = git("diff", "--name-only", "--diff-filter=U")
-    return [line.strip() for line in stdout(result).splitlines() if line.strip()]
-
-
-def rebase_in_progress() -> bool:
-    return any((REPO / marker).exists() for marker in (".git/rebase-merge", ".git/rebase-apply"))
-
-
-def try_continue_resolved_rebase(commands: list[dict[str, Any]]) -> bool:
-    """Continue a rebase if rerere/autoupdate resolved every conflict.
-
-    Returns True only when the rebase completed successfully. If conflicts remain
-    or continue fails, callers should wake the agent with diagnostics.
-    """
-    if not rebase_in_progress() or unmerged_paths():
-        return False
-    status = git("status", "--porcelain")
-    commands.append(status)
-    cont = git("rebase", "--continue", timeout=300)
-    commands.append(cont)
-    return cont["returncode"] == 0
+def git(*args: str, check: bool = False, timeout: int = 300, cwd: Path | None = None) -> dict[str, Any]:
+    return run(["git", *args], check=check, timeout=timeout, cwd=cwd)
 
 
 def stdout(result: dict[str, Any]) -> str:
     return str(result.get("stdout", "")).strip()
 
 
-def is_ancestor(older: str, newer: str) -> bool:
-    return git("merge-base", "--is-ancestor", older, newer)["returncode"] == 0
+def is_ancestor(older: str, newer: str, *, cwd: Path | None = None) -> bool:
+    return git("merge-base", "--is-ancestor", older, newer, cwd=cwd)["returncode"] == 0
 
 
-def dirty_paths() -> list[str]:
-    # Use raw subprocess output here, not git()/run(), because run() redacts and
-    # truncates command output for logs. Large personalization snapshots can make
-    # `git status --porcelain` exceed the log limit; parsing the truncated text
-    # produces bogus paths like "UNCATED]" and falsely trips the dirty-tree gate.
+def git_operation_in_progress(repo: Path) -> bool:
+    return any((repo / marker).exists() for marker in (".git/rebase-merge", ".git/rebase-apply", ".git/MERGE_HEAD"))
+
+
+def rebase_in_progress(repo: Path | None = None) -> bool:
+    check_repo = repo or REPO
+    return any((check_repo / marker).exists() for marker in (".git/rebase-merge", ".git/rebase-apply"))
+
+
+def unmerged_paths(repo: Path | None = None) -> list[str]:
+    check_repo = repo or REPO
+    result = git("diff", "--name-only", "--diff-filter=U", cwd=check_repo)
+    return [line.strip() for line in stdout(result).splitlines() if line.strip()]
+
+
+def dirty_paths(repo: Path | None = None) -> list[str]:
+    check_repo = repo or REPO
     proc = subprocess.run(
         ["git", "status", "--porcelain"],
-        cwd=REPO,
+        cwd=check_repo,
         text=True,
         capture_output=True,
         check=False,
@@ -187,7 +185,6 @@ def dirty_paths() -> list[str]:
     for line in proc.stdout.splitlines():
         if not line:
             continue
-        # Porcelain v1 format: XY PATH, or XY OLD -> NEW. Use destination for renames.
         path = line[3:] if len(line) > 3 else line
         if " -> " in path:
             path = path.split(" -> ", 1)[1]
@@ -195,84 +192,220 @@ def dirty_paths() -> list[str]:
     return paths
 
 
-def non_personalization_dirty_paths() -> list[str]:
-    return [p for p in dirty_paths() if not p.startswith(PERSONALIZATION_ALLOWED_PREFIXES)]
+def non_personalization_dirty_paths(repo: Path | None = None) -> list[str]:
+    return [p for p in dirty_paths(repo) if not p.startswith(PERSONALIZATION_ALLOWED_PREFIXES)]
+
+
+def configure_git_automation(commands: list[dict[str, Any]]) -> None:
+    """Enable Git helpers that make repeated rebases less manual."""
+    for key, value in (("rerere.enabled", "true"), ("rerere.autoupdate", "true")):
+        result = git("config", key, value, cwd=LIVE_REPO)
+        commands.append(result)
+
+
+def ensure_clean_worktree_slot(commands: list[dict[str, Any]]) -> bool:
+    WORKTREE.parent.mkdir(parents=True, exist_ok=True)
+    prune = git("worktree", "prune", cwd=LIVE_REPO)
+    commands.append(prune)
+
+    if not WORKTREE.exists():
+        return True
+
+    if not (WORKTREE / ".git").exists():
+        fail(
+            "worktree_preflight",
+            f"Worktree path exists but is not a git worktree: {WORKTREE}. Move it aside before automated CI continues.",
+            commands=commands,
+            repo=LIVE_REPO,
+        )
+        return False
+
+    if git_operation_in_progress(WORKTREE) or dirty_paths(WORKTREE):
+        fail(
+            "worktree_dirty",
+            "Previous CI worktree has an in-progress git operation or uncommitted changes; leaving it intact for inspection.",
+            commands=commands,
+            repo=WORKTREE,
+        )
+        return False
+
+    remove = git("worktree", "remove", "--force", str(WORKTREE), cwd=LIVE_REPO, timeout=120)
+    commands.append(remove)
+    if remove["returncode"] != 0:
+        fail("worktree_remove", "Failed to remove clean stale CI worktree.", commands=commands, repo=WORKTREE)
+        return False
+    return True
+
+
+def choose_base_ref(commands: list[dict[str, Any]]) -> str | None:
+    branch = stdout(git("branch", "--show-current", cwd=LIVE_REPO))
+    if branch != TARGET_BRANCH:
+        fail("preflight", f"Expected live checkout branch {TARGET_BRANCH}, found {branch or '[detached]'}", commands=commands, repo=LIVE_REPO)
+        return None
+
+    live_dirty = dirty_paths(LIVE_REPO)
+    if live_dirty:
+        fail(
+            "preflight",
+            "Live checkout has uncommitted changes; refusing automated update. The CI now uses an isolated worktree, but live source changes still need explicit review before they are used as the update base.",
+            commands=commands,
+            repo=LIVE_REPO,
+        )
+        return None
+
+    fetch_upstream = git("fetch", "upstream", "main", "--quiet", cwd=LIVE_REPO, timeout=120)
+    commands.append(fetch_upstream)
+    if fetch_upstream["returncode"] != 0:
+        fail("fetch_upstream", "Failed to fetch official upstream/main.", commands=commands, repo=LIVE_REPO)
+        return None
+
+    fetch_origin = git("fetch", "origin", TARGET_BRANCH, "--quiet", cwd=LIVE_REPO, timeout=120)
+    commands.append(fetch_origin)
+    if fetch_origin["returncode"] != 0:
+        fail("fetch_origin", f"Failed to fetch fork origin/{TARGET_BRANCH}.", commands=commands, repo=LIVE_REPO)
+        return None
+
+    remote_target = f"origin/{TARGET_BRANCH}"
+    live_head = stdout(git("rev-parse", "HEAD", cwd=LIVE_REPO))
+    remote_head = stdout(git("rev-parse", remote_target, cwd=LIVE_REPO))
+    if not live_head or not remote_head:
+        fail("preflight", f"Could not resolve live HEAD or {remote_target}.", commands=commands, repo=LIVE_REPO)
+        return None
+
+    if is_ancestor(live_head, remote_target, cwd=LIVE_REPO):
+        return remote_head
+    if is_ancestor(remote_target, live_head, cwd=LIVE_REPO):
+        return live_head
+
+    fail(
+        "preflight",
+        f"Live {TARGET_BRANCH} and origin/{TARGET_BRANCH} have diverged. Refusing to choose a base automatically.",
+        commands=commands,
+        repo=LIVE_REPO,
+    )
+    return None
+
+
+def prepare_worktree(base_ref: str, commands: list[dict[str, Any]]) -> bool:
+    if not ensure_clean_worktree_slot(commands):
+        return False
+    add = git("worktree", "add", "--detach", str(WORKTREE), base_ref, cwd=LIVE_REPO, timeout=180)
+    commands.append(add)
+    if add["returncode"] != 0:
+        fail("worktree_add", f"Failed to create isolated CI worktree at {WORKTREE}.", commands=commands, repo=LIVE_REPO)
+        return False
+    return True
 
 
 def sync_personalization(commands: list[dict[str, Any]]) -> bool:
     script = REPO / "scripts/sync-brayan-personalization.py"
     if not script.exists():
-        fail("personalization_sync", f"Missing personalization sync script: {script}", commands=commands)
+        fail("personalization_sync", f"Missing personalization sync script: {script}", commands=commands, repo=REPO)
         return False
-    sync = run([str(PYTHON), str(script)], timeout=300)
+    sync = run([str(PYTHON), str(script)], timeout=300, cwd=REPO)
     commands.append(sync)
     if sync["returncode"] != 0:
-        fail("personalization_sync", "Failed to sync Brayan personalization bundle; not committing/pushing.", commands=commands)
+        fail("personalization_sync", "Failed to sync Brayan personalization bundle; not committing/pushing.", commands=commands, repo=REPO)
         return False
     return True
 
 
 def commit_personalization_if_changed(commands: list[dict[str, Any]]) -> bool:
-    changed = dirty_paths()
+    changed = dirty_paths(REPO)
     if not changed:
         return False
-    non_allowed = non_personalization_dirty_paths()
+    non_allowed = non_personalization_dirty_paths(REPO)
     if non_allowed:
         fail(
             "personalization_dirty_tree",
             "Working tree has non-personalization uncommitted changes; refusing automated commit.",
             commands=commands,
+            repo=REPO,
         )
         return False
-    add = git("add", *PERSONALIZATION_ALLOWED_PREFIXES)
+    add = git("add", *PERSONALIZATION_ALLOWED_PREFIXES, cwd=REPO)
     commands.append(add)
     if add["returncode"] != 0:
-        fail("personalization_add", "Failed to stage Brayan personalization snapshot.", commands=commands)
+        fail("personalization_add", "Failed to stage Brayan personalization snapshot.", commands=commands, repo=REPO)
         return False
-    commit = git("commit", "-m", "chore: sync Brayan Hermes personalization snapshot", timeout=120)
+    commit = git("commit", "-m", "chore: sync Brayan Hermes personalization snapshot", cwd=REPO, timeout=120)
     commands.append(commit)
     if commit["returncode"] != 0:
-        # If git says there was nothing to commit after all, treat as no change.
-        if "nothing to commit" in (commit.get("stdout", "") + commit.get("stderr", "")).lower():
+        combined = (commit.get("stdout", "") + commit.get("stderr", "")).lower()
+        if "nothing to commit" in combined:
             return False
-        fail("personalization_commit", "Failed to commit Brayan personalization snapshot.", commands=commands)
+        fail("personalization_commit", "Failed to commit Brayan personalization snapshot.", commands=commands, repo=REPO)
         return False
     return True
 
 
 def push_origin(commands: list[dict[str, Any]], *, force_with_lease: bool = False) -> bool:
     args = ["push"]
+    observed_origin = stdout(git("rev-parse", f"origin/{TARGET_BRANCH}", cwd=REPO))
     if force_with_lease:
-        args.append("--force-with-lease")
+        if not observed_origin:
+            fail("push", f"Could not resolve origin/{TARGET_BRANCH} for exact force-with-lease.", commands=commands, repo=REPO)
+            return False
+        args.append(f"--force-with-lease=refs/heads/{TARGET_BRANCH}:{observed_origin}")
     args.extend(["origin", f"HEAD:{TARGET_BRANCH}"])
-    push = git(*args, timeout=180)
+    push = git(*args, cwd=REPO, timeout=180)
     commands.append(push)
     if push["returncode"] != 0:
-        fail("push", f"Push to origin/{TARGET_BRANCH} failed.", commands=commands)
+        fail("push", f"Push to origin/{TARGET_BRANCH} failed.", commands=commands, repo=REPO)
         return False
-    if git("remote", "get-url", "brayan")["returncode"] == 0:
-        brayan_args = ["push"]
-        if force_with_lease:
-            brayan_args.append("--force-with-lease")
-        brayan_args.extend(["brayan", f"HEAD:{TARGET_BRANCH}"])
-        push_brayan = git(*brayan_args, timeout=180)
-        commands.append(push_brayan)
-        if push_brayan["returncode"] != 0:
-            fail("push_brayan", f"Push to origin/{TARGET_BRANCH} succeeded but push to brayan alias failed.", commands=commands)
-            return False
+
+    origin_url = stdout(git("remote", "get-url", "origin", cwd=REPO))
+    brayan_url_result = git("remote", "get-url", "brayan", cwd=REPO)
+    if brayan_url_result["returncode"] == 0:
+        brayan_url = stdout(brayan_url_result)
+        if brayan_url and brayan_url != origin_url:
+            fetch_brayan = git("fetch", "brayan", TARGET_BRANCH, "--quiet", cwd=REPO, timeout=120)
+            commands.append(fetch_brayan)
+            if fetch_brayan["returncode"] != 0:
+                fail("fetch_brayan", f"origin push succeeded but fetch from brayan/{TARGET_BRANCH} failed.", commands=commands, repo=REPO)
+                return False
+            brayan_args = ["push"]
+            if force_with_lease:
+                observed_brayan = stdout(git("rev-parse", f"brayan/{TARGET_BRANCH}", cwd=REPO))
+                if not observed_brayan:
+                    fail("push_brayan", f"Could not resolve brayan/{TARGET_BRANCH} for exact force-with-lease.", commands=commands, repo=REPO)
+                    return False
+                brayan_args.append(f"--force-with-lease=refs/heads/{TARGET_BRANCH}:{observed_brayan}")
+            brayan_args.extend(["brayan", f"HEAD:{TARGET_BRANCH}"])
+            push_brayan = git(*brayan_args, cwd=REPO, timeout=180)
+            commands.append(push_brayan)
+            if push_brayan["returncode"] != 0:
+                fail("push_brayan", f"Push to brayan/{TARGET_BRANCH} failed after origin push succeeded.", commands=commands, repo=REPO)
+                return False
     return True
 
 
-def status_snapshot() -> dict[str, Any]:
-    return {
-        "branch": stdout(git("branch", "--show-current")),
-        "status_short": stdout(git("status", "--short", "--branch")),
-        "head": stdout(git("rev-parse", "--short", "HEAD")),
-        "remotes": stdout(git("remote", "-v")),
-        "ahead_behind_upstream": stdout(git("rev-list", "--left-right", "--count", "upstream/main...HEAD")),
-        "unmerged_paths": unmerged_paths(),
-        "rebase_in_progress": rebase_in_progress(),
-    }
+def status_snapshot(repo: Path | None = None) -> dict[str, Any]:
+    snap_repo = repo or (REPO if REPO.exists() else LIVE_REPO)
+    data: dict[str, Any] = {"repo": str(snap_repo), "repo_exists": snap_repo.exists()}
+    if not snap_repo.exists():
+        return data
+    for key, args in {
+        "branch": ["branch", "--show-current"],
+        "status_short": ["status", "--short", "--branch"],
+        "head": ["rev-parse", "--short", "HEAD"],
+        "remotes": ["remote", "-v"],
+        "ahead_behind_upstream": ["rev-list", "--left-right", "--count", "upstream/main...HEAD"],
+    }.items():
+        result = git(*args, cwd=snap_repo)
+        data[key] = stdout(result) if result["returncode"] == 0 else redact(result.get("stderr", ""))
+    data["unmerged_paths"] = unmerged_paths(snap_repo)
+    data["rebase_in_progress"] = rebase_in_progress(snap_repo)
+    if snap_repo != LIVE_REPO and LIVE_REPO.exists():
+        live_head = git("rev-parse", "--short", "HEAD", cwd=LIVE_REPO)
+        live_status = git("status", "--short", "--branch", cwd=LIVE_REPO)
+        data["live_checkout"] = {
+            "repo": str(LIVE_REPO),
+            "head": stdout(live_head) if live_head["returncode"] == 0 else "",
+            "status_short": stdout(live_status) if live_status["returncode"] == 0 else "",
+            "git_operation_in_progress": git_operation_in_progress(LIVE_REPO),
+        }
+    return data
 
 
 def emit(payload: dict[str, Any]) -> None:
@@ -283,144 +416,140 @@ def emit(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, ensure_ascii=False))
 
 
-def fail(stage: str, message: str, *, commands: list[dict[str, Any]] | None = None) -> None:
+def fail(stage: str, message: str, *, commands: list[dict[str, Any]] | None = None, repo: Path | None = None) -> None:
     emit(
         {
             "wakeAgent": True,
             "status": "needs_agent",
             "stage": stage,
             "message": message,
-            "repo": str(REPO),
+            "repo": str(repo or (REPO if REPO.exists() else LIVE_REPO)),
+            "live_repo": str(LIVE_REPO),
+            "worktree": str(WORKTREE),
             "commands": commands or [],
-            "snapshot": status_snapshot(),
+            "snapshot": status_snapshot(repo),
             "recommended_agent_action": (
-                "Investigate systematically, preserve Brayan's source customizations, "
-                "prefer plugin/config solutions over base-code changes where possible, "
-                f"resolve conflicts or failures, rerun focused tests, and push only to origin/{TARGET_BRANCH} after verification."
+                "Investigate systematically. If the failure is in the isolated worktree, "
+                "resolve conflicts there or remove the worktree only after confirming it is clean. "
+                f"Preserve Brayan's source customizations and push only origin/{TARGET_BRANCH} after verification."
             ),
         }
     )
 
 
+def try_continue_resolved_rebase(commands: list[dict[str, Any]]) -> bool:
+    """Continue a rebase if rerere/autoupdate resolved every conflict."""
+    if not rebase_in_progress(REPO) or unmerged_paths(REPO):
+        return False
+    status = git("status", "--porcelain", cwd=REPO)
+    commands.append(status)
+    cont = git("rebase", "--continue", cwd=REPO, timeout=300)
+    commands.append(cont)
+    return cont["returncode"] == 0
+
+
+def run_verification(commands: list[dict[str, Any]], *, failure_stage: str) -> bool:
+    for test_cmd in TEST_COMMANDS:
+        test = run(test_cmd, timeout=600, cwd=REPO)
+        commands.append(test)
+        if test["returncode"] != 0:
+            fail(failure_stage, f"Verification failed; not pushing {TARGET_BRANCH}.", commands=commands, repo=REPO)
+            return False
+    return True
+
+
 def main() -> None:
-    if not REPO.exists():
-        emit({"wakeAgent": True, "status": "needs_agent", "stage": "preflight", "message": f"Repo missing: {REPO}"})
+    if not LIVE_REPO.exists():
+        emit({"wakeAgent": True, "status": "needs_agent", "stage": "preflight", "message": f"Live repo missing: {LIVE_REPO}"})
         return
 
     commands: list[dict[str, Any]] = []
 
-    # Refuse to automate over in-progress Git operations.
-    for marker in (REPO / ".git/rebase-merge", REPO / ".git/rebase-apply", REPO / ".git/MERGE_HEAD"):
-        if marker.exists():
-            fail("preflight", f"Git operation already in progress: {marker}")
-            return
-
-    branch = stdout(git("branch", "--show-current"))
-    if branch != TARGET_BRANCH:
-        fail("preflight", f"Expected branch {TARGET_BRANCH}, found {branch or '[detached]'}")
-        return
-
-    non_allowed_dirty = non_personalization_dirty_paths()
-    if non_allowed_dirty:
-        fail("preflight", "Working tree has non-personalization uncommitted changes; refusing automated rebase/sync.")
+    if git_operation_in_progress(LIVE_REPO):
+        fail("preflight", "Live checkout already has an in-progress git operation; refusing to automate over it.", repo=LIVE_REPO)
         return
 
     for remote in ("origin", "upstream"):
-        result = git("remote", "get-url", remote)
+        result = git("remote", "get-url", remote, cwd=LIVE_REPO)
         if result["returncode"] != 0:
-            fail("preflight", f"Missing git remote: {remote}", commands=[result])
+            fail("preflight", f"Missing git remote on live checkout: {remote}", commands=[result], repo=LIVE_REPO)
             return
 
     configure_git_automation(commands)
-
-    fetch_upstream = git("fetch", "upstream", "main", "--quiet", timeout=120)
-    commands.append(fetch_upstream)
-    if fetch_upstream["returncode"] != 0:
-        fail("fetch_upstream", "Failed to fetch official upstream/main.", commands=commands)
+    base_ref = choose_base_ref(commands)
+    if not base_ref:
         return
-
-    fetch_origin = git("fetch", "origin", TARGET_BRANCH, "--quiet", timeout=120)
-    commands.append(fetch_origin)
-    if fetch_origin["returncode"] != 0:
-        fail("fetch_origin", f"Failed to fetch fork origin/{TARGET_BRANCH}.", commands=commands)
+    if not prepare_worktree(base_ref, commands):
         return
-
-    remote_target = f"origin/{TARGET_BRANCH}"
-    if is_ancestor("HEAD", remote_target) and stdout(git("rev-parse", "HEAD")) != stdout(git("rev-parse", remote_target)):
-        ff = git("merge", "--ff-only", remote_target)
-        commands.append(ff)
-        if ff["returncode"] != 0:
-            fail("sync_origin", f"origin/{TARGET_BRANCH} is ahead but local branch could not fast-forward.", commands=commands)
-            return
 
     if not sync_personalization(commands):
         return
     personalization_changed = commit_personalization_if_changed(commands)
-    if dirty_paths():
+    if dirty_paths(REPO):
+        fail("personalization_dirty_tree", "Personalization sync left unstaged/uncommitted changes; refusing to continue.", commands=commands, repo=REPO)
         return
 
-    if is_ancestor("upstream/main", "HEAD"):
+    if is_ancestor("upstream/main", "HEAD", cwd=REPO):
         if personalization_changed:
-            for test_cmd in TEST_COMMANDS:
-                test = run(test_cmd, timeout=600)
-                commands.append(test)
-                if test["returncode"] != 0:
-                    fail("tests", f"Personalization sync verification failed; not pushing {TARGET_BRANCH}.", commands=commands)
-                    return
-            if not push_origin(commands):
+            if not run_verification(commands, failure_stage="tests"):
+                return
+            if not push_origin(commands, force_with_lease=False):
                 return
         emit(
             {
                 "wakeAgent": False,
                 "status": "personalization_synced" if personalization_changed else "up_to_date",
                 "message": (
-                    "Synced and pushed Brayan's Hermes personalization snapshot."
+                    "Synced and pushed Brayan's Hermes personalization snapshot from an isolated worktree. Live gateway checkout was not mutated."
                     if personalization_changed
-                    else f"Local/fork {TARGET_BRANCH} already contains upstream/main and personalization snapshot is unchanged; no agent needed."
+                    else f"origin/{TARGET_BRANCH} already contains upstream/main and personalization snapshot is unchanged; no agent needed. Live gateway checkout was not mutated."
                 ),
                 "repo": str(REPO),
-                "snapshot": status_snapshot(),
+                "live_repo": str(LIVE_REPO),
+                "snapshot": status_snapshot(REPO),
                 "commands": commands,
             }
         )
         return
 
-    before = stdout(git("rev-parse", "--short", "HEAD"))
-    upstream = stdout(git("rev-parse", "--short", "upstream/main"))
+    before = stdout(git("rev-parse", "--short", "HEAD", cwd=REPO))
+    upstream = stdout(git("rev-parse", "--short", "upstream/main", cwd=REPO))
 
-    rebase = git("rebase", "upstream/main", timeout=600)
+    rebase = git("rebase", "upstream/main", cwd=REPO, timeout=600)
     commands.append(rebase)
+    rebase_needed_force_push = False
     if rebase["returncode"] != 0:
         if try_continue_resolved_rebase(commands):
-            commands.append({"cmd": ["git", "rebase", "--continue"], "returncode": 0, "stdout": "Rebase continued automatically after rerere/autoupdate resolved conflicts.", "stderr": ""})
+            commands.append({"cmd": ["git", "rebase", "--continue"], "cwd": str(REPO), "returncode": 0, "stdout": "Rebase continued automatically after rerere/autoupdate resolved conflicts.", "stderr": ""})
+            rebase_needed_force_push = True
         else:
             fail(
                 "rebase",
-                f"Rebase onto upstream/main failed. Repo may be mid-rebase; resolve conflicts before continuing. Before={before}, upstream={upstream}. Unmerged paths: {', '.join(unmerged_paths()) or 'none reported'}.",
+                f"Rebase onto upstream/main failed in isolated worktree. Live gateway checkout was not mutated. Before={before}, upstream={upstream}. Unmerged paths: {', '.join(unmerged_paths(REPO)) or 'none reported'}.",
                 commands=commands,
+                repo=REPO,
             )
             return
+    else:
+        rebase_needed_force_push = True
 
-    for test_cmd in TEST_COMMANDS:
-        test = run(test_cmd, timeout=600)
-        commands.append(test)
-        if test["returncode"] != 0:
-            fail("tests", f"Post-rebase verification failed; not pushing rebased {TARGET_BRANCH}.", commands=commands)
-            return
+    if not run_verification(commands, failure_stage="tests"):
+        return
 
-    if not push_origin(commands, force_with_lease=True):
+    if not push_origin(commands, force_with_lease=rebase_needed_force_push):
         return
 
     emit(
         {
             "wakeAgent": False,
             "status": "updated",
-            "message": f"Rebased Brayan's {TARGET_BRANCH} onto upstream/main, tests passed, and pushed the personalization branch. No agent needed.",
+            "message": f"Rebased Brayan's {TARGET_BRANCH} onto upstream/main in an isolated worktree, tests passed, and pushed the personalization branch. Live gateway checkout was not mutated.",
             "repo": str(REPO),
+            "live_repo": str(LIVE_REPO),
             "before": before,
-            "after": stdout(git("rev-parse", "--short", "HEAD")),
+            "after": stdout(git("rev-parse", "--short", "HEAD", cwd=REPO)),
             "upstream": upstream,
-            "snapshot": status_snapshot(),
+            "snapshot": status_snapshot(REPO),
             "commands": commands,
         }
     )
@@ -436,8 +565,8 @@ if __name__ == "__main__":
                 "status": "needs_agent",
                 "stage": "timeout",
                 "message": f"Command timed out: {exc.cmd}",
-                "repo": str(REPO),
-                "snapshot": status_snapshot() if REPO.exists() else {},
+                "repo": str(REPO if REPO.exists() else LIVE_REPO),
+                "snapshot": status_snapshot(REPO if REPO.exists() else LIVE_REPO),
             }
         )
     except Exception as exc:
@@ -447,7 +576,7 @@ if __name__ == "__main__":
                 "status": "needs_agent",
                 "stage": "unexpected_exception",
                 "message": redact(repr(exc)),
-                "repo": str(REPO),
-                "snapshot": status_snapshot() if REPO.exists() else {},
+                "repo": str(REPO if REPO.exists() else LIVE_REPO),
+                "snapshot": status_snapshot(REPO if REPO.exists() else LIVE_REPO),
             }
         )
