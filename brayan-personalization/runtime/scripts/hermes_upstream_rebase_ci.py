@@ -25,7 +25,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -156,13 +155,24 @@ def is_ancestor(older: str, newer: str, *, cwd: Path | None = None) -> bool:
     return git("merge-base", "--is-ancestor", older, newer, cwd=cwd)["returncode"] == 0
 
 
+def git_path(repo: Path, path_name: str) -> Path:
+    result = git("rev-parse", "--git-path", path_name, cwd=repo)
+    if result["returncode"] != 0:
+        return repo / ".git" / path_name
+    raw = stdout(result)
+    if not raw:
+        return repo / ".git" / path_name
+    path = Path(raw)
+    return path if path.is_absolute() else repo / path
+
+
 def git_operation_in_progress(repo: Path) -> bool:
-    return any((repo / marker).exists() for marker in (".git/rebase-merge", ".git/rebase-apply", ".git/MERGE_HEAD"))
+    return any(git_path(repo, marker).exists() for marker in ("rebase-merge", "rebase-apply", "MERGE_HEAD"))
 
 
 def rebase_in_progress(repo: Path | None = None) -> bool:
     check_repo = repo or REPO
-    return any((check_repo / marker).exists() for marker in (".git/rebase-merge", ".git/rebase-apply"))
+    return any(git_path(check_repo, marker).exists() for marker in ("rebase-merge", "rebase-apply"))
 
 
 def unmerged_paths(repo: Path | None = None) -> list[str]:
