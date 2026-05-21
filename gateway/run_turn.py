@@ -256,7 +256,8 @@ class GatewayTurnMixin:
         topic-binding heal). Returns ``(source, session_entry, session_key)`` or ``None`` to drop
         the event."""
         # Topic-mode DMs: rewrite a stale/foreign thread_id to the user's last-active topic so a
-        # cross-topic Reply doesn't fragment the conversation.
+        # cross-topic Reply doesn't fragment the conversation. Do this before choosing/resetting
+        # the session so normal traffic and capture isolation use the corrected source key.
         recovered = await asyncio.to_thread(self._recover_telegram_topic_thread_id, source)
         if recovered is not None:
             logger.info(
