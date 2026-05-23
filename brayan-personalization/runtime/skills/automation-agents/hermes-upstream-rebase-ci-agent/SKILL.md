@@ -80,6 +80,7 @@ Do not bypass finalizer refusals. The finalizer intentionally hard-codes repo, b
 
 ## Known conflict patterns
 
+- `gateway/run.py` import conflicts between upstream gateway/provider additions and Brayan's notes-intake branch should preserve both sides when both imported symbols are still referenced. For the 2026-05-23 rebase, keep upstream `from hermes_cli.fallback_config import get_fallback_chain` and Brayan's `from gateway.notes_intake import enrich_anything_inbox_image, is_anything_inbox_source, load_notes_intake_settings, persist_audio_transcript, should_auto_new_session_for_capture` import block; this is an import-surface conflict, not a choice between fallback routing and Anything Inbox capture routing.
 - `tests/cron/test_cron_script.py` empty-script-output conflicts can be caused by upstream removing stale tests while Brayan's branch preserves updated cron wake-gate behavior. Current intended behavior: `_run_job_script()` returns `(True, "")` for empty stdout, normal agent-mode `run_job()` treats empty script stdout as silent/`[SILENT]`, and `_build_job_prompt()` returns `None` for an empty successful pre-run script rather than injecting a "no output" prompt. When resolving a rebase conflict around `test_script_empty_output_noted` / `test_script_empty_output_skips_prompt`, preserve the `assert prompt is None` expectation if `cron/scheduler.py` still implements the empty-output skip at `_build_job_prompt()`.
 
 ## Verification commands
