@@ -32,6 +32,8 @@ Propose 3-5 recommendations balanced across:
 
 When the daily review identifies a board/reset problem, stale deadlines, passed gates, or active-dashboard drift, treat cleanup/final-state classification as a legitimate high-leverage build/project recommendation. Protecting the priority system can matter more than opening new research topics.
 
+When repeated daily/recommendation runs keep surfacing the same stale gates, check whether the daily review reports missing final-state handoff files such as opportunity `closeout-input.md`, workspace `PROJECT_CLOSEOUT.md`, or `PROJECT_REOPEN.md`. If they are missing, recommend creating explicit handoff/final-state inputs or `user-status-needed` markers before recommending broad review again; do not silently propagate unconfirmed outcomes into finished registers.
+
 When a time-boxed resource window has passed (for example expired compute credits), do not keep recommending launch/run-card execution as if the window were still open. Pivot the recommendation to final-state classification (spent/skipped/unknown), cognitive-leak cleanup in the decision register/dashboard, and the nearest replacement leverage path if one exists (such as a still-live compute grant or proof-bundle opportunity).
 
 ## Quality bar
