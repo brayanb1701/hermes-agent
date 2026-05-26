@@ -36,6 +36,7 @@ The pre-run script intentionally refuses to choose between local live `brayan/pe
 
 9. Run the skill-owned finalizer with `--apply`; do not bypass it with direct `git push --force-with-lease` from the agent.
 10. Final sanity check: local and origin match, `upstream/main` is an ancestor of HEAD, and the worktree is clean.
+11. If the finalizer or post-finalizer `hermes config check` reports a config schema update (for example `23 → 24`), run `hermes config migrate` in the live checkout/runtime, verify `Config version: N ✓`, then run `scripts/sync-brayan-personalization.py`, commit only the resulting allowed `brayan-personalization/runtime/**` snapshot changes, and rerun the finalizer with `--apply`. This keeps the fork branch reproducible with the migrated runtime config; never resolve this by hand-editing `_config_version`.
 
 ## Notes
 
