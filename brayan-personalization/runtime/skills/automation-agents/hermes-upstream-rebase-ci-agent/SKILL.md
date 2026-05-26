@@ -36,8 +36,9 @@ Use this when the daily `hermes-upstream-rebase-ci` cron wakes because the pre-r
 8. Prefer programmatic recovery before manual edits: inspect the script output, let the script use `git rerere`/`rerere.autoupdate` and `GIT_EDITOR=true git rebase --continue` when conflicts have already been resolved, and only manually resolve genuinely new conflicts or failing tests.
 9. If a conflict is manually resolved, make the resolution durable: keep repo-local `rerere.enabled=true` and `rerere.autoupdate=true`, continue the rebase, run verification, and update this skill/script/docs if the conflict suggests a reusable rule.
 10. After a manual conflict resolution, explicitly finalize the rebased personalization branch by running `scripts/finalize_rebase_push.py` from this skill with `--apply`. The finalizer is a narrow deterministic capability: hard-coded repo, branch, remotes, exact force-with-lease, clean-tree checks, tests, and JSON diagnostics. If it refuses or fails, report its `stage`, `message`, failed command output, and `next_action`; do not bypass it with a direct force push.
-11. Update the workflow doc or `_meta/log.md` only for meaningful workflow changes, conflict resolution notes, or persistent lessons.
-12. Final response should be concise: failure stage, fix, tests/finalizer stage, current HEAD, push status, and manual action needed.
+11. After a successful rebase/finalizer, run a post-finalizer sanity check on the live checkout: local/origin counts are `0 0`, `upstream/main` is an ancestor of `HEAD`, the worktree is clean, and `hermes config check` is current. If `hermes config check` reports a schema update available, run `hermes config migrate`, sync the migrated runtime config into `brayan-personalization/runtime/` with `scripts/sync-brayan-personalization.py`, commit only the resulting allowed personalization snapshot paths, then rerun the skill-owned finalizer with `--apply` so the branch and fork preserve the migrated config. Do not hand-edit `_config_version`.
+12. Update the workflow doc or `_meta/log.md` only for meaningful workflow changes, conflict resolution notes, or persistent lessons.
+13. Final response should be concise: failure stage, fix, tests/finalizer stage, current HEAD, push status, and manual action needed.
 
 ## Finalizer script for exception-agent repairs
 
