@@ -43,6 +43,8 @@ Append only strong reusable recommendations to `~/personal_vault/queries/topic-r
 
 ## Run procedure
 1. After the required reads, check whether today's daily review exists under `~/personal_vault/daily/YYYY-MM-DD.md`; if present, use it as the pressure/priority signal so recommendations reflect current deadlines and blockers rather than repeating older sets.
+   - If today's daily review does not exist, do not stall or invent it. Use the latest available daily review plus current dashboards/registers/workspace status files as the pressure signal, and explicitly mention that fallback in the recommendation delta if writing a durable set.
+   - When a previously urgent opportunity/resource deadline has passed since the latest daily review, pivot from countdown/submit language to final-state classification (`submitted`, `skipped/no-submission`, `unknown`, or `user-status-needed`) unless there is explicit evidence of manual submission.
 2. Read any directly relevant project/opportunity notes for candidate recommendations before writing, especially P0/P1 items, deadline-driven sprints, and newly created creative/build labs.
 3. If adding a durable recommendation set, update the `updated:` date in `queries/topic-recommendations.md` and append a concise entry to `~/personal_vault/_meta/log.md`.
 4. Verify the new set by searching for the date/slug and reading the changed section.
