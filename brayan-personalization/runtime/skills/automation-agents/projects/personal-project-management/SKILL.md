@@ -106,6 +106,7 @@ PROJECT_REOPEN.md + project README + PROJECT_STATUS.md + PROJECT_CHANGELOG.md + 
 - Do not process more than the assigned project in independent sessions.
 - Do not put code repos or bulky artifacts inside the vault.
 - Do not create a workspace for `seed` projects.
+- Active non-coding projects can still need an external workspace when they produce living artifacts such as spreadsheets, CSV mirrors, exports, scripts, or generated reports. Keep those artifacts under `/home/brayan/projects/<slug>/` and link them from the vault project README rather than storing bulky/editable operational files directly in the vault.
 - Preserve Web Friction Interrupter as `area: personal` unless Brayan explicitly changes it.
 
 ## Deterministic helpers
