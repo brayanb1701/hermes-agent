@@ -148,6 +148,7 @@ compression:
   hygiene_hard_message_limit: 400
   protect_first_n: 3
   abort_on_summary_failure: false
+  codex_gpt55_autoraise: true
 prompt_caching:
   cache_ttl: 5m
 openrouter:
@@ -561,6 +562,7 @@ onboarding:
   seen:
     busy_input_prompt: true
     tool_progress_prompt: true
+  profile_build: ask
 updates:
   pre_update_backup: false
   backup_keep: 5
@@ -587,7 +589,7 @@ secrets:
 paste_collapse_threshold: 5
 paste_collapse_threshold_fallback: 0
 paste_collapse_char_threshold: 2000
-_config_version: 27
+_config_version: 28
 notes_intake:
   enabled: true
   vision_provider: main
