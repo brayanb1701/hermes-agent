@@ -287,6 +287,33 @@ def choose_base_ref(commands: list[dict[str, Any]]) -> str | None:
     if is_ancestor(remote_target, live_head, cwd=LIVE_REPO):
         return live_head
 
+    # A successful prior isolated rebase/push can leave the live checkout's
+    # branch ref on the pre-rebase commits while origin contains patch-equivalent
+    # rebased versions of the same local changes. In that case, choosing origin
+    # preserves the live changes without replaying stale duplicate commits.
+    live_cherry_cmd = ["git", "cherry", "-v", remote_target, "HEAD"]
+    live_cherry_proc = subprocess.run(
+        live_cherry_cmd,
+        cwd=LIVE_REPO,
+        text=True,
+        capture_output=True,
+        check=False,
+        env={**os.environ, "NO_COLOR": "1", "GIT_EDITOR": "true", "GIT_SEQUENCE_EDITOR": "true"},
+    )
+    commands.append(
+        {
+            "cmd": live_cherry_cmd,
+            "cwd": str(LIVE_REPO),
+            "returncode": live_cherry_proc.returncode,
+            "stdout": redact(live_cherry_proc.stdout),
+            "stderr": redact(live_cherry_proc.stderr),
+        }
+    )
+    if live_cherry_proc.returncode == 0:
+        live_cherry_lines = [line for line in live_cherry_proc.stdout.splitlines() if line.strip()]
+        if live_cherry_lines and all(line.startswith("- ") for line in live_cherry_lines):
+            return remote_head
+
     fail(
         "preflight",
         f"Live {TARGET_BRANCH} and origin/{TARGET_BRANCH} have diverged. Refusing to choose a base automatically.",
