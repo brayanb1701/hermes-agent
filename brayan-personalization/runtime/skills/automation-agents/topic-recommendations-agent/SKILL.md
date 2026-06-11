@@ -36,6 +36,8 @@ When repeated daily/recommendation runs keep surfacing the same stale gates, che
 
 When a time-boxed resource window has passed (for example expired compute credits), do not keep recommending launch/run-card execution as if the window were still open. Pivot the recommendation to final-state classification (spent/skipped/unknown), cognitive-leak cleanup in the decision register/dashboard, and the nearest replacement leverage path if one exists (such as a still-live compute grant or proof-bundle opportunity).
 
+When a prior recommendation’s setup artifact has been completed since the last durable set, explicitly pivot to the next evidence-producing action instead of repeating the old setup recommendation. Examples: if a project spec was previously blank and is now locked/synced, recommend launching the first run and logging verified results; if a packet was previously missing and is now drafted, recommend review/submission/final-state evidence; if a blocker became Brayan-only, name the smallest artifact Darwin can still produce without inventing user decisions.
+
 ## Quality bar
 Prefer topics that compound Brayan's skill, agency, earning potential, or durable knowledge. Avoid random trivia.
 
