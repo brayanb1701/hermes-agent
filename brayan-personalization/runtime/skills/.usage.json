@@ -55,25 +55,25 @@
     "archived_at": null,
     "created_at": "2026-04-30T08:11:06.973711+00:00",
     "last_patched_at": "2026-06-03T14:19:18.546534+00:00",
-    "last_used_at": "2026-06-16T14:00:30.204314+00:00",
-    "last_viewed_at": "2026-06-16T14:00:30.202220+00:00",
+    "last_used_at": "2026-06-17T14:00:49.122967+00:00",
+    "last_viewed_at": "2026-06-17T14:00:49.119303+00:00",
     "patch_count": 1,
     "pinned": false,
     "state": "active",
-    "use_count": 66,
-    "view_count": 24
+    "use_count": 68,
+    "view_count": 25
   },
   "decision-reminders-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:11:07.416991+00:00",
     "last_patched_at": "2026-06-07T17:04:20.545895+00:00",
-    "last_used_at": "2026-06-15T22:00:25.502981+00:00",
-    "last_viewed_at": "2026-06-15T22:00:25.501233+00:00",
+    "last_used_at": "2026-06-16T22:00:35.898766+00:00",
+    "last_viewed_at": "2026-06-16T22:00:35.894770+00:00",
     "patch_count": 1,
     "pinned": false,
     "state": "active",
-    "use_count": 111,
-    "view_count": 37
+    "use_count": 115,
+    "view_count": 39
   },
   "file-defined-hermes-agents": {
     "archived_at": null,
@@ -216,13 +216,13 @@
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.168633+00:00",
     "last_patched_at": "2026-05-19T05:10:20.527309+00:00",
-    "last_used_at": "2026-06-16T14:00:30.208390+00:00",
-    "last_viewed_at": "2026-06-16T14:00:30.206727+00:00",
+    "last_used_at": "2026-06-17T14:00:49.120941+00:00",
+    "last_viewed_at": "2026-06-17T14:00:49.107012+00:00",
     "patch_count": 30,
     "pinned": false,
     "state": "active",
-    "use_count": 405,
-    "view_count": 179
+    "use_count": 411,
+    "view_count": 182
   },
   "subagent-driven-development": {
     "archived_at": null,
