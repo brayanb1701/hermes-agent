@@ -30,13 +30,13 @@
     "created_at": "2026-05-24T16:45:25.299885+00:00",
     "created_by": null,
     "last_patched_at": null,
-    "last_used_at": "2026-06-15T16:45:32.585942+00:00",
-    "last_viewed_at": "2026-06-15T16:45:32.584169+00:00",
+    "last_used_at": "2026-06-17T16:46:06.811882+00:00",
+    "last_viewed_at": "2026-06-17T16:46:06.810168+00:00",
     "patch_count": 0,
     "pinned": false,
     "state": "active",
-    "use_count": 22,
-    "view_count": 22
+    "use_count": 25,
+    "view_count": 25
   },
   "codex": {
     "archived_at": null,
@@ -55,25 +55,25 @@
     "archived_at": null,
     "created_at": "2026-04-30T08:11:06.973711+00:00",
     "last_patched_at": "2026-06-03T14:19:18.546534+00:00",
-    "last_used_at": "2026-06-17T14:00:49.122967+00:00",
-    "last_viewed_at": "2026-06-17T14:00:49.119303+00:00",
+    "last_used_at": "2026-06-18T14:00:20.880641+00:00",
+    "last_viewed_at": "2026-06-18T14:00:20.878704+00:00",
     "patch_count": 1,
     "pinned": false,
     "state": "active",
-    "use_count": 68,
-    "view_count": 25
+    "use_count": 70,
+    "view_count": 26
   },
   "decision-reminders-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:11:07.416991+00:00",
     "last_patched_at": "2026-06-07T17:04:20.545895+00:00",
-    "last_used_at": "2026-06-16T22:00:35.898766+00:00",
-    "last_viewed_at": "2026-06-16T22:00:35.894770+00:00",
+    "last_used_at": "2026-06-17T22:01:45.383197+00:00",
+    "last_viewed_at": "2026-06-17T22:01:45.381198+00:00",
     "patch_count": 1,
     "pinned": false,
     "state": "active",
-    "use_count": 115,
-    "view_count": 39
+    "use_count": 119,
+    "view_count": 41
   },
   "file-defined-hermes-agents": {
     "archived_at": null,
@@ -92,24 +92,24 @@
     "created_at": "2026-06-05T14:30:17.201425+00:00",
     "created_by": null,
     "last_patched_at": null,
-    "last_used_at": "2026-06-15T14:30:17.180243+00:00",
+    "last_used_at": "2026-06-18T14:30:11.289921+00:00",
     "last_viewed_at": null,
     "patch_count": 0,
     "pinned": false,
     "state": "active",
-    "use_count": 5,
+    "use_count": 6,
     "view_count": 0
   },
   "hermes-upstream-rebase-ci-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.090129+00:00",
     "last_patched_at": "2026-06-15T14:34:57.620331+00:00",
-    "last_used_at": "2026-06-15T14:30:17.248069+00:00",
+    "last_used_at": "2026-06-18T14:30:11.361402+00:00",
     "last_viewed_at": "2026-06-10T14:36:29.746680+00:00",
     "patch_count": 31,
     "pinned": false,
     "state": "active",
-    "use_count": 30,
+    "use_count": 31,
     "view_count": 14
   },
   "inbox-triage-agent": {
@@ -204,25 +204,25 @@
     "created_at": "2026-05-19T05:34:11.612089+00:00",
     "created_by": null,
     "last_patched_at": "2026-06-05T03:50:08.216521+00:00",
-    "last_used_at": "2026-06-15T16:45:13.865781+00:00",
+    "last_used_at": "2026-06-17T16:45:38.221734+00:00",
     "last_viewed_at": "2026-06-05T05:21:31.471107+00:00",
     "patch_count": 2,
     "pinned": false,
     "state": "active",
-    "use_count": 52,
+    "use_count": 56,
     "view_count": 6
   },
   "personal-vault-ops": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.168633+00:00",
     "last_patched_at": "2026-05-19T05:10:20.527309+00:00",
-    "last_used_at": "2026-06-17T14:00:49.120941+00:00",
-    "last_viewed_at": "2026-06-17T14:00:49.107012+00:00",
+    "last_used_at": "2026-06-18T14:30:11.338059+00:00",
+    "last_viewed_at": "2026-06-18T14:00:21.925408+00:00",
     "patch_count": 30,
     "pinned": false,
     "state": "active",
-    "use_count": 411,
-    "view_count": 182
+    "use_count": 422,
+    "view_count": 185
   },
   "subagent-driven-development": {
     "archived_at": null,
@@ -242,12 +242,12 @@
     "created_at": "2026-06-05T14:30:17.224391+00:00",
     "created_by": null,
     "last_patched_at": null,
-    "last_used_at": "2026-06-15T14:30:17.203657+00:00",
+    "last_used_at": "2026-06-18T14:30:11.315191+00:00",
     "last_viewed_at": null,
     "patch_count": 0,
     "pinned": false,
     "state": "active",
-    "use_count": 5,
+    "use_count": 6,
     "view_count": 0
   },
   "topic-recommendations-agent": {
