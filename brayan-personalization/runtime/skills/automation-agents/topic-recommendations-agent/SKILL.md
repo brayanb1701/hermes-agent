@@ -38,6 +38,8 @@ When a time-boxed resource window has passed (for example expired compute credit
 
 When a prior recommendation’s setup artifact has been completed since the last durable set, explicitly pivot to the next evidence-producing action instead of repeating the old setup recommendation. Examples: if a project spec was previously blank and is now locked/synced, recommend launching the first run and logging verified results; if a packet was previously missing and is now drafted, recommend review/submission/final-state evidence; if a blocker became Brayan-only, name the smallest artifact Darwin can still produce without inventing user decisions.
 
+When several days pass with the same ready-but-unexecuted artifact, do not force novelty just to vary the recommendation. Treat unchanged execution starvation as a material signal when it is backed by current daily review/workspace evidence. The recommendation should become sharper and more binary: run it, record the exact blocker, downgrade/pause it, or switch to the named fallback lane. Phrase this as “evidence-or-remove-from-active-pressure”/“run-or-downgrade” rather than another broad planning reminder.
+
 ## Quality bar
 Prefer topics that compound Brayan's skill, agency, earning potential, or durable knowledge. Avoid random trivia.
 
