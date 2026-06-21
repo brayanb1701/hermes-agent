@@ -33,7 +33,8 @@ Read, at minimum:
 - Prefer leverage and bottleneck removal over busywork.
 - Do not go silent just because the inbox is empty; stale dashboards, expired active-looking opportunities, or unresolved blocking decisions are meaningful reportable signals.
 - Treat board trust as a first-class daily-review concern: if dashboards or pending decisions carry expired active-looking gates, call out final-state / `user-status-needed` cleanup as a priority before adding new work.
-- If meaningful structural changes are made, update `_meta/log.md`.
+- Routine daily-note creation is not a structural vault change; do not update `_meta/log.md` just because a daily review note was written. Only update `_meta/log.md` when the review changes schema, dashboards, workflows, indexes, or other durable structure.
+- After writing the daily note, verify it by rereading the file and checking that the key signal(s) and recommended next action made it into the note before producing the briefing.
 
 ## Output
 Send Brayan a concise briefing with:
