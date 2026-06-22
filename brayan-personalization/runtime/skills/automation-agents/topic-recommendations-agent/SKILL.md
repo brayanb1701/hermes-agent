@@ -40,6 +40,8 @@ When a prior recommendation’s setup artifact has been completed since the last
 
 When several days pass with the same ready-but-unexecuted artifact, do not force novelty just to vary the recommendation. Treat unchanged execution starvation as a material signal when it is backed by current daily review/workspace evidence. The recommendation should become sharper and more binary: run it, record the exact blocker, downgrade/pause it, or switch to the named fallback lane. Phrase this as “evidence-or-remove-from-active-pressure”/“run-or-downgrade” rather than another broad planning reminder.
 
+When the repeated ready-but-unexecuted artifact has a documented, low-risk preflight/checklist, run only the non-invasive verification steps before writing the recommendation if cron permissions and time allow. Use the result to sharpen the delta: if preflight passes, say the setup excuse is gone and recommend the actual run/blocker artifact; if preflight fails, recommend recording that exact blocker or switching to the named fallback. Do not launch interactive or side-effectful execution from this cron unless the cron prompt explicitly authorizes it.
+
 ## Quality bar
 Prefer topics that compound Brayan's skill, agency, earning potential, or durable knowledge. Avoid random trivia.
 

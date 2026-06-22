@@ -247,6 +247,82 @@ def ensure_clean_worktree_slot(commands: list[dict[str, Any]]) -> bool:
     return True
 
 
+def remote_preserves_telegram_pending_updates(remote_target: str, commands: list[dict[str, Any]]) -> bool:
+    """Known-safe equivalence check for the Telegram polling preservation fix.
+
+    Upstream refactors moved the Telegram adapter from gateway/platforms/telegram.py
+    into plugins/platforms/telegram/adapter.py. That makes git cherry report the
+    old live commit as non-patch-equivalent even when origin already carries the
+    same behavioral fix in the new file layout. Only treat origin as equivalent
+    when both the behavior and its regression test are present on the remote.
+    """
+    subject = "fix: preserve Telegram updates during polling startup"
+    same_subject = git(
+        "log",
+        "--format=%H",
+        "--max-count=1",
+        "--fixed-strings",
+        f"--grep={subject}",
+        remote_target,
+        cwd=LIVE_REPO,
+    )
+    commands.append(same_subject)
+    if same_subject["returncode"] != 0 or not stdout(same_subject):
+        return False
+
+    grep_code = git(
+        "grep",
+        "-n",
+        "drop_pending_updates=False",
+        remote_target,
+        "--",
+        "gateway/platforms/telegram.py",
+        "plugins/platforms/telegram/adapter.py",
+        cwd=LIVE_REPO,
+    )
+    commands.append(grep_code)
+    if grep_code["returncode"] != 0 or "drop_pending_updates=False" not in str(grep_code.get("stdout", "")):
+        return False
+
+    grep_test = git(
+        "grep",
+        "-n",
+        "test_polling_connect_preserves_pending_updates",
+        remote_target,
+        "--",
+        "tests/gateway/test_telegram_conflict.py",
+        "tests/gateway/test_telegram_platform.py",
+        cwd=LIVE_REPO,
+    )
+    commands.append(grep_test)
+    return grep_test["returncode"] == 0 and "test_polling_connect_preserves_pending_updates" in str(grep_test.get("stdout", ""))
+
+
+def known_live_plus_commits_equivalent_on_origin(
+    live_cherry_lines: list[str], remote_target: str, commands: list[dict[str, Any]]
+) -> bool:
+    """Return True when every live-only '+' commit is a known-safe origin equivalent."""
+    plus_subjects: list[str] = []
+    for line in live_cherry_lines:
+        if not line.startswith("+ "):
+            continue
+        parts = line.split(" ", 2)
+        if len(parts) < 3:
+            return False
+        plus_subjects.append(parts[2])
+
+    if not plus_subjects:
+        return False
+
+    for subject in plus_subjects:
+        if subject == "fix: preserve Telegram updates during polling startup":
+            if not remote_preserves_telegram_pending_updates(remote_target, commands):
+                return False
+            continue
+        return False
+    return True
+
+
 def choose_base_ref(commands: list[dict[str, Any]]) -> str | None:
     branch = stdout(git("branch", "--show-current", cwd=LIVE_REPO))
     if branch != TARGET_BRANCH:
@@ -312,6 +388,8 @@ def choose_base_ref(commands: list[dict[str, Any]]) -> str | None:
     if live_cherry_proc.returncode == 0:
         live_cherry_lines = [line for line in live_cherry_proc.stdout.splitlines() if line.strip()]
         if live_cherry_lines and all(line.startswith("- ") for line in live_cherry_lines):
+            return remote_head
+        if live_cherry_lines and known_live_plus_commits_equivalent_on_origin(live_cherry_lines, remote_target, commands):
             return remote_head
 
     fail(
