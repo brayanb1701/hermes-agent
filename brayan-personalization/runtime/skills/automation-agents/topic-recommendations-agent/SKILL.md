@@ -42,6 +42,8 @@ When several days pass with the same ready-but-unexecuted artifact, do not force
 
 When the repeated ready-but-unexecuted artifact has a documented, low-risk preflight/checklist, run only the non-invasive verification steps before writing the recommendation if cron permissions and time allow. Use the result to sharpen the delta: if preflight passes, say the setup excuse is gone and recommend the actual run/blocker artifact; if preflight fails, recommend recording that exact blocker or switching to the named fallback. Do not launch interactive or side-effectful execution from this cron unless the cron prompt explicitly authorizes it.
 
+When a low-risk preflight has passed repeatedly across consecutive recommendation/daily-review runs but the artifact still has no run evidence or logged blocker, escalate the recommendation from another "run it" reminder into an **evidence-or-demotion** frame: produce the run/blocker now, or remove/pause/downgrade that item from active pressure until someone is ready to execute it. Name the active-pressure leak explicitly so future runs do not normalize repeated setup verification as progress.
+
 ## Quality bar
 Prefer topics that compound Brayan's skill, agency, earning potential, or durable knowledge. Avoid random trivia.
 
