@@ -1,6 +1,6 @@
 {
   "_portable_note": "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by scripts/sync-brayan-personalization.py. Secrets are not included.",
-  "updated_at": "2026-06-23T14:30:18+00:00",
+  "updated_at": "2026-06-24T14:30:19+00:00",
   "jobs": [
     {
       "id": "1e387ba82595",
@@ -73,7 +73,8 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null
+      "origin": null,
+      "fire_claim": null
     },
     {
       "id": "b5b791cd972b",
@@ -114,7 +115,8 @@
         "file",
         "terminal"
       ],
-      "no_agent": false
+      "no_agent": false,
+      "fire_claim": null
     },
     {
       "id": "65b0c66d08ee",
@@ -150,7 +152,8 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null
+      "origin": null,
+      "fire_claim": null
     },
     {
       "id": "edfaeb3aed5d",
@@ -186,7 +189,8 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null
+      "origin": null,
+      "fire_claim": null
     },
     {
       "id": "92663af3d092",
@@ -224,7 +228,8 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "local",
-      "origin": null
+      "origin": null,
+      "fire_claim": null
     },
     {
       "id": "64be0631db63",
@@ -452,7 +457,8 @@
         "file",
         "terminal"
       ],
-      "workdir": null
+      "workdir": null,
+      "fire_claim": null
     },
     {
       "id": "d93ad4e6be8b",
@@ -495,7 +501,8 @@
         "file",
         "terminal"
       ],
-      "workdir": null
+      "workdir": null,
+      "fire_claim": null
     }
   ]
 }
