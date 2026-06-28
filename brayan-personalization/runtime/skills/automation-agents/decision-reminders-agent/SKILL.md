@@ -32,3 +32,11 @@ Produce a concise reminder summary with:
 - why it matters
 - default recommendation, if clear
 - what Brayan needs to decide next
+
+## Verification after metadata edits
+When the run updates `decisions/pending.md` reminder metadata, perform focused ad-hoc verification before finalizing:
+- Check that only surfaced reminders had `last_reminder_generated` advanced and that unrelated/expired/non-surfaced items stayed untouched.
+- Check the frontmatter `updated` date when it was changed.
+- If no canonical test exists, create a temporary verifier under `/tmp` with a `hermes-verify-` filename prefix, run it, and report it explicitly as ad-hoc verification rather than suite green.
+- Prefer making the verifier clean up its own temp file at the end of execution; direct shell deletion of `/tmp` files can hit cron approval policy.
+- If cleanup is attempted, confirm whether the temp verifier is absent or report the concrete cleanup blocker.
