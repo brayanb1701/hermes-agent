@@ -35,6 +35,7 @@ Read, at minimum:
 - Treat board trust as a first-class daily-review concern: if dashboards or pending decisions carry expired active-looking gates, call out final-state / `user-status-needed` cleanup as a priority before adding new work.
 - Routine daily-note creation is not a structural vault change; do not update `_meta/log.md` just because a daily review note was written. Only update `_meta/log.md` when the review changes schema, dashboards, workflows, indexes, or other durable structure.
 - After writing the daily note, verify it by rereading the file and checking that the key signal(s) and recommended next action made it into the note before producing the briefing.
+- If a post-write verification guard requests fresh evidence for the changed daily note, create a focused temporary verifier under `/tmp` using an OS-safe `tempfile` path with a `hermes-verify-` prefix, run it against the note, clean it up, and report it explicitly as ad-hoc verification rather than full suite/lint/build green. Avoid leaving fixed-name verifier scripts in `/tmp` as changed artifacts.
 
 ## Output
 Send Brayan a concise briefing with:
