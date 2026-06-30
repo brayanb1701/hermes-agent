@@ -103,10 +103,10 @@
   "hermes-upstream-rebase-ci-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.090129+00:00",
-    "last_patched_at": "2026-06-26T14:36:57.371563+00:00",
+    "last_patched_at": "2026-06-30T14:37:21.058929+00:00",
     "last_used_at": "2026-06-30T14:30:54.985872+00:00",
     "last_viewed_at": "2026-06-10T14:36:29.746680+00:00",
-    "patch_count": 37,
+    "patch_count": 38,
     "pinned": false,
     "state": "active",
     "use_count": 35,
