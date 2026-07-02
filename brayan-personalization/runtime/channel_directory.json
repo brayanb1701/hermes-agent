@@ -1,17 +1,11 @@
 {
-  "updated_at": "2026-07-01T10:45:56.363578",
+  "updated_at": "2026-07-02T09:29:32.066794",
   "platforms": {
     "telegram": [
       {
         "id": "875925495",
         "name": "Brayan xd",
         "type": "dm",
-        "thread_id": null
-      },
-      {
-        "id": "-1003960601334",
-        "name": "Anything Inbox",
-        "type": "group",
         "thread_id": null
       }
     ],
