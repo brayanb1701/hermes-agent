@@ -92,24 +92,24 @@
     "created_at": "2026-06-05T14:30:17.201425+00:00",
     "created_by": null,
     "last_patched_at": null,
-    "last_used_at": "2026-07-01T15:46:07.832862+00:00",
+    "last_used_at": "2026-07-03T14:30:59.818802+00:00",
     "last_viewed_at": null,
     "patch_count": 0,
     "pinned": false,
     "state": "active",
-    "use_count": 11,
+    "use_count": 12,
     "view_count": 0
   },
   "hermes-upstream-rebase-ci-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.090129+00:00",
     "last_patched_at": "2026-07-01T15:52:30.494565+00:00",
-    "last_used_at": "2026-07-01T15:46:07.906043+00:00",
+    "last_used_at": "2026-07-03T14:30:59.897232+00:00",
     "last_viewed_at": "2026-06-10T14:36:29.746680+00:00",
     "patch_count": 40,
     "pinned": false,
     "state": "active",
-    "use_count": 36,
+    "use_count": 37,
     "view_count": 14
   },
   "inbox-triage-agent": {
@@ -216,12 +216,12 @@
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.168633+00:00",
     "last_patched_at": "2026-05-19T05:10:20.527309+00:00",
-    "last_used_at": "2026-07-03T14:03:52.244047+00:00",
+    "last_used_at": "2026-07-03T14:30:59.873910+00:00",
     "last_viewed_at": "2026-07-03T00:00:55.362028+00:00",
     "patch_count": 30,
     "pinned": false,
     "state": "active",
-    "use_count": 531,
+    "use_count": 532,
     "view_count": 206
   },
   "subagent-driven-development": {
@@ -242,12 +242,12 @@
     "created_at": "2026-06-05T14:30:17.224391+00:00",
     "created_by": null,
     "last_patched_at": null,
-    "last_used_at": "2026-07-01T15:46:07.862343+00:00",
+    "last_used_at": "2026-07-03T14:30:59.851441+00:00",
     "last_viewed_at": null,
     "patch_count": 0,
     "pinned": false,
     "state": "active",
-    "use_count": 11,
+    "use_count": 12,
     "view_count": 0
   },
   "topic-recommendations-agent": {
