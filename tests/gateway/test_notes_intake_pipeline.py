@@ -317,6 +317,20 @@ def test_clean_ocr_text_strips_generation_artifacts():
     assert cleaned == "Hello world"
 
 
+def test_make_vision_messages_sniffs_mime_type_from_image_bytes(tmp_path):
+    from gateway import notes_intake
+
+    from PIL import Image
+
+    image = tmp_path / "capture.bin"
+    Image.new("RGB", (1, 1), color="white").save(image, format="PNG")
+
+    messages = notes_intake._make_vision_messages("describe", str(image))
+
+    image_url = messages[0]["content"][1]["image_url"]["url"]
+    assert image_url.startswith("data:image/png;base64,")
+
+
 @pytest.mark.asyncio
 async def test_transcribe_note_image_uses_glm_ocr_first_when_it_succeeds():
     from gateway import notes_intake

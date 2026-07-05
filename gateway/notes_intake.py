@@ -25,6 +25,21 @@ _JSON_BLOCK_RE = re.compile(r"\{.*\}", re.S)
 _OCR_MIN_CONFIDENCE = 0.55
 
 
+def _detect_image_mime_type(image_path: Path) -> Optional[str]:
+    """Return an image MIME type based on file bytes, or None if unsupported."""
+    try:
+        data = image_path.read_bytes()
+    except Exception as exc:
+        logger.warning("Could not read notes-intake image %s: %s", image_path, exc)
+        return None
+    sniffed = _detect_image_mime_type_from_bytes(data)
+    if sniffed is not None:
+        return sniffed
+    if b"<svg" in data[:4096].lower():
+        return "image/svg+xml"
+    return None
+
+
 @dataclass
 class NotesIntakeSettings:
     enabled: bool = True
@@ -269,10 +284,7 @@ def _clean_ocr_text(text: str) -> str:
 
 def _make_vision_messages(prompt: str, image_path: str) -> list[dict[str, Any]]:
     path = Path(os.path.expanduser(image_path)).resolve()
-    try:
-        mime_type = _detect_image_mime_type_from_bytes(path.read_bytes())
-    except OSError:
-        mime_type = None
+    mime_type = _detect_image_mime_type(path)
     if not mime_type:
         raise NotesIntakeError(f"Unsupported image file for notes intake: {image_path}")
     data_url = _image_to_base64_data_url(path, mime_type=mime_type)
