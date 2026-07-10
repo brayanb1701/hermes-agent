@@ -298,6 +298,64 @@ def remote_preserves_telegram_pending_updates(remote_target: str, commands: list
     return grep_test["returncode"] == 0 and "test_polling_connect_preserves_pending_updates" in str(grep_test.get("stdout", ""))
 
 
+def remote_preserves_notes_intake_isolation(remote_target: str, commands: list[dict[str, Any]]) -> bool:
+    """Known-safe equivalence check for the Anything Inbox / cron wake-gate commit.
+
+    Repeated rebases rewrite the original notes-intake feature commit onto newer
+    upstream gateway/cron code, so the old live commit can appear as a '+' in
+    ``git cherry`` even when origin already carries the same behavior. Treat it
+    as equivalent only when the rebased origin branch has the same subject plus
+    the source and regression-test anchors that protect the behavior.
+    """
+    subject = "feat: add notes intake isolation and cron wake gate"
+    same_subject = git(
+        "log",
+        "--format=%H",
+        "--max-count=1",
+        "--fixed-strings",
+        f"--grep={subject}",
+        remote_target,
+        cwd=LIVE_REPO,
+    )
+    commands.append(same_subject)
+    if same_subject["returncode"] != 0 or not stdout(same_subject):
+        return False
+
+    required_greps = [
+        (
+            "notes-intake helper",
+            "enrich_anything_inbox_image",
+            ("gateway/notes_intake.py",),
+        ),
+        (
+            "Anything Inbox source routing",
+            "is_anything_inbox_source",
+            ("gateway/run.py",),
+        ),
+        (
+            "wake-gate parser",
+            "ready_count",
+            ("cron/scheduler.py",),
+        ),
+        (
+            "vision MIME regression",
+            "test_make_vision_messages_sniffs_mime_type_from_image_bytes",
+            ("tests/gateway/test_notes_intake_pipeline.py",),
+        ),
+        (
+            "wake-gate regression",
+            "test_ready_count_zero_skips_agent_for_pretty_json",
+            ("tests/cron/test_cron_script.py",),
+        ),
+    ]
+    for _label, pattern, paths in required_greps:
+        grep = git("grep", "-n", pattern, remote_target, "--", *paths, cwd=LIVE_REPO)
+        commands.append(grep)
+        if grep["returncode"] != 0 or pattern not in str(grep.get("stdout", "")):
+            return False
+    return True
+
+
 def known_live_plus_commits_equivalent_on_origin(
     live_cherry_lines: list[str], remote_target: str, commands: list[dict[str, Any]]
 ) -> bool:
@@ -317,6 +375,10 @@ def known_live_plus_commits_equivalent_on_origin(
     for subject in plus_subjects:
         if subject == "fix: preserve Telegram updates during polling startup":
             if not remote_preserves_telegram_pending_updates(remote_target, commands):
+                return False
+            continue
+        if subject == "feat: add notes intake isolation and cron wake gate":
+            if not remote_preserves_notes_intake_isolation(remote_target, commands):
                 return False
             continue
         return False
