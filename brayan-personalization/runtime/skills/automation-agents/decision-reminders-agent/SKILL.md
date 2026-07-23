@@ -33,6 +33,12 @@ Produce a concise reminder summary with:
 - default recommendation, if clear
 - what Brayan needs to decide next
 
+## Editing reminder metadata
+When advancing reminder metadata in `decisions/pending.md`, patch conservatively:
+- Reread the current file immediately before editing if earlier tool output or git diff suggests concurrent/pre-existing changes.
+- Prefer unique per-decision block replacements for `last_reminder_generated` updates; repeated metadata keys/dates make broad multi-hunk patches fragile.
+- Do not rewrite or normalize unrelated decision entries while doing a reminder run. Preserve pre-existing stale/dirty state unless the surfaced reminder requires a grounded metadata update.
+
 ## Verification after metadata edits
 When the run updates `decisions/pending.md` reminder metadata, perform focused ad-hoc verification before finalizing:
 - Check that only surfaced reminders had `last_reminder_generated` advanced and that unrelated/expired/non-surfaced items stayed untouched.
