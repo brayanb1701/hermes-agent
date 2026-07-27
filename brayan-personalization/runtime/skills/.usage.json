@@ -55,25 +55,25 @@
     "archived_at": null,
     "created_at": "2026-04-30T08:11:06.973711+00:00",
     "last_patched_at": "2026-06-27T14:34:16.937218+00:00",
-    "last_used_at": "2026-07-26T15:02:40.988073+00:00",
-    "last_viewed_at": "2026-07-24T14:05:07.643319+00:00",
+    "last_used_at": "2026-07-27T14:00:43.217121+00:00",
+    "last_viewed_at": "2026-07-27T14:00:43.215885+00:00",
     "patch_count": 3,
     "pinned": false,
     "state": "active",
-    "use_count": 124,
-    "view_count": 42
+    "use_count": 126,
+    "view_count": 43
   },
   "decision-reminders-agent": {
     "archived_at": null,
     "created_at": "2026-04-30T08:11:07.416991+00:00",
     "last_patched_at": "2026-07-22T17:04:54.395648+00:00",
-    "last_used_at": "2026-07-25T23:19:40.940162+00:00",
-    "last_viewed_at": "2026-07-25T23:19:40.937739+00:00",
+    "last_used_at": "2026-07-26T22:01:01.415634+00:00",
+    "last_viewed_at": "2026-07-26T22:01:01.414208+00:00",
     "patch_count": 6,
     "pinned": false,
     "state": "active",
-    "use_count": 223,
-    "view_count": 76
+    "use_count": 226,
+    "view_count": 77
   },
   "file-defined-hermes-agents": {
     "archived_at": null,
@@ -216,13 +216,13 @@
     "archived_at": null,
     "created_at": "2026-04-30T08:07:22.168633+00:00",
     "last_patched_at": "2026-05-19T05:10:20.527309+00:00",
-    "last_used_at": "2026-07-26T15:02:41.397741+00:00",
-    "last_viewed_at": "2026-07-26T00:00:35.617503+00:00",
+    "last_used_at": "2026-07-27T14:00:43.210939+00:00",
+    "last_viewed_at": "2026-07-27T14:00:43.209557+00:00",
     "patch_count": 30,
     "pinned": false,
     "state": "active",
-    "use_count": 691,
-    "view_count": 237
+    "use_count": 698,
+    "view_count": 240
   },
   "scheduled-agent-verification": {
     "archived_at": null,
@@ -280,13 +280,13 @@
     "archived_at": null,
     "created_at": "2026-04-30T08:11:10.877619+00:00",
     "last_patched_at": "2026-07-21T00:07:41.604755+00:00",
-    "last_used_at": "2026-07-26T00:00:35.616188+00:00",
-    "last_viewed_at": "2026-07-26T00:00:35.612679+00:00",
+    "last_used_at": "2026-07-27T04:00:30.208142+00:00",
+    "last_viewed_at": "2026-07-27T04:00:30.206586+00:00",
     "patch_count": 23,
     "pinned": false,
     "state": "active",
-    "use_count": 119,
-    "view_count": 50
+    "use_count": 121,
+    "view_count": 51
   },
   "vault-structure-auditor-agent": {
     "archived_at": null,
