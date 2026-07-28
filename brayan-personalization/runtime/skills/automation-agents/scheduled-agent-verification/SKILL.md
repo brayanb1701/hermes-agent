@@ -27,6 +27,8 @@ This is an umbrella execution/verification skill. It does **not** replace task-s
 3. If editing a vault file, check whether the target file already has dirty/pre-existing changes when the run context suggests possible concurrent automation.
 4. Select only items that are actually actionable, current, and blocking meaningful progress.
 5. For dated opportunities/resources, compare deadline against the current date before surfacing them; expired items should usually be cleanup/closeout decisions, not normal action reminders.
+6. In approval-sensitive cron contexts, keep selection/date-cadence checks lightweight: use `date`, required file reads, and conservative manual comparison when sufficient. Avoid `execute_code`, Python heredocs, or `python -c` merely to compute reminder ages; those can interrupt the run before the useful scoped edit/report work.
+7. For lightweight live API/JSON evidence checks, prefer an approval-friendly two-step pattern: fetch to an OS-safe temporary file under `/tmp` with a `hermes-` prefix, inspect the saved file with read-only tools/commands, then remove the temp file with a simple cleanup command such as `unlink <tmpfile>`. Do not pipe untrusted network output directly into an interpreter in an unattended cron run.
 
 ## When a blocker is missing from a register
 
