@@ -67,6 +67,7 @@ Verifier evidence should include:
 ## References
 
 - `references/decision-reminders-2026-07-25.md` — concrete decision-reminders cron example: dashboard-derived missing register item, scoped metadata update, and ad-hoc verifier evidence pattern.
+- `references/daily-review-current-source-probe-2026-07-29.md` — approval-friendly current-source API probe pattern for unattended daily reviews: fetch to temp file, inspect with read-only tools or `jq`, summarize evidence, and avoid network-to-interpreter pipelines.
 
 ## Final report
 
