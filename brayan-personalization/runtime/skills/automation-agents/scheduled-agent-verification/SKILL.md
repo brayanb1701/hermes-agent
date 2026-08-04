@@ -72,6 +72,7 @@ Verifier evidence should include:
 - `references/daily-review-current-source-probe-2026-07-29.md` — approval-friendly current-source API probe pattern for unattended daily reviews: fetch to temp file, inspect with read-only tools or `jq`, summarize evidence, and avoid network-to-interpreter pipelines.
 - `references/daily-review-approval-sensitive-probe-2026-07-30.md` — daily-review recovery pattern: decompose routine evidence gathering into read/search plus small `stat`/`git`/`wc`/`curl|jq` commands instead of arbitrary scripts in unattended cron runs.
 - `references/topic-recommendations-evidence-probe-2026-08-02.md` — topic-recommendations example: use written `/tmp/hermes-topic-*` or `/tmp/hermes-verify-*` helper scripts for mixed file/Codex/git/Workable evidence and cleanup; avoid inline Python heredocs or `tool | python -c` in unattended cron.
+- `references/topic-recommendations-evidence-probe-2026-08-03.md` — topic-recommendations example: daily-note anchored recommendation update, Codex/git/stat preflight, Workable `curl -o` then `jq`, self-cleaning verifier script, and approval-gated cleanup pitfalls.
 - `references/daily-review-approval-sensitive-probe-2026-08-03.md` — daily-review example: stat/read/search plus Codex/git probes, Workable `curl -o` then `jq`, and avoiding `| head` broken-pipe noise in unattended verification.
 
 ## Final report
