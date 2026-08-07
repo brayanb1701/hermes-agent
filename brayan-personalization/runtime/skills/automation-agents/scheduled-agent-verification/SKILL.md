@@ -75,6 +75,7 @@ Verifier evidence should include:
 - `references/topic-recommendations-evidence-probe-2026-08-03.md` — topic-recommendations example: daily-note anchored recommendation update, Codex/git/stat preflight, Workable `curl -o` then `jq`, self-cleaning verifier script, and approval-gated cleanup pitfalls.
 - `references/daily-review-approval-sensitive-probe-2026-08-03.md` — daily-review example: stat/read/search plus Codex/git probes, Workable `curl -o` then `jq`, and avoiding `| head` broken-pipe noise in unattended verification.
 - `references/topic-recommendations-workable-retry-2026-08-05.md` — topic-recommendations example: recover from a same-day Workable/Cloudflare `522` with a browser-header retry, written temp helper script, explicit evidence, and self-cleanup.
+- `references/daily-review-workable-probe-2026-08-07.md` — daily-review example: Workable `curl -o` then `jq` parsing after cron approval blocks for `execute_code`, Python heredocs/`-c`, network-to-interpreter pipes, and direct `/tmp` cleanup.
 
 ## Final report
 
