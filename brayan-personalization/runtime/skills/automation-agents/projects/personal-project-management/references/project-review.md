@@ -20,3 +20,5 @@ Choose one outcome: continue active, update next action, pause, request decision
 Do not auto-close or auto-pause solely because a project is stale.
 
 When continuing an active project after a cadence review, advance the review state coherently enough that `project_review_scan.py` will not relaunch the same stale item immediately: update the project README `last_meaningful_update`/`updated`, dashboard last-update row, workspace `PROJECT_STATUS.md`, and `PROJECT_CHANGELOG.md` `last_meaningful_update`/`next_review` unless there is a stronger reason to leave the project explicitly blocked for immediate user attention. Preserve the real blocker in notes; do not fabricate progress.
+
+Verification pitfall: `project_state_audit.py --dry-run` can still write a same-day `_meta/audits/*project-state-audit.md` report. For ad-hoc single-project reviews, remove that generated report after recording the audit output unless the task explicitly asks to preserve an audit artifact.
