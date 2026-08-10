@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-08-09T14:57:38+00:00",
+  "generated_at": "2026-08-10T14:30:47+00:00",
   "source_hermes_home": "/home/brayan/.hermes",
   "bundle_root": "brayan-personalization/runtime",
   "copied_dirs": {
     "agents": 14,
-    "skills": 754,
+    "skills": 719,
     "plugins": 3,
     "scripts": 9
   },
