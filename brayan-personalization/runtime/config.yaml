@@ -625,8 +625,6 @@ platform_toolsets:
     - file
     - image_gen
     - memory
-    - messaging
-    - rl
     - session_search
     - skills
     - terminal
@@ -643,9 +641,6 @@ platform_toolsets:
     - file
     - image_gen
     - memory
-    - messaging
-    - moa
-    - rl
     - session_search
     - skills
     - terminal
@@ -664,8 +659,6 @@ platform_toolsets:
     - file
     - image_gen
     - memory
-    - messaging
-    - rl
     - session_search
     - skills
     - terminal
