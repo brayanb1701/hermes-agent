@@ -1,11 +1,10 @@
 ---
 name: huggingface-hub
-description: "HuggingFace hf CLI: search/download/upload models, datasets."
-version: 1.0.1
+description: Hugging Face Hub CLI (hf) — search, download, and upload models and datasets, manage repos, query datasets with SQL, deploy inference endpoints, manage Spaces and buckets.
+version: 1.0.0
 author: Hugging Face
 license: MIT
 tags: [huggingface, hf, models, datasets, hub, mlops]
-platforms: [linux, macos, windows]
 ---
 
 # Hugging Face CLI (`hf`) Reference Guide
@@ -25,8 +24,8 @@ The `hf` command is the modern command-line interface for interacting with the H
 
 ### General Operations
 *   `hf download REPO_ID`: Download files from the Hub.
-*   `hf upload REPO_ID`: Upload files/folders (recommended for single-commit; also handles resumable uploads of large directories).
-*   `hf upload-large-folder REPO_ID LOCAL_PATH`: **[Deprecated]** — use `hf upload` instead.
+*   `hf upload REPO_ID`: Upload files/folders (recommended for single-commit).
+*   `hf upload-large-folder REPO_ID LOCAL_PATH`: Recommended for resumable uploads of large directories.
 *   `hf sync`: Sync files between a local directory and a bucket.
 *   `hf env` / `hf version`: View environment and version details.
 
@@ -50,7 +49,7 @@ The `hf` command is the modern command-line interface for interacting with the H
 *   **Datasets:** `hf datasets list`, `info`, and `parquet` (list parquet URLs).
 *   **SQL Queries:** `hf datasets sql SQL` — Execute raw SQL via DuckDB against dataset parquet URLs.
 *   **Models:** `hf models list` and `info`.
-*   **Papers:** `hf papers ls` — View daily papers.
+*   **Papers:** `hf papers list` — View daily papers.
 
 ### Discussions & Pull Requests (`hf discussions`)
 *   Manage the lifecycle of Hub contributions: `list`, `create`, `info`, `comment`, `close`, `reopen`, and `rename`.
