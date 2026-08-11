@@ -13,7 +13,7 @@
       "model": null,
       "provider": null,
       "base_url": null,
-      "script": null,
+      "script": "vault_generated_retention.py",
       "schedule": {
         "kind": "cron",
         "expr": "0 9 * * *",

@@ -47,7 +47,7 @@ Do not split them mentally into separate systems unless Brayan asks.
 - `opportunities/` — jobs, fellowships, grants, scholarships, challenges, bounties, funding leads, and co-located application materials; finished opportunities are registered in `opportunities/finished.md`.
 - `profile/` — canonical CV, bio, portfolio, and application profile sources.
 - `decisions/` — pending decisions and decision logs.
-- `daily/` — reviews and snapshots.
+- `daily/` — rolling operational reviews and snapshots; generated dated daily reviews retain only the newest five files.
 - `inbox/` — transient unprocessed manual files only; often empty.
 - `comparisons/` — side-by-side analyses when needed.
 
