@@ -25,7 +25,7 @@ Do not commit or push these personalization assets to `main`.
 
 The daily Hermes upstream CI for this setup should do this, in order:
 
-1. Verify the checkout is on `brayan/personal-hermes-customizations`.
+1. Verify the live checkout is clean. If an older/raw update moved it to `main`, use the remote personalization branch as the recovery base.
 2. Refuse to run during an in-progress merge/rebase.
 3. Refuse unrelated dirty source changes.
 4. Fetch official Hermes updates:
@@ -55,7 +55,12 @@ The daily Hermes upstream CI for this setup should do this, in order:
     ```bash
     git push --force-with-lease origin HEAD:brayan/personal-hermes-customizations
     ```
-12. Emit compact JSON:
+12. When the verified candidate differs from the live checkout, schedule a detached transient unit that runs:
+    ```bash
+    hermes update --branch brayan/personal-hermes-customizations --yes --no-backup
+    ```
+    This activates the candidate through Hermes' supported updater, refreshes dependencies/config, and restarts the gateway without killing the cron run before it records its result.
+13. Emit compact JSON:
     - `wakeAgent: false` when successful or no-op
     - `wakeAgent: true` with diagnostics when conflicts/tests/pushes fail
 
@@ -75,23 +80,15 @@ So the snapshot should be committed on the personalization branch, then that bra
 
 ## Manual update commands
 
-Use this when doing the workflow manually:
+Use the same deterministic script when triggering the complete workflow manually:
 
 ```bash
-cd ~/.hermes/hermes-agent
-git switch brayan/personal-hermes-customizations
-git fetch upstream main
-git fetch origin brayan/personal-hermes-customizations
-git merge --ff-only origin/brayan/personal-hermes-customizations
-scripts/sync-brayan-personalization.py
-git status --short
-# if only allowed personalization files changed:
-git add brayan-personalization scripts/sync-brayan-personalization.py scripts/apply-brayan-personalization.py
-git commit -m "chore: sync Brayan Hermes personalization snapshot"
-git rebase upstream/main
-python -m py_compile scripts/sync-brayan-personalization.py scripts/apply-brayan-personalization.py
-hermes config check
-git push --force-with-lease origin HEAD:brayan/personal-hermes-customizations
+/home/brayan/.hermes/hermes-agent/venv/bin/python \
+  /home/brayan/.hermes/scripts/hermes_upstream_rebase_ci.py
+
+# Then inspect the JSON result/log and, when activation was scheduled:
+systemctl --user status 'hermes-personalization-activate-*' --no-pager
+hermes gateway status
 ```
 
 ## Installing on another already-installed Hermes machine
@@ -107,6 +104,8 @@ hermes config check
 ```
 
 Restore secrets locally after applying. Do not commit `.env`, `auth.json`, provider credentials, Telegram tokens, chat IDs, logs, sessions, state DBs, venvs, checkpoints, model caches, or cron output.
+
+Keep `updates.branch: brayan/personal-hermes-customizations` in `~/.hermes/config.yaml`. This makes both terminal `hermes update` and gateway `/update` target the integration branch instead of switching the live checkout to `main`.
 
 ## Recovery if personalization lands on main
 
