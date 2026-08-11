@@ -19,7 +19,8 @@ past that); see the **routing table** at the end and read the area file before e
   ```
 - The `main` branch should stay a clean source-code baseline for Brayan's fork and upstream tracking.
 - Personalization sync/CI jobs must push to `origin/brayan/personal-hermes-customizations`, not `origin/main`.
-- Daily CI order: fetch official `upstream/main`, fetch the fork personalization branch, sync/commit local runtime personalization on that branch, rebase that branch onto `upstream/main`, test, then push only `HEAD:brayan/personal-hermes-customizations`.
+- Daily CI order: fetch official `upstream/main`, fetch the fork personalization branch, sync/commit local runtime personalization, rebase onto `upstream/main`, test, push only `HEAD:brayan/personal-hermes-customizations`, then schedule detached live activation through the branch-safe Hermes updater.
+- Keep `updates.branch: brayan/personal-hermes-customizations` in live config so terminal `hermes update` and gateway `/update` do not switch the checkout to `main`.
 - If personalization accidentally lands on `main`, immediately move/save the commit to `brayan/personal-hermes-customizations`, then reset `main` back and push with `--force-with-lease`.
 - Full workflow doc: `docs/brayan-personalization-branch-workflow.md`.
 

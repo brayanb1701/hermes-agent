@@ -36,7 +36,7 @@ cd ~/.hermes/hermes-agent
 scripts/sync-brayan-personalization.py
 ```
 
-The daily `hermes-upstream-rebase-ci` script also runs this sync and commits changes to **`brayan/personal-hermes-customizations` only** when the personalization bundle changed. Its required order is: fetch `upstream/main`, fetch the fork personalization branch, sync/commit current local personalization on that branch, rebase the branch onto `upstream/main`, test, then push only `HEAD:brayan/personal-hermes-customizations`. It must never push this bundle to `main`.
+The daily `hermes-upstream-rebase-ci` script also runs this sync and commits changes to **`brayan/personal-hermes-customizations` only** when the personalization bundle changed. Its required order is: fetch `upstream/main`, fetch the fork personalization branch, sync/commit current local personalization, rebase onto `upstream/main`, test, push only `HEAD:brayan/personal-hermes-customizations`, then schedule detached live activation through `hermes update --branch brayan/personal-hermes-customizations`. It must never push this bundle to `main`.
 
 See `docs/brayan-personalization-branch-workflow.md` for the full branch/CI rulebook.
 
@@ -60,6 +60,8 @@ hermes config check
 hermes gateway restart
 hermes gateway status
 ```
+
+Set `updates.branch: brayan/personal-hermes-customizations` in the destination's live config so future CLI and gateway updates remain on the integrated branch.
 
 If the new machine should use a different Telegram bot/chat/vault path, edit `~/.hermes/config.yaml` after applying.
 
