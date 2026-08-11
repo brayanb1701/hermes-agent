@@ -16,6 +16,10 @@ TEMPLATE_DIR = VAULT / "_meta" / "templates"
 TODAY = date.today().isoformat()
 
 
+class RawYaml(str):
+    """An existing YAML value block that must be rendered byte-for-byte."""
+
+
 def parse_frontmatter(text: str) -> tuple[dict[str, str], str]:
     if not text.startswith("---\n"):
         return {}, text
@@ -23,15 +27,31 @@ def parse_frontmatter(text: str) -> tuple[dict[str, str], str]:
     if end == -1:
         return {}, text
     fm: dict[str, str] = {}
-    for line in text[4:end].splitlines():
-        if not line.strip() or line.startswith(" ") or line.startswith("-") or ":" not in line:
+    lines = text[4:end].splitlines()
+    key_line = re.compile(r"^([A-Za-z_][A-Za-z0-9_-]*):(?:\s*(.*))?$")
+    i = 0
+    while i < len(lines):
+        match = key_line.match(lines[i])
+        if not match:
+            i += 1
             continue
-        key, value = line.split(":", 1)
-        fm[key.strip()] = value.strip().strip('"').strip("'")
+        key = match.group(1)
+        first_value = match.group(2) or ""
+        continuation: list[str] = []
+        i += 1
+        while i < len(lines) and not key_line.match(lines[i]):
+            continuation.append(lines[i])
+            i += 1
+        if continuation:
+            fm[key] = RawYaml("\n".join([first_value, *continuation]))
+        else:
+            fm[key] = first_value.strip().strip('"').strip("'")
     return fm, text[end + 5 :]
 
 
 def yaml_scalar(value: Any) -> str:
+    if isinstance(value, RawYaml):
+        return str(value)
     if value is None:
         return "null"
     if isinstance(value, list):
@@ -61,11 +81,17 @@ def render_frontmatter(fm: dict[str, Any]) -> str:
     seen: set[str] = set()
     for key in order:
         if key in fm:
-            lines.append(f"{key}: {yaml_scalar(fm[key])}")
+            rendered = yaml_scalar(fm[key])
+            first, *continuation = rendered.splitlines()
+            lines.append(f"{key}: {first}" if first else f"{key}:")
+            lines.extend(continuation)
             seen.add(key)
     for key, value in fm.items():
         if key not in seen:
-            lines.append(f"{key}: {yaml_scalar(value)}")
+            rendered = yaml_scalar(value)
+            first, *continuation = rendered.splitlines()
+            lines.append(f"{key}: {first}" if first else f"{key}:")
+            lines.extend(continuation)
     lines.append("---")
     return "\n".join(lines) + "\n"
 
