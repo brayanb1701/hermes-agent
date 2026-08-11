@@ -116,6 +116,9 @@ def normalize_cron_jobs(raw: dict[str, Any]) -> dict[str, Any]:
     }
     for job in raw.get("jobs", []):
         keep = dict(job)
+        # A scheduler claim is set while this very pre-run script executes;
+        # persisting it would manufacture a personalization commit every tick.
+        keep.pop("fire_claim", None)
         for key in volatile_null:
             keep[key] = None
         if isinstance(keep.get("repeat"), dict):
