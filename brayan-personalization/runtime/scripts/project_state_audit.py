@@ -11,6 +11,8 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from vault_generated_retention import apply_retention
+
 HOME = Path.home()
 VAULT = HOME / "personal_vault"
 WORKSPACE_ROOT = HOME / "projects"
@@ -21,7 +23,11 @@ TODAY = date.today().isoformat()
 REPORT_PATH = AUDIT_DIR / f"{TODAY}-project-state-audit.md"
 ALLOWED_PROJECT_STATUSES = {"seed", "active", "paused", "complete", "archived"}
 FINAL_STATUSES = {"complete", "archived"}
-REQUIRED_ACTIVE_FIELDS = ["objective", "next_action", "success_criteria", "stop_condition", "review_cadence", "external_workspace", "last_meaningful_update"]
+REQUIRED_ACTIVE_FIELDS = ["priority", "objective", "next_action", "success_criteria", "stop_condition", "review_cadence", "external_workspace", "last_meaningful_update"]
+PLACEHOLDER_ACTIVE_PATTERNS = {
+    "objective": [r"^Advance .+ to a useful, reviewable outcome\.?$"],
+    "success_criteria": [r"Minimum useful result documented in the project hub"],
+}
 
 
 def configure(vault: Path, workspace_root: Path) -> None:
@@ -51,11 +57,21 @@ def parse_frontmatter(text: str) -> dict[str, str]:
     if end == -1:
         return {}
     fm: dict[str, str] = {}
-    for line in text[4:end].splitlines():
-        if not line.strip() or line.startswith(" ") or line.startswith("-") or ":" not in line:
+    lines = text[4:end].splitlines()
+    key_line = re.compile(r"^([A-Za-z_][A-Za-z0-9_-]*):(?:\s*(.*))?$")
+    i = 0
+    while i < len(lines):
+        match = key_line.match(lines[i])
+        if not match:
+            i += 1
             continue
-        key, value = line.split(":", 1)
-        fm[key.strip()] = value.strip().strip('"').strip("'")
+        key = match.group(1)
+        values = [match.group(2) or ""]
+        i += 1
+        while i < len(lines) and not key_line.match(lines[i]):
+            values.append(lines[i])
+            i += 1
+        fm[key] = "\n".join(values).strip().strip('"').strip("'")
     return fm
 
 
@@ -146,6 +162,7 @@ def audit() -> dict[str, Any]:
         "backlog_missing_seed_or_paused": [],
         "backlog_wrong_status_rows": [],
         "active_missing_required_fields": [],
+        "active_placeholder_fields": [],
         "active_workspace_missing": [],
         "active_missing_changelog": [],
         "active_missing_status": [],
@@ -194,6 +211,12 @@ def audit() -> dict[str, Any]:
             missing = [key for key in REQUIRED_ACTIVE_FIELDS if not truthy_value(fm.get(key))]
             if missing:
                 issues["active_missing_required_fields"].append((slug, missing))
+            placeholders = [
+                key for key, patterns in PLACEHOLDER_ACTIVE_PATTERNS.items()
+                if any(re.search(pattern, fm.get(key, ""), re.IGNORECASE) for pattern in patterns)
+            ]
+            if placeholders:
+                issues["active_placeholder_fields"].append((slug, placeholders))
             ws = workspace_for(slug, fm)
             if not ws.exists():
                 issues["active_workspace_missing"].append((slug, str(ws)))
@@ -355,8 +378,10 @@ def main() -> None:
     configure(Path(args.vault).expanduser().resolve(), Path(args.workspace_root).expanduser().resolve())
     result = audit()
     write_report(result)
+    retention = apply_retention(VAULT, groups={"project_state_audits"})
     compact = {k: v for k, v in result.items() if k != "issues"}
     compact["top_issue_summary"] = {k: c for k, c in result["issue_counts"].items() if c}
+    compact["retention"] = retention["groups"]["project_state_audits"]
     if args.json:
         print(json.dumps(compact, ensure_ascii=False))
     else:

@@ -15,6 +15,8 @@ from collections import Counter, defaultdict
 from datetime import date
 from pathlib import Path
 
+from vault_generated_retention import apply_retention
+
 HOME = Path.home()
 VAULT = HOME / "personal_vault"
 AUDIT_DIR = VAULT / "_meta" / "audits"
@@ -365,6 +367,7 @@ A follow-up agent may propose exact patches for these findings, but must not del
 ```
 """
     REPORT_PATH.write_text(report, encoding="utf-8")
+    retention = apply_retention(VAULT, groups={"vault_structure_audits"})
     print(json.dumps({
         "wakeAgent": bool(combined_issue_count),
         "vault": str(VAULT),
@@ -378,6 +381,7 @@ A follow-up agent may propose exact patches for these findings, but must not del
         "project_audit_error": project_audit.get("error"),
         "issue_counts": {k: len(v) for k, v in issues.items()},
         "top_level_counts": dict(sorted(counts_by_top.items())),
+        "retention": retention["groups"]["vault_structure_audits"],
     }, ensure_ascii=False, indent=2))
 
 

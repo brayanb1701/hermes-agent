@@ -47,6 +47,8 @@ It writes:
 
 `~/personal_vault/_meta/audits/YYYY-MM-DD-vault-structure-audit.md`
 
+Generated audit history is bounded automatically: keep the five newest `*-vault-structure-audit.md` reports and the five newest `*-project-state-audit.md` reports. The scripts prune only their own dated report series; unrelated/manual files under `_meta/audits/` are untouched. Treat older reports as transient diagnostics, and avoid durable wikilinks to reports that will age out.
+
 The script is the first-pass inventory, not the whole audit. It checks:
 
 - files by top-level folder;
