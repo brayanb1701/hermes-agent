@@ -3,9 +3,9 @@
   "bundle_root": "brayan-personalization/runtime",
   "copied_dirs": {
     "agents": 14,
-    "skills": 719,
+    "skills": 720,
     "plugins": 3,
-    "scripts": 9
+    "scripts": 12
   },
   "copied_files": [
     "config.yaml",

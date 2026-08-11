@@ -6,6 +6,8 @@ It checks status vocabulary, dashboard/backlog/finished membership, active requi
 
 It is report-only. Findings become actionable through interactive Darwin sessions or the existing `vault-structure-auditor` cron agent after Brayan reviews patch proposals.
 
+Generated report retention is bounded per series: `project_state_audit.py` keeps the five newest `*-project-state-audit.md` files, while `vault_structure_audit.py` keeps the five newest `*-vault-structure-audit.md` files. Other/manual audit files are untouched.
+
 Run:
 
 ```bash

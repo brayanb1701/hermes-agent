@@ -77,6 +77,7 @@ Verifier evidence should include:
 - `references/topic-recommendations-workable-retry-2026-08-05.md` — topic-recommendations example: recover from a same-day Workable/Cloudflare `522` with a browser-header retry, written temp helper script, explicit evidence, and self-cleanup.
 - `references/daily-review-workable-probe-2026-08-07.md` — daily-review example: Workable `curl -o` then `jq` parsing after cron approval blocks for `execute_code`, Python heredocs/`-c`, network-to-interpreter pipes, and direct `/tmp` cleanup.
 - `references/decision-reminders-2026-08-08.md` — decision-reminders example: select only still-blocking current decisions, patch repeated metadata via full unique decision blocks, and verify surfaced/non-surfaced reminder dates with a self-cleaning `/tmp/hermes-verify-*.py` script.
+- `references/wake-gated-cron-side-effect-verification-2026-08.md` — cron verification example: prove side-effecting wake-gated scripts by reading script-specific logs plus external state, not merely cron `ok` / `wakeAgent=false` output.
 
 ## Final report
 
