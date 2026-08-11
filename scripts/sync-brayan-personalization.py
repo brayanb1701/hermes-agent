@@ -60,6 +60,8 @@ IGNORE_FILE_NAMES = {
     "state.db-shm",
     "state.db-wal",
     ".skills_prompt_snapshot.json",
+    ".usage.json",
+    ".curator_state",
 }
 
 
