@@ -119,8 +119,9 @@ python3 ~/.hermes/scripts/project_scaffold.py --project /home/brayan/personal_va
 python3 ~/.hermes/scripts/project_scaffold.py --project /home/brayan/personal_vault/projects/<slug>/README.md --closeout
 python3 ~/.hermes/scripts/project_scaffold.py --project /home/brayan/personal_vault/projects/<slug>/README.md --reopen
 python3 ~/.hermes/scripts/project_scaffold.py --all-active --dry-run
-python3 ~/.hermes/scripts/project_review_scan.py --dry-run
-python3 ~/.hermes/scripts/project_state_audit.py --dry-run
+- `python3 ~/.hermes/scripts/project_review_scan.py --dry-run`
+- `python3 ~/.hermes/scripts/project_review_history_retention.py --project /home/brayan/personal_vault/projects/<slug>/README.md --keep 5`
+- `python3 ~/.hermes/scripts/project_state_audit.py --dry-run`
 ```
 
 ## Verification checklist
@@ -131,5 +132,6 @@ Before finishing a project-management change:
 - Dashboard/backlog/finished membership matches status exactly.
 - Active projects have workspace, `PROJECT_STATUS.md`, and `PROJECT_CHANGELOG.md`.
 - `PROJECT_CLOSEOUT.md`/`PROJECT_REOPEN.md` was preserved and marked complete/paused when processed.
+- `python3 ~/.hermes/scripts/project_review_history_retention.py --project /home/brayan/personal_vault/projects/<slug>/README.md --keep 5` leaves no more than five dated review-history entries in the project hub.
 - `python3 ~/.hermes/scripts/project_state_audit.py --dry-run` does not show newly introduced drift for the touched project.
 - `git diff --check` passes in `~/personal_vault` when vault files changed.
