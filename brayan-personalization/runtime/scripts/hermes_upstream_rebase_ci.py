@@ -3,7 +3,7 @@
 
 This script is intended to run as a Hermes cron pre-run script. It performs a
 safe upstream update check for Brayan's Hermes personalization branch while
-protecting the live gateway checkout:
+protecting the live gateway checkout during rebase/testing:
 
 - The live executable checkout is /home/brayan/.hermes/hermes-agent.
 - Rebases/tests run in an isolated detached git worktree under
@@ -16,6 +16,10 @@ protecting the live gateway checkout:
 - If a rebase conflict or test failure happens, the broken state stays in the
   isolated worktree. The live checkout used by the gateway is not left with
   conflict markers or mixed source files.
+- After a verified candidate is pushed, a detached systemd transient unit runs
+  ``hermes update --branch brayan/personal-hermes-customizations``. That
+  supported updater path activates the verified commit, refreshes dependencies
+  and config, and restarts the gateway without killing this cron run early.
 
 It never quotes secrets and operates only on the Hermes source checkout plus the
 source-controlled Brayan personalization bundle.
@@ -35,6 +39,7 @@ WORKTREE = Path("/home/brayan/.hermes/worktrees/hermes-upstream-rebase-ci")
 REPO = WORKTREE
 TARGET_BRANCH = "brayan/personal-hermes-customizations"
 PYTHON = LIVE_REPO / "venv/bin/python"
+HERMES_CLI = Path("/home/brayan/.local/bin/hermes")
 RUNTIME_SCRIPT = Path("/home/brayan/.hermes/scripts/hermes_upstream_rebase_ci.py")
 LOG_DIR = Path("/home/brayan/.hermes/logs/hermes-upstream-ci")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -96,6 +101,34 @@ PERSONALIZATION_ALLOWED_PREFIXES = (
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def live_activation_required(candidate_head: str, live_head: str) -> bool:
+    """Return whether the verified candidate still needs live activation."""
+    return bool(candidate_head and live_head and candidate_head != live_head)
+
+
+def build_live_activation_command(candidate_head: str) -> list[str]:
+    """Build a detached, branch-safe live updater command.
+
+    The transient unit runs outside the gateway service cgroup, so the updater
+    survives the gateway restart it performs after dependency/config refresh.
+    """
+    unit = f"hermes-personalization-activate-{candidate_head[:12]}"
+    return [
+        "systemd-run",
+        "--user",
+        "--collect",
+        "--on-active=5s",
+        f"--unit={unit}",
+        "--property=TimeoutStartSec=1800",
+        str(HERMES_CLI),
+        "update",
+        "--branch",
+        TARGET_BRANCH,
+        "--yes",
+        "--no-backup",
+    ]
 
 
 def redact(text: str, limit: int = 6000) -> str:
@@ -387,9 +420,6 @@ def known_live_plus_commits_equivalent_on_origin(
 
 def choose_base_ref(commands: list[dict[str, Any]]) -> str | None:
     branch = stdout(git("branch", "--show-current", cwd=LIVE_REPO))
-    if branch != TARGET_BRANCH:
-        fail("preflight", f"Expected live checkout branch {TARGET_BRANCH}, found {branch or '[detached]'}", commands=commands, repo=LIVE_REPO)
-        return None
 
     live_dirty = dirty_paths(LIVE_REPO)
     if live_dirty:
@@ -414,10 +444,30 @@ def choose_base_ref(commands: list[dict[str, Any]]) -> str | None:
         return None
 
     remote_target = f"origin/{TARGET_BRANCH}"
-    live_head = stdout(git("rev-parse", "HEAD", cwd=LIVE_REPO))
     remote_head = stdout(git("rev-parse", remote_target, cwd=LIVE_REPO))
-    if not live_head or not remote_head:
-        fail("preflight", f"Could not resolve live HEAD or {remote_target}.", commands=commands, repo=LIVE_REPO)
+    if not remote_head:
+        fail("preflight", f"Could not resolve {remote_target}.", commands=commands, repo=LIVE_REPO)
+        return None
+
+    # Raw ``hermes update`` historically defaults to main. If that moved the
+    # live checkout away from the personalization branch, recover from the
+    # remote integration branch and let the post-verification activation step
+    # switch the live checkout back safely.
+    if branch != TARGET_BRANCH:
+        commands.append(
+            {
+                "cmd": ["git", "branch", "--show-current"],
+                "cwd": str(LIVE_REPO),
+                "returncode": 0,
+                "stdout": f"Live checkout is on {branch or '[detached]'}; using {remote_target} as recovery base.",
+                "stderr": "",
+            }
+        )
+        return remote_head
+
+    live_head = stdout(git("rev-parse", "HEAD", cwd=LIVE_REPO))
+    if not live_head:
+        fail("preflight", "Could not resolve live HEAD.", commands=commands, repo=LIVE_REPO)
         return None
 
     if is_ancestor(live_head, remote_target, cwd=LIVE_REPO):
@@ -557,6 +607,33 @@ def push_origin(commands: list[dict[str, Any]], *, force_with_lease: bool = Fals
     return True
 
 
+def schedule_live_activation(commands: list[dict[str, Any]], candidate_head: str) -> bool | None:
+    """Schedule activation of a verified/pushed candidate outside the gateway.
+
+    Returns ``True`` when a transient updater was scheduled, ``False`` when the
+    live checkout already matches, and ``None`` after emitting a failure.
+    """
+    live_head = stdout(git("rev-parse", "HEAD", cwd=LIVE_REPO))
+    if not live_head:
+        fail("activation_preflight", "Could not resolve live HEAD before activation.", commands=commands, repo=LIVE_REPO)
+        return None
+    if not live_activation_required(candidate_head, live_head):
+        return False
+
+    command = build_live_activation_command(candidate_head)
+    scheduled = run(command, timeout=120, cwd=LIVE_REPO)
+    commands.append(scheduled)
+    if scheduled["returncode"] != 0:
+        fail(
+            "activation_schedule",
+            "Verified candidate was pushed, but the detached live updater could not be scheduled.",
+            commands=commands,
+            repo=LIVE_REPO,
+        )
+        return None
+    return True
+
+
 def status_snapshot(repo: Path | None = None) -> dict[str, Any]:
     snap_repo = repo or (REPO if REPO.exists() else LIVE_REPO)
     data: dict[str, Any] = {"repo": str(snap_repo), "repo_exists": snap_repo.exists()}
@@ -667,20 +744,41 @@ def main() -> None:
         return
 
     if is_ancestor("upstream/main", "HEAD", cwd=REPO):
-        if personalization_changed:
+        candidate_head = stdout(git("rev-parse", "HEAD", cwd=REPO))
+        observed_origin = stdout(git("rev-parse", f"origin/{TARGET_BRANCH}", cwd=REPO))
+        live_head = stdout(git("rev-parse", "HEAD", cwd=LIVE_REPO))
+        remote_needs_push = bool(candidate_head and candidate_head != observed_origin)
+        activation_needed = live_activation_required(candidate_head, live_head)
+
+        if personalization_changed or remote_needs_push or activation_needed:
             if not run_verification(commands, failure_stage="tests"):
                 return
+        if personalization_changed or remote_needs_push:
             if not push_origin(commands, force_with_lease=False):
                 return
+
+        activation_scheduled = schedule_live_activation(commands, candidate_head)
+        if activation_scheduled is None:
+            return
+        status = (
+            "personalization_synced"
+            if personalization_changed
+            else "updated"
+            if remote_needs_push or activation_scheduled
+            else "up_to_date"
+        )
+        message = (
+            f"Verified and pushed {TARGET_BRANCH}; detached live activation scheduled."
+            if activation_scheduled
+            else f"origin/{TARGET_BRANCH}, upstream/main, and the live checkout are synchronized."
+        )
         emit(
             {
                 "wakeAgent": False,
-                "status": "personalization_synced" if personalization_changed else "up_to_date",
-                "message": (
-                    "Synced and pushed Brayan's Hermes personalization snapshot from an isolated worktree. Live gateway checkout was not mutated."
-                    if personalization_changed
-                    else f"origin/{TARGET_BRANCH} already contains upstream/main and personalization snapshot is unchanged; no agent needed. Live gateway checkout was not mutated."
-                ),
+                "status": status,
+                "message": message,
+                "activation_scheduled": activation_scheduled,
+                "candidate_head": candidate_head,
                 "repo": str(REPO),
                 "live_repo": str(LIVE_REPO),
                 "snapshot": status_snapshot(REPO),
@@ -716,11 +814,22 @@ def main() -> None:
     if not push_origin(commands, force_with_lease=rebase_needed_force_push):
         return
 
+    candidate_head = stdout(git("rev-parse", "HEAD", cwd=REPO))
+    activation_scheduled = schedule_live_activation(commands, candidate_head)
+    if activation_scheduled is None:
+        return
+
     emit(
         {
             "wakeAgent": False,
             "status": "updated",
-            "message": f"Rebased Brayan's {TARGET_BRANCH} onto upstream/main in an isolated worktree, tests passed, and pushed the personalization branch. Live gateway checkout was not mutated.",
+            "message": (
+                f"Rebased and pushed Brayan's {TARGET_BRANCH}; detached live activation scheduled."
+                if activation_scheduled
+                else f"Rebased and pushed Brayan's {TARGET_BRANCH}; live checkout already matched."
+            ),
+            "activation_scheduled": activation_scheduled,
+            "candidate_head": candidate_head,
             "repo": str(REPO),
             "live_repo": str(LIVE_REPO),
             "before": before,
