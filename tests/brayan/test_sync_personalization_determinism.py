@@ -40,6 +40,13 @@ def test_cron_normalization_drops_snapshot_time():
     assert "fire_claim" not in first["jobs"][0]
 
 
+def test_skill_usage_and_curator_state_are_not_snapshot_inputs(tmp_path):
+    sync = load_sync_module()
+
+    assert sync.should_ignore(tmp_path / "skills" / ".usage.json")
+    assert sync.should_ignore(tmp_path / "skills" / ".curator_state")
+
+
 def test_channel_directory_normalization_drops_rebuild_time():
     sync = load_sync_module()
     raw = {
