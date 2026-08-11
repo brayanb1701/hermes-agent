@@ -63,6 +63,11 @@ def main() -> None:
     parser.add_argument("--hermes-home", default=str(DEFAULT_HERMES_HOME), help="Destination Hermes home")
     parser.add_argument("--apply", action="store_true", help="Actually copy files; default is dry-run")
     parser.add_argument("--no-backup", action="store_true", help="Overwrite without .bak timestamp backups")
+    parser.add_argument(
+        "--preserve-config",
+        action="store_true",
+        help="Do not replace config.yaml (recommended when setup/auth already ran)",
+    )
     args = parser.parse_args()
 
     hermes_home = Path(args.hermes_home).expanduser()
@@ -78,6 +83,9 @@ def main() -> None:
     for name in COPY_DIRS:
         copy_dir(BUNDLE / name, hermes_home / name, apply=args.apply, backup=backup)
     for name in COPY_FILES:
+        if name == "config.yaml" and args.preserve_config:
+            print(f"SKIP {hermes_home / name} (preserving existing setup/auth config)")
+            continue
         copy_file(BUNDLE / name, hermes_home / name, apply=args.apply, backup=backup)
     copy_file(BUNDLE / "cron" / "jobs.json", hermes_home / "cron" / "jobs.json", apply=args.apply, backup=backup)
 
@@ -86,7 +94,7 @@ def main() -> None:
         print("Dry run only. Re-run with --apply to install the personalization bundle.")
     else:
         print("Applied. Next steps:")
-        print("  1. Restore secrets/auth locally: ~/.hermes/.env, hermes login, platform tokens.")
+        print("  1. Restore/check secrets and auth locally: ~/.hermes/.env, hermes login, platform tokens.")
         print("  2. Run: hermes config check")
         print("  3. If using messaging: hermes gateway restart && hermes gateway status")
 

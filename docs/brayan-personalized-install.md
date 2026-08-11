@@ -1,21 +1,21 @@
 # Brayan Personalized Hermes Agent Install Guide
 
-This guide installs Brayan's personalized Hermes Agent fork on a second computer so it can evolve independently, then later be compared and selectively merged back into a unified line.
+This guide installs Brayan's maintained personalized Hermes Agent branch. The same installer can target an experimental branch explicitly on a second computer.
 
 ## What this installs
 
 Repository:
 - `https://github.com/brayanb1701/hermes-agent`
 
-Default branch for the independent machine:
-- `second-computer-evolution`
+Default maintained branch:
+- `brayan/personal-hermes-customizations`
 
 Official upstream kept as a remote:
 - `https://github.com/NousResearch/hermes-agent`
 
-Default text model target:
-- provider: `openai-codex`
-- model: `gpt-5.5`
+Update safety:
+- `updates.branch` is set to the branch selected by the installer, so later `hermes update` and gateway `/update` calls do not silently switch back to `main`.
+- The installer does not pin a model version; `hermes setup`, the safe local config, and the current model catalog determine supported models.
 
 Important boundary:
 - This guide installs source code and safe baseline configuration only.
@@ -27,21 +27,21 @@ Important boundary:
 On Linux, macOS, or WSL2:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/main/scripts/install-brayan-personalized.sh | bash
+curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash
 ```
 
-The personalized installer defaults to the `second-computer-evolution` branch. That gives the new computer its own development line immediately.
+The installer defaults to `brayan/personal-hermes-customizations`, applies the safe personalization bundle on a fresh install while preserving setup/auth config, and records that branch as the future update target.
 
-If you want to install the current unified baseline instead:
+If you want an independent experimental line on another computer instead:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/main/scripts/install-brayan-personalized.sh | bash -s -- --branch main
+curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash -s -- --branch second-computer-evolution
 ```
 
 If you want a lab install that does not replace an existing `~/.hermes/hermes-agent` checkout:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/main/scripts/install-brayan-personalized.sh | bash -s -- --dir ~/.hermes/hermes-agent-lab
+curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash -s -- --dir ~/.hermes/hermes-agent-lab --hermes-home ~/.hermes-lab
 ```
 
 ## After install
@@ -68,10 +68,10 @@ git remote -v
 git branch --show-current
 ```
 
-Expected for the independent evolution machine:
+Expected for the default maintained installation:
 
 ```text
-branch: second-computer-evolution
+branch: brayan/personal-hermes-customizations
 origin:   brayanb1701/hermes-agent
 upstream: NousResearch/hermes-agent
 ```
@@ -84,11 +84,11 @@ Run setup on the new machine:
 hermes setup
 ```
 
-Then set the default text model if setup did not already do it:
+Verify the update target and choose a currently supported model if setup did not already do so:
 
 ```bash
-hermes config set model.provider openai-codex
-hermes config set model.default gpt-5.5
+hermes config get updates.branch
+hermes model
 ```
 
 Do not commit secrets. Keep these local:
@@ -117,7 +117,7 @@ test -d ~/personal_vault && echo "vault present"
 
 ## Development workflow on the second computer
 
-Use the second-computer branch as its own evolutionary line:
+This section is optional. Use the second-computer branch as its own evolutionary line only when intentionally selected with `--branch second-computer-evolution`:
 
 ```bash
 cd ~/.hermes/hermes-agent
@@ -154,6 +154,8 @@ git fetch upstream origin
 git rebase upstream/main
 git push --force-with-lease origin second-computer-evolution
 ```
+
+On Brayan's primary machine, do not use that manual live-checkout rebase. The scheduled `hermes-upstream-rebase-ci` job rebases an isolated candidate, verifies it, pushes with an exact lease, and activates it through the configured fork branch. See `docs/brayan-personalization-branch-workflow.md`.
 
 If a rebase is risky or conflicts heavily, stop and inspect rather than forcing it:
 
@@ -239,15 +241,16 @@ If install was interrupted:
 
 ```bash
 rm -rf ~/.hermes/hermes-agent
-curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/main/scripts/install-brayan-personalized.sh | bash
+curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash
 ```
 
-If the branch is wrong:
+If the maintained branch is wrong:
 
 ```bash
 cd ~/.hermes/hermes-agent
 git fetch origin
-git switch second-computer-evolution
+git switch brayan/personal-hermes-customizations
+hermes config set updates.branch brayan/personal-hermes-customizations
 ```
 
 If local changes block an update:
@@ -256,6 +259,6 @@ If local changes block an update:
 cd ~/.hermes/hermes-agent
 git status --short
 git stash push --include-untracked -m "before-update"
-git pull --ff-only origin second-computer-evolution
+hermes update --branch brayan/personal-hermes-customizations --yes
 git stash apply
 ```
