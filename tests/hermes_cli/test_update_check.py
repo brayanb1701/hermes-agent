@@ -66,6 +66,21 @@ def test_passive_check_uses_the_api_and_never_fetches(git_repo, monkeypatch):
     assert (cached["head"], cached["target"], cached["behind"]) == (SHA_A, SHA_B, 61)
 
 
+def test_configured_branch_uses_api_and_invalidates_cache(git_repo, monkeypatch):
+    calls = _stub_git(monkeypatch)
+    tip = MagicMock(return_value=SHA_B)
+    monkeypatch.setattr(banner, "_github_branch_tip", tip)
+    monkeypatch.setattr(banner, "_github_compare_behind", lambda cur, tgt: 2)
+    monkeypatch.setattr("hermes_cli.config.load_config", lambda: {"updates": {"branch": "main"}})
+    assert banner.check_for_updates() == 2
+    tip.reset_mock()
+    branch = "brayan/personal-hermes-customizations"
+    monkeypatch.setattr("hermes_cli.config.load_config", lambda: {"updates": {"branch": branch}})
+    assert banner.check_for_updates() == 2
+    tip.assert_called_once_with("nousresearch/hermes-agent", branch)
+    assert not any(c[1] in {"fetch", "ls-remote"} for c in calls)
+
+
 def test_cache_is_daily_but_invalidated_when_head_moves(git_repo, monkeypatch):
     """A fresh cache answers without any network; ``hermes update`` moving HEAD busts it at once;
     an inconclusive (None) result is retried after the shorter failure window, not never."""
