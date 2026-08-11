@@ -158,3 +158,38 @@ def test_check_via_local_git_insteadof_rewrite_routes_to_ssh_fastpath(tmp_path, 
     assert probe is not None
     assert probe["env"]["GIT_CONFIG_GLOBAL"] == os.devnull, (
         "the origin-URL probe must observe the URL the isolated fetch will dial")
+
+
+def test_get_git_banner_state_reads_configured_integration_branch(tmp_path):
+    from hermes_cli import banner
+
+    repo_dir = tmp_path / "repo"
+    (repo_dir / ".git").mkdir(parents=True)
+    branch = "brayan/personal-hermes-customizations"
+    remote_ref = f"origin/{branch}"
+    results = {
+        ("git", "rev-parse", "--short=8", remote_ref): MagicMock(
+            returncode=0, stdout="37aa5d75\n"
+        ),
+        ("git", "rev-parse", "--short=8", "HEAD"): MagicMock(
+            returncode=0, stdout="37aa5d75\n"
+        ),
+        ("git", "rev-list", "--count", f"{remote_ref}..HEAD"): MagicMock(
+            returncode=0, stdout="0\n"
+        ),
+    }
+
+    def fake_run(cmd, **kwargs):
+        key = tuple(cmd)
+        if key not in results:
+            raise AssertionError(f"unexpected command: {cmd}")
+        return results[key]
+
+    with (
+        patch.object(banner, "_resolve_update_branch", return_value=branch),
+        patch("hermes_cli.banner.subprocess.run", side_effect=fake_run),
+    ):
+        state = banner.get_git_banner_state(repo_dir)
+
+    assert state == {"upstream": "37aa5d75", "local": "37aa5d75", "ahead": 0}
+
