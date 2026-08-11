@@ -76,6 +76,7 @@ LibreOffice implements fewer functions than Excel, and one it cannot evaluate be
 ## openpyxl gotchas
 
 - **Reading a model takes two loads.** `data_only=True` yields cached values with the formulas gone; the default yields formula strings with no values. One pass cannot give you both.
+- **Critical extraction: do not trust `read_only=True` dimensions blindly.** Streaming mode may honor a stale worksheet `<dimension>` and silently stop before later populated rows. For completeness-sensitive work, compare `read_only` results with a normal load (`read_only=False`) or inspect the worksheet XML's actual `<row>` elements; use the non-read-only result when they disagree.
 - **`data_only=True` is destructive if you save.** That workbook has no formulas left, so saving replaces every one with a literal — permanently.
 - **`data_only=True` on a file openpyxl just wrote returns `None` everywhere** — run `recalc.py` first. (A formula whose result is `""` also reads back as `None`.)
 - **Merged cells: write the top-left anchor only.** Every other cell in the range is a `MergedCell` whose `.value` is read-only.
