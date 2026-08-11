@@ -3,8 +3,9 @@
 
 This script is intentionally narrow. It gives the Hermes upstream-rebase
 exception agent one deterministic post-repair capability: after a human/agent
-has resolved conflicts and left the repo clean, verify the branch and push only
-Brayan's personalization branch with an exact force-with-lease.
+has resolved conflicts and left the candidate repo clean, verify the branch,
+push only Brayan's personalization branch with an exact force-with-lease, then
+schedule branch-safe activation in the live checkout.
 
 It must not become a generic git helper. Repo, branch, and remotes are hard-coded
 by design.
@@ -21,12 +22,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-REPO = Path("/home/brayan/.hermes/hermes-agent")
+LIVE_REPO = Path("/home/brayan/.hermes/hermes-agent")
+WORKTREE = Path("/home/brayan/.hermes/worktrees/hermes-upstream-rebase-ci")
+REPO = LIVE_REPO
 TARGET_BRANCH = "brayan/personal-hermes-customizations"
 TARGET_REF = f"refs/heads/{TARGET_BRANCH}"
 ORIGIN_REMOTE = "origin"
 UPSTREAM_REMOTE = "upstream"
-PYTHON = REPO / "venv/bin/python"
+PYTHON = LIVE_REPO / "venv/bin/python"
 HERMES = Path("/home/brayan/.local/bin/hermes")
 
 EXPECTED_ORIGIN_HINTS = (
@@ -83,7 +86,7 @@ TEST_COMMANDS = [
     },
     {
         "name": "hermes_config_check",
-        "cmd": [str(HERMES), "config", "check"],
+        "cmd": [str(PYTHON), "-m", "hermes_cli.main", "config", "check"],
         "timeout": 180,
     },
 ]
@@ -107,6 +110,52 @@ SENSITIVE_MARKERS = (
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def resolve_candidate_repo(value: str) -> Path:
+    """Accept only the hard-coded live checkout or isolated CI worktree."""
+    candidate = Path(value).expanduser().resolve()
+    allowed = {LIVE_REPO.resolve(), WORKTREE.resolve()}
+    if candidate not in allowed:
+        raise ValueError(f"candidate repo must be {LIVE_REPO} or {WORKTREE}")
+    return candidate
+
+
+def build_live_activation_command(candidate_head: str) -> list[str]:
+    unit = f"hermes-personalization-activate-{candidate_head[:12]}"
+    return [
+        "systemd-run",
+        "--user",
+        "--collect",
+        "--on-active=5s",
+        f"--unit={unit}",
+        "--property=TimeoutStartSec=1800",
+        str(HERMES),
+        "update",
+        "--branch",
+        TARGET_BRANCH,
+        "--yes",
+        "--no-backup",
+    ]
+
+
+def schedule_live_activation(candidate_head: str, commands: list[dict[str, Any]]) -> bool:
+    live_head_result = run(["git", "rev-parse", "HEAD"], cwd=LIVE_REPO)
+    commands.append(live_head_result)
+    if not ok_cmd(live_head_result):
+        fail("activation_preflight", "Could not resolve live checkout HEAD.", commands=commands)
+    if stdout(live_head_result) == candidate_head:
+        return False
+
+    scheduled = run(build_live_activation_command(candidate_head), timeout=120, cwd=LIVE_REPO)
+    commands.append(scheduled)
+    if not ok_cmd(scheduled):
+        fail(
+            "activation_schedule_failed",
+            "Candidate was verified/pushed, but detached live activation could not be scheduled.",
+            commands=commands,
+        )
+    return True
 
 
 def redact(text: str, limit: int = 8000) -> str:
@@ -282,13 +331,13 @@ def preflight_and_fetch(commands: list[dict[str, Any]]) -> dict[str, Any]:
         )
 
     branch = command_stdout(git("branch", "--show-current"), "preflight", "current branch", commands)
-    if branch != TARGET_BRANCH:
+    if REPO == LIVE_REPO and branch != TARGET_BRANCH:
         fail(
             "wrong_branch",
             f"Expected current branch {TARGET_BRANCH!r}, found {branch or '[detached]'}.",
             commands=commands,
             current_branch=branch,
-            next_action=f"Switch to {TARGET_BRANCH} and rerun the finalizer.",
+            next_action=f"Switch to {TARGET_BRANCH} or finalize the repaired CI worktree with --repo {WORKTREE}.",
         )
 
     origin_url = remote_url(ORIGIN_REMOTE, commands)
@@ -381,12 +430,24 @@ def run_verification(commands: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def main() -> None:
+    global REPO
+
     parser = argparse.ArgumentParser(description="Guarded final push for Brayan's Hermes personalization rebase repair.")
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--apply", action="store_true", help="Run verification and push with an exact force-with-lease.")
-    mode.add_argument("--check", action="store_true", help="Run all guards and verification, but do not push.")
+    mode.add_argument("--apply", action="store_true", help="Run verification, push with an exact force-with-lease, and schedule live activation.")
+    mode.add_argument("--check", action="store_true", help="Run all guards and verification, but do not push or activate.")
+    parser.add_argument(
+        "--repo",
+        default=str(LIVE_REPO),
+        help=f"Candidate checkout to verify: {LIVE_REPO} or {WORKTREE}.",
+    )
     parser.add_argument("--no-fetch", action="store_true", help="Reserved for debugging only; currently refused to keep leases fresh.")
     args = parser.parse_args()
+
+    try:
+        REPO = resolve_candidate_repo(args.repo)
+    except ValueError as exc:
+        fail("invalid_candidate_repo", str(exc))
 
     if args.no_fetch:
         fail("unsupported_option", "--no-fetch is intentionally refused; the finalizer must fetch before computing the exact lease.")
@@ -406,24 +467,31 @@ def main() -> None:
         f"HEAD:{TARGET_REF}",
     ]
 
+    checks: list[dict[str, Any]] = []
+    if args.apply or args.check:
+        checks = run_verification(commands)
+
     if head_full == origin_full:
+        activation_scheduled = schedule_live_activation(head_full, commands) if args.apply else False
         emit(
             {
                 "ok": True,
                 "mode": run_mode,
-                "stage": "no_op",
-                "message": f"origin/{TARGET_BRANCH} already matches local HEAD; no push needed.",
+                "stage": "activated" if activation_scheduled else "no_op",
+                "message": (
+                    f"origin/{TARGET_BRANCH} already matched the verified candidate; detached live activation scheduled."
+                    if activation_scheduled
+                    else f"origin/{TARGET_BRANCH} already matches candidate HEAD; no push needed."
+                ),
                 "pushed": False,
+                "activation_scheduled": activation_scheduled,
                 "snapshot": data["snapshot"],
                 "origin_before": origin_full,
                 "head": head_full,
+                "checks": checks,
                 "commands": commands,
             }
         )
-
-    checks: list[dict[str, Any]] = []
-    if args.apply or args.check:
-        checks = run_verification(commands)
 
     if not args.apply:
         emit(
@@ -486,13 +554,20 @@ def main() -> None:
             head=head_full,
         )
 
+    activation_scheduled = schedule_live_activation(head_full, commands)
+
     emit(
         {
             "ok": True,
             "mode": run_mode,
-            "stage": "pushed",
-            "message": f"Verified and pushed {TARGET_BRANCH} to origin with exact force-with-lease.",
+            "stage": "pushed_and_activation_scheduled" if activation_scheduled else "pushed",
+            "message": (
+                f"Verified and pushed {TARGET_BRANCH} with exact force-with-lease; detached live activation scheduled."
+                if activation_scheduled
+                else f"Verified and pushed {TARGET_BRANCH} with exact force-with-lease; live checkout already matched."
+            ),
             "pushed": True,
+            "activation_scheduled": activation_scheduled,
             "origin_before": origin_full,
             "origin_after": origin_after,
             "head": head_full,
