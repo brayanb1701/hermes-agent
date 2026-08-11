@@ -21,7 +21,14 @@ def test_cron_normalization_drops_snapshot_time():
     sync = load_sync_module()
     raw = {
         "updated_at": "2026-08-10T00:00:00Z",
-        "jobs": [{"id": "job", "name": "demo", "last_run_at": "volatile"}],
+        "jobs": [
+            {
+                "id": "job",
+                "name": "demo",
+                "last_run_at": "volatile",
+                "fire_claim": {"at": "2026-08-10T00:00:00Z", "by": "gateway"},
+            }
+        ],
     }
 
     first = sync.normalize_cron_jobs(raw)
@@ -30,6 +37,7 @@ def test_cron_normalization_drops_snapshot_time():
 
     assert first == second
     assert "updated_at" not in first
+    assert "fire_claim" not in first["jobs"][0]
 
 
 def test_channel_directory_normalization_drops_rebuild_time():

@@ -35,8 +35,7 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null,
-      "fire_claim": null
+      "origin": null
     },
     {
       "id": "50f9df74cb16",
@@ -72,8 +71,7 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null,
-      "fire_claim": null
+      "origin": null
     },
     {
       "id": "b5b791cd972b",
@@ -114,8 +112,7 @@
         "file",
         "terminal"
       ],
-      "no_agent": false,
-      "fire_claim": null
+      "no_agent": false
     },
     {
       "id": "65b0c66d08ee",
@@ -151,8 +148,7 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null,
-      "fire_claim": null
+      "origin": null
     },
     {
       "id": "edfaeb3aed5d",
@@ -188,8 +184,7 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null,
-      "fire_claim": null
+      "origin": null
     },
     {
       "id": "92663af3d092",
@@ -228,10 +223,6 @@
       "last_delivery_error": null,
       "deliver": "local",
       "origin": null,
-      "fire_claim": {
-        "at": "2026-08-10T19:29:19.678109-05:00",
-        "by": "Calcifer:72563"
-      },
       "enabled_toolsets": [
         "terminal",
         "file",
@@ -422,8 +413,7 @@
       "enabled_toolsets": [
         "file",
         "terminal"
-      ],
-      "fire_claim": null
+      ]
     },
     {
       "id": "c77f4c0f5cd9",
@@ -466,8 +456,7 @@
         "file",
         "terminal"
       ],
-      "workdir": null,
-      "fire_claim": null
+      "workdir": null
     },
     {
       "id": "d93ad4e6be8b",
@@ -510,8 +499,7 @@
         "file",
         "terminal"
       ],
-      "workdir": null,
-      "fire_claim": null
+      "workdir": null
     }
   ]
 }
