@@ -2069,6 +2069,9 @@ DEFAULT_CONFIG = {
     },
 
     "updates": {
+        # Optional default branch for fork/integration installs. An explicit
+        # ``hermes update --branch ...`` takes precedence; None keeps ``main``.
+        "branch": None,
         # Pre-update backup. quick = snapshot small critical state (pairing JSONs, cron jobs,
         # config.yaml, .env, auth.json, profile DBs) into <HERMES_HOME>/state-snapshots/, skipping
         # files >1 GiB; restore via ``/snapshot``. full = quick PLUS a ``hermes backup`` zip in

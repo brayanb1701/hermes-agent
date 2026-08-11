@@ -793,8 +793,8 @@ class TestCmdUpdateProfileSkillSync:
 class TestCmdUpdateBranchFlag:
     """``hermes update --branch <name>`` targets the requested branch.
 
-    The CLI default stays 'main'; --branch lets callers pick a different
-    target without monkey-patching the implementation.
+    An explicit --branch lets callers override the configured ``updates.branch``
+    target (or ``main`` when no update branch is configured).
     """
 
     def _branch_side_effect(self, current_branch, target_branch, *, checkout_fails=False, track_fails=False, commit_count="0"):
