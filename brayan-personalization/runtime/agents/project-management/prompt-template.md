@@ -26,8 +26,9 @@ Required execution:
 4. If active or workspace-related, inspect `PROJECT_STATUS.md`, `PROJECT_CHANGELOG.md`, and the signal file when it exists.
 5. Apply only well-supported state changes.
 6. Keep dashboard/backlog/finished in sync.
-7. Append `_meta/log.md` only for meaningful structural or finalization changes.
-8. If facts are insufficient, mark the signal file paused when appropriate or add missing-info notes, then notify Brayan.
+7. After adding a dated project-hub review entry, run `python3 ~/.hermes/scripts/project_review_history_retention.py --project {{vault_project_path}} --keep 5` and verify at most five dated review entries remain.
+8. Append `_meta/log.md` only for meaningful structural or finalization changes.
+9. If facts are insufficient, mark the signal file paused when appropriate or add missing-info notes, then notify Brayan.
 
 Boundaries:
 - Do not submit/publish/spend externally.
