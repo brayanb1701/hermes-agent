@@ -31,7 +31,7 @@ DEFAULT_HERMES_HOME = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes"
 BUNDLE = REPO / "brayan-personalization" / "runtime"
 
 COPY_DIRS = ["agents", "skills", "plugins", "scripts"]
-COPY_FILES = ["config.yaml", "SOUL.md", "channel_directory.json"]
+COPY_FILES = ["config.yaml", "SOUL.md"]
 
 SECRET_LITERAL_PATTERNS = [
     re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
@@ -128,9 +128,15 @@ def normalize_cron_jobs(raw: dict[str, Any]) -> dict[str, Any]:
             "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by "
             "scripts/sync-brayan-personalization.py. Secrets are not included."
         ),
-        "updated_at": utc_now(),
         "jobs": normalized_jobs,
     }
+
+
+def normalize_channel_directory(raw: dict[str, Any]) -> dict[str, Any]:
+    """Drop the gateway rebuild timestamp while preserving routing data."""
+    normalized = dict(raw)
+    normalized.pop("updated_at", None)
+    return normalized
 
 
 def write_json(path: Path, data: Any) -> None:
@@ -167,7 +173,6 @@ def scan_for_secrets(root: Path) -> list[str]:
 def sync(hermes_home: Path, *, check_secrets: bool = True) -> dict[str, Any]:
     BUNDLE.mkdir(parents=True, exist_ok=True)
     manifest: dict[str, Any] = {
-        "generated_at": utc_now(),
         "source_hermes_home": str(hermes_home),
         "bundle_root": str(BUNDLE.relative_to(REPO)),
         "copied_dirs": {},
@@ -192,6 +197,12 @@ def sync(hermes_home: Path, *, check_secrets: bool = True) -> dict[str, Any]:
     for name in COPY_FILES:
         if copy_file(hermes_home / name, BUNDLE / name):
             manifest["copied_files"].append(name)
+
+    channel_src = hermes_home / "channel_directory.json"
+    if channel_src.exists():
+        raw = json.loads(channel_src.read_text(encoding="utf-8"))
+        write_json(BUNDLE / "channel_directory.json", normalize_channel_directory(raw))
+        manifest["copied_files"].append("channel_directory.json")
 
     cron_src = hermes_home / "cron" / "jobs.json"
     if cron_src.exists():
