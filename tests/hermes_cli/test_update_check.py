@@ -36,8 +36,72 @@ def test_check_for_updates_uses_cache(tmp_path, monkeypatch):
     mock_run.assert_not_called()
 
 
+def test_local_git_check_compares_configured_integration_branch(tmp_path):
+    """The banner update check must inspect the branch `hermes update` pulls."""
+    from hermes_cli import banner
+
+    repo_dir = tmp_path / "repo"
+    (repo_dir / ".git").mkdir(parents=True)
+    commands = []
+
+    def fake_run(cmd, **kwargs):
+        commands.append(tuple(cmd))
+        if cmd[:3] == ["git", "remote", "get-url"]:
+            return MagicMock(
+                returncode=0,
+                stdout="git@github.com:NousResearch/hermes-agent.git\n",
+            )
+        if cmd[:3] == ["git", "rev-parse", "--is-shallow-repository"]:
+            return MagicMock(returncode=0, stdout="false\n")
+        if cmd[:2] == ["git", "fetch"]:
+            return MagicMock(returncode=0, stdout="")
+        if cmd[:3] == ["git", "rev-list", "--count"]:
+            return MagicMock(returncode=0, stdout="0\n")
+        raise AssertionError(f"unexpected command: {cmd}")
+
+    branch = "brayan/personal-hermes-customizations"
+    with patch("hermes_cli.banner.subprocess.run", side_effect=fake_run):
+        result = banner._check_via_local_git(repo_dir, branch=branch)
+
+    assert result == 0
+    assert ("git", "fetch", "origin", branch, "--quiet") in commands
+    assert ("git", "rev-list", "--count", f"HEAD..origin/{branch}") in commands
+    assert not any("origin/main" in command for command in commands)
 
 
+def test_update_check_uses_configured_branch_and_invalidates_other_branch_cache(
+    tmp_path, monkeypatch
+):
+    """A cached main result must not override the configured integration branch."""
+    from hermes_cli import __version__, banner
+
+    cache_file = tmp_path / ".update_check"
+    cache_file.write_text(
+        json.dumps(
+            {
+                "ts": time.time(),
+                "behind": 3,
+                "rev": None,
+                "ver": __version__,
+                "branch": "main",
+            }
+        )
+    )
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    branch = "brayan/personal-hermes-customizations"
+
+    with (
+        patch(
+            "hermes_cli.config.load_config",
+            return_value={"updates": {"branch": branch}},
+        ),
+        patch.object(banner, "_check_via_local_git", return_value=0) as check_git,
+    ):
+        result = banner.check_for_updates()
+
+    assert result == 0
+    check_git.assert_called_once_with(check_git.call_args.args[0], branch=branch)
+    assert json.loads(cache_file.read_text())["branch"] == branch
 
 
 def test_prefetch_non_blocking():
@@ -231,7 +295,7 @@ def test_check_for_updates_does_not_cache_none(tmp_path, monkeypatch):
     (repo_dir / ".git").mkdir()
 
     # Mock the internal functions to force the local-git path returning None
-    monkeypatch.setattr(banner, "_check_via_local_git", lambda rd: None)
+    monkeypatch.setattr(banner, "_check_via_local_git", lambda rd, branch="main": None)
     monkeypatch.setattr(
         "hermes_cli.config.detect_install_method", lambda root: "git"
     )
