@@ -50,6 +50,8 @@ git switch brayan/personal-hermes-customizations
 git pull --ff-only origin brayan/personal-hermes-customizations
 scripts/apply-brayan-personalization.py          # dry run
 scripts/apply-brayan-personalization.py --apply  # copy into ~/.hermes
+# Preserve an already-configured machine's auth/provider config:
+scripts/apply-brayan-personalization.py --apply --preserve-config
 ```
 
 Then restore local secrets/auth and restart/check Hermes:
@@ -67,4 +69,4 @@ If the new machine should use a different Telegram bot/chat/vault path, edit `~/
 
 ## Applying without replacing existing files
 
-The apply script creates timestamped backups by default, e.g. `config.yaml.bak-YYYYMMDDTHHMMSSZ`. Use `--no-backup` only when you intentionally want direct overwrite.
+The apply script creates timestamped backups by default, e.g. `config.yaml.bak-YYYYMMDDTHHMMSSZ`. Use `--preserve-config` when setup/auth has already run, and use `--no-backup` only when you intentionally want direct overwrite.
