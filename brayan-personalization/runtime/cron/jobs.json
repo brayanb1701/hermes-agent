@@ -228,7 +228,10 @@
       "last_delivery_error": null,
       "deliver": "local",
       "origin": null,
-      "fire_claim": null,
+      "fire_claim": {
+        "at": "2026-08-10T19:29:19.678109-05:00",
+        "by": "Calcifer:72563"
+      },
       "enabled_toolsets": [
         "terminal",
         "file",
