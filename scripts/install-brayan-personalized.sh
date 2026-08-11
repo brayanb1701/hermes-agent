@@ -3,11 +3,11 @@
 #
 # Default target:
 #   repo:   brayanb1701/hermes-agent
-#   branch: second-computer-evolution
+#   branch: brayan/personal-hermes-customizations
 #   dir:    ~/.hermes/hermes-agent
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/main/scripts/install-brayan-personalized.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash
 #
 # Options are forwarded to scripts/install.sh. Common examples:
 #   bash install-brayan-personalized.sh --branch main
@@ -18,8 +18,10 @@ set -euo pipefail
 
 FORK_OWNER="${HERMES_PERSONAL_FORK_OWNER:-brayanb1701}"
 FORK_REPO="${HERMES_PERSONAL_FORK_REPO:-hermes-agent}"
-DEFAULT_BRANCH="${HERMES_PERSONAL_BRANCH:-second-computer-evolution}"
+DEFAULT_BRANCH="${HERMES_PERSONAL_BRANCH:-brayan/personal-hermes-customizations}"
 INSTALL_SH_BRANCH="$DEFAULT_BRANCH"
+INSTALL_DIR="${HERMES_INSTALL_DIR:-${HOME}/.hermes/hermes-agent}"
+HERMES_HOME_DIR="${HERMES_HOME:-${HOME}/.hermes}"
 
 args=("$@")
 for ((i = 0; i < ${#args[@]}; i++)); do
@@ -31,18 +33,32 @@ for ((i = 0; i < ${#args[@]}; i++)); do
       fi
       INSTALL_SH_BRANCH="${args[$((i + 1))]}"
       ;;
+    --dir)
+      if (( i + 1 >= ${#args[@]} )); then
+        echo "error: --dir requires a value" >&2
+        exit 2
+      fi
+      INSTALL_DIR="${args[$((i + 1))]}"
+      ;;
+    --hermes-home)
+      if (( i + 1 >= ${#args[@]} )); then
+        echo "error: --hermes-home requires a value" >&2
+        exit 2
+      fi
+      HERMES_HOME_DIR="${args[$((i + 1))]}"
+      ;;
     -h|--help)
       cat <<'HELP'
 Install Brayan's personalized Hermes Agent fork.
 
 Defaults:
   repo:   brayanb1701/hermes-agent
-  branch: second-computer-evolution
+  branch: brayan/personal-hermes-customizations
   dir:    ~/.hermes/hermes-agent
 
 Usage:
-  curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/main/scripts/install-brayan-personalized.sh | bash
-  curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/main/scripts/install-brayan-personalized.sh | bash -s -- --branch main
+  curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash -s -- --branch second-computer-evolution
 
 Forwarded options from scripts/install.sh:
   --branch NAME        Branch to install
@@ -58,6 +74,11 @@ done
 
 if [[ " ${args[*]} " != *" --branch "* ]]; then
   args+=(--branch "$DEFAULT_BRANCH")
+fi
+
+existing_install=false
+if [[ -d "$INSTALL_DIR/.git" ]]; then
+  existing_install=true
 fi
 
 export HERMES_REPO_URL_SSH="git@github.com:${FORK_OWNER}/${FORK_REPO}.git"
@@ -87,7 +108,7 @@ else
   bash "$installer" "${args[@]}"
 fi
 
-install_dir="${HERMES_INSTALL_DIR:-${HOME}/.hermes/hermes-agent}"
+install_dir="$INSTALL_DIR"
 if [[ -d "$install_dir/.git" ]]; then
   cd "$install_dir"
   git remote set-url origin "$HERMES_REPO_URL_SSH" 2>/dev/null || git remote add origin "$HERMES_REPO_URL_SSH"
@@ -100,12 +121,21 @@ if [[ -d "$install_dir/.git" ]]; then
   git fetch upstream --quiet || true
 fi
 
-if command -v hermes >/dev/null 2>&1; then
-  hermes config set model.provider openai-codex >/dev/null 2>&1 || true
-  hermes config set model.default gpt-5.5 >/dev/null 2>&1 || true
-  echo "Configured Hermes default text model to openai-codex:gpt-5.5 when supported."
+python_bin="$install_dir/venv/bin/python"
+if [[ "$existing_install" == false && -x "$python_bin" && -f "$install_dir/scripts/apply-brayan-personalization.py" ]]; then
+  "$python_bin" "$install_dir/scripts/apply-brayan-personalization.py" \
+    --hermes-home "$HERMES_HOME_DIR" --apply --no-backup --preserve-config
+  echo "Applied Brayan's agents, skills, plugins, scripts, cron jobs, and safe runtime files."
+fi
+
+if [[ -x "$python_bin" ]]; then
+  "$python_bin" -m hermes_cli.main config set updates.branch "$INSTALL_SH_BRANCH" >/dev/null
+  echo "Configured future Hermes updates to stay on ${INSTALL_SH_BRANCH}."
+elif command -v hermes >/dev/null 2>&1; then
+  hermes config set updates.branch "$INSTALL_SH_BRANCH" >/dev/null
+  echo "Configured future Hermes updates to stay on ${INSTALL_SH_BRANCH}."
 else
-  echo "Hermes command is not on PATH yet. Restart the shell, then run: hermes config set model.default gpt-5.5"
+  echo "Hermes is not on PATH yet. After restarting the shell, run: hermes config set updates.branch '$INSTALL_SH_BRANCH'"
 fi
 
 cat <<'DONE'
@@ -117,10 +147,10 @@ Next recommended commands:
   hermes config check
   hermes
 
-If this machine is the independent evolution line:
+Verify the selected maintenance branch:
   cd ~/.hermes/hermes-agent
   git status --short --branch
-  git branch --show-current   # should be second-computer-evolution unless you chose another branch
+  git branch --show-current
 
 Do not copy secrets from another machine into Git. Configure providers, Telegram, and local credentials through `hermes setup` or local config only.
 DONE
