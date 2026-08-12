@@ -3,7 +3,7 @@
   "bundle_root": "brayan-personalization/runtime",
   "copied_dirs": {
     "agents": 14,
-    "skills": 723,
+    "skills": 726,
     "plugins": 3,
     "scripts": 12
   },
