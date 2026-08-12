@@ -22,6 +22,9 @@ Use this orchestration/quality-assurance skill for mixed folders containing PDFs
 ## Core principles
 
 - Preserve originals. Write every derivative under a clearly named output directory.
+- When originals are reorganized after extraction, preserve source-relative provenance: migrate existing page records and update paths instead of blindly re-running OCR.
+- Distinguish the active corpus from user-designated redundant/archive folders; excluded files are not extraction failures.
+- Keep user-provided factual clarifications in a dedicated context layer, separate from extracted evidence, and require agent entry points to reference it.
 - Inspect capacity before starting local models: CPU/load, RAM/swap, disk, VRAM, GPU utilization, and competing GPU processes.
 - Keep the workstation responsive. Run one local model process at a time, one page/image per generation, at low process priority with restricted CPU threads.
 - Save page-level results incrementally so interruption or timeout can resume without recomputing completed pages.
@@ -117,6 +120,18 @@ Before completion:
 - spreadsheet exports match source row counts and important sums,
 - no OCR/model process remains running,
 - provide one README naming preferred entry points and warning users not to feed raw OCR to downstream agents when validated versions exist.
+
+## Reorganizing an existing corpus
+
+When source files are moved into new categories after extraction, do not treat path changes as new OCR work. Centralize active-corpus discovery and mirrored output paths, migrate page-level records while updating provenance, then regenerate aggregate transcripts. OCR only genuinely missing records. Keep user-designated redundant/archive sources outside completeness counts and the preferred agent corpus.
+
+Publish a human-readable corpus map plus a machine-readable source-to-validated-output index. Extend final verification so the active source list, OCR manifest, validated index, output existence, and page totals reconcile exactly. Re-run the OCR entry point as an idempotence test; with a complete corpus it should report zero new pages without loading the model.
+
+For evidence packages used by downstream decision-making agents, add a dedicated context Markdown file for user-resolved facts: filing history, interpretation of same-type documents, categories confirmed non-applicable, evidence the user considers sufficient, and known duplicate-reporting risks. Make every agent entry point reference it. Tell agents not to reopen generic evidence requests unless they identify a concrete contradiction, a material residual discrepancy, or an exact missing field.
+
+When the same economic amount appears in source documents and third-party/annual reports, require a reconciliation table. Supporting documents may explain or classify an amount already reported; they do not automatically create another entry. Preserve residual differences explicitly rather than forcing a false exact match or double-counting.
+
+See `references/corpus-reorganization.md` for the proven migration, exclusion, indexing, context-layer, reconciliation, and verification pattern.
 
 ## Pitfalls
 
