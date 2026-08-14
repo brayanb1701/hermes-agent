@@ -89,7 +89,22 @@ The human-readable report should include:
 
 Avoid burying the projected result. Present it near the top and repeat the critical caveat beside it.
 
-### 6. Verify before delivery
+### 6. Compare an external preparer's completed form
+
+When reconciling the draft against a completed PDF prepared by an accountant or other professional:
+
+1. Extract the PDF's native text layer first, then use layout-aware OCR when the form is visually dense. Compare both outputs and visually inspect the rendered page before trusting box-to-value mappings.
+2. Build explicit `field/casilla → value` maps for both drafts. Compare the maps mechanically and sort differences by absolute amount, not by form order.
+3. Separate **independent input/treatment differences** from **propagated calculated differences**. Group downstream fields that share one cause instead of presenting each as a separate disagreement.
+4. Reconstruct both sides' arithmetic where possible. Explain the internal draft from cited inputs and formulas; label any explanation of the external preparer's choice as an inference unless their workpapers establish it.
+5. Check whether a downstream tax delta exactly matches a previously modeled alternative legal treatment. Exact reconciliation is stronger evidence than a merely plausible narrative.
+6. Treat one-thousand-peso differences separately when they arise from rounding order. Show the exact unrounded values and the two rounding sequences.
+7. If a total differs but the form lacks supporting schedules, do not reverse-engineer a specific asset or deduction as fact. State the implied residual under an explicit “all other components equal” assumption and ask for the preparer's detail.
+8. End with a short set of targeted questions tied to the material root causes.
+
+For a condensed worked pattern, see `references/comparing-external-tax-drafts.md`.
+
+### 7. Verify before delivery
 
 At minimum verify:
 
@@ -101,7 +116,9 @@ At minimum verify:
 - VBA project hash matches byte-for-byte;
 - ActiveX/drawing/sensitive parts match byte-for-byte;
 - workbook requests full recalculation;
-- independent calculations reconcile to expected form lines under documented rounding.
+- independent calculations reconcile to expected form lines under documented rounding;
+- every reported external-draft difference appears in the mechanically generated comparison;
+- grouped downstream differences reconcile to their stated root cause.
 
 Do not treat stale formula caches as final. If native Excel/VBA execution is unavailable, say so and require the user to open the workbook in supported Microsoft Excel, enable macros, recalculate, run official macros, and compare outputs against the independent mirror.
 
