@@ -6,6 +6,7 @@ arxiv:320b2fb12d0e112c1fc007d4e7ff0a7b
 ascii-art:0323134573013c5409a0b35d513aedb7
 ascii-video:2c8277458b2ef50421ce44debb9d81ad
 baoyu-infographic:53edf7d1b9398d62f4ccb0755e27913e
+blocked-page-recovery:04ccef711fdae1abae4454eaf37333bc
 blogwatcher:3f30bdd408c771501b94fab9289579c6
 claude-code:11185c8a90b5600cafe267fff856c427
 claude-design:a839ed75e38167058cb363f63b64c6a3
@@ -58,6 +59,7 @@ requesting-code-review:f7e902570802e21f340955384385abda
 research-paper-writing:caf8f129ab2c78a43f27648868c667a1
 sdlc-review:4a4be11e979ac444fdc9c277b8500a81
 serving-llms-vllm:a610c728d704ea074a8c56b180fcd5f4
+session-librarian:c497c4e67599f44057ceb91cccedde72
 sketch:fb54013e36f2ce099e2c2ce197a06a26
 songsee:644dc0f267b6661a3df6c76ce80d7f1f
 songwriting-and-ai-music:52be403c894c7bd7d6fe70f7eeaf9460
