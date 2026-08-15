@@ -66,7 +66,7 @@ agent:
 terminal:
   backend: local
   modal_mode: auto
-  cwd: .
+  cwd: /home/brayan
   timeout: 180
   env_passthrough: []
   home_mode: auto
