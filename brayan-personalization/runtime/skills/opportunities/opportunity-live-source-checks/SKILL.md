@@ -24,6 +24,7 @@ Produce a small evidence-backed live-source finding, not a broad web research re
    - Record method, HTTP status, final redirected URL, byte count or response size, and whether expected role/title text was present.
    - For simple pages, a direct HTTP fetch is usually enough.
    - For JavaScript-heavy pages, use browser/web extraction only if the direct check is inconclusive and the decision warrants it.
+   - When a public Airtable interface-form URL returns only its generic shell, render the original URL with an isolated disposable headless-Chrome profile and inspect the hydrated DOM. This avoids requiring control of the user's normal browser and keeps the check read-only. See `references/airtable-interface-forms.md` for the validated command and evidence checklist.
 
 3. **Do not treat HTTP 200 as sufficient evidence of a live role.**
    - A platform can return HTTP 200 for a generic company page, soft-404 page, or stale shell page.
