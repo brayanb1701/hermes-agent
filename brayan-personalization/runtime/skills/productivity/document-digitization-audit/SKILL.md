@@ -99,7 +99,18 @@ Never represent a visual guess as a correction. Record user verification explici
 
 ### 6. Audit macro-enabled workbooks safely
 
-Do not save an `.xlsm` with a library that might strip VBA. Prefer read-only package inspection:
+Do not save an `.xlsm` with a library that might strip VBA. Prefer read-only package inspection.
+
+Treat large or highly styled XLSM files as potential memory bombs. Never use `openpyxl.load_workbook(..., read_only=False)` followed by `for ws in wb.worksheets` / `iter_rows()` across the whole workbook merely to search formulas, labels, or constants. On a 191-sheet DIAN workbook this pattern twice grew one Python process to about 27 GiB RSS, exhausted 8 GiB swap, triggered the kernel OOM killer, and caused systemd-oomd to close the containing terminal scope. Parallel subagents amplify the chance of this mistake but are not the underlying allocation source.
+
+Safe order:
+
+1. Inspect workbook dimensions, shared strings, formulas, constants, and sheet XML directly from the OOXML ZIP, streaming one member at a time.
+2. Use existing extracted formula indexes when available.
+3. If `openpyxl` is unavoidable, start with `read_only=True`, open only once, access named target sheets/ranges, close promptly, and run the probe in a memory-limited process/cgroup after a one-sheet sample.
+4. Do not run multiple workbook loaders in parallel with OCR/local models. Stop if RSS grows unexpectedly.
+
+Then:
 
 - inspect OOXML ZIP relationships, sheet states, dimensions, formulas, cached errors, external links, drawings, and ActiveX parts;
 - extract VBA statically (for example with `olevba`) and identify auto-run events, command bars, UserForms, ActiveX handlers, file/process/network behavior;
