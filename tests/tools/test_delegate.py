@@ -1715,6 +1715,44 @@ class TestDispatchDelegateTask(unittest.TestCase):
 
         self.assertIs(captured["background"], False)
 
+    def test_model_dispatch_preserves_live_control_arguments(self):
+        """Foreground policy must not drop current live-control fields."""
+        import run_agent
+
+        captured = {}
+
+        def fake_delegate_task(**kwargs):
+            captured.update(kwargs)
+            return "{}"
+
+        parent = _make_mock_parent(depth=0)
+        with patch("tools.delegate_tool.delegate_task", fake_delegate_task):
+            run_agent.AIAgent._dispatch_delegate_task(
+                parent,
+                {
+                    "action": "steer",
+                    "subagent_id": "subagent-1",
+                    "message": "focus on the failing test",
+                },
+            )
+
+        self.assertEqual(captured["action"], "steer")
+        self.assertEqual(captured["subagent_id"], "subagent-1")
+        self.assertEqual(captured["message"], "focus on the failing test")
+
+    def test_registry_fallback_uses_same_foreground_policy(self):
+        from tools.delegate_tool import _model_background_value
+
+        top_level = _make_mock_parent(depth=0)
+        orchestrator = _make_mock_parent(depth=1)
+
+        self.assertFalse(_model_background_value({}, top_level))
+        self.assertTrue(_model_background_value({"background": True}, top_level))
+        self.assertFalse(
+            _model_background_value({"background": True}, orchestrator)
+        )
+
+
 class TestDelegateEventEnum(unittest.TestCase):
     """Tests for DelegateEvent enum and back-compat aliases."""
 
