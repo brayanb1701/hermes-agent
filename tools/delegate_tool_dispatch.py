@@ -118,11 +118,14 @@ def _run_children_parallel(batch: _Batch, results: list, *, honor_parent_interru
         except Exception as exc:
             return _fabricated_entry(idx, "error", str(exc), _child_by_index.get(idx))
 
-    with DaemonThreadPoolExecutor(max_workers=batch.max_children) as executor:
+    executor = DaemonThreadPoolExecutor(max_workers=batch.max_children)
+    abandon_workers = False
+    try:
         futures = {executor.submit(contextvars.copy_context().run, batch.run_child, i, t, child): i for i, t, child in batch.children}
         pending = set(futures)
         while pending:
             if honor_parent_interrupt and getattr(parent_agent, "_interrupt_requested", False) is True:
+                abandon_workers = True
                 results.extend(_entry_of(f, futures[f]) for f in pending)
                 break
             done, pending = _cf_wait(pending, timeout=0.5, return_when=FIRST_COMPLETED)
@@ -130,6 +133,11 @@ def _run_children_parallel(batch: _Batch, results: list, *, honor_parent_interru
                 entry = _entry_of(future, futures[future])
                 results.append(entry)
                 _report_child_done(parent_agent, spinner_ref, entry, _tag, task_labels, n_tasks, n_here - len(results))
+    finally:
+        # Context-manager exit always waits. On parent interruption, leave daemon
+        # workers to finish without blocking /stop; queued children are not
+        # cancelled so their lifecycle cleanup still runs.
+        executor.shutdown(wait=not abandon_workers, cancel_futures=False)
     results.sort(key=lambda r: r["task_index"])  # match input order
 
 def _execute_and_aggregate(batch: _Batch, *, honor_parent_interrupt: bool = True) -> dict:
