@@ -1752,6 +1752,124 @@ class TestDispatchDelegateTask(unittest.TestCase):
             _model_background_value({"background": True}, orchestrator)
         )
 
+    def test_foreground_batch_interrupt_does_not_join_wedged_children(self):
+        """Stopping the parent must return even if a worker ignores interrupt."""
+        release_workers = threading.Event()
+        workers_started = threading.Barrier(3)
+        parent = _make_mock_parent(depth=0)
+        parent._interrupt_requested = False
+        result_holder = {}
+
+        def wedged_child(task_index, task, child):
+            workers_started.wait(timeout=2)
+            release_workers.wait(timeout=5)
+            return {
+                "task_index": task_index,
+                "status": "completed",
+                "summary": "late",
+                "api_calls": 1,
+                "duration_seconds": 0,
+            }
+
+        children = [MagicMock(), MagicMock()]
+
+        def run_delegate():
+            with (
+                patch(
+                    "tools.delegate_tool._build_child_preserving_parent_tools",
+                    side_effect=children,
+                ),
+                patch("tools.delegate_tool_dispatch._Batch.run_child", side_effect=wedged_child),
+            ):
+                result_holder["value"] = delegate_task(
+                    tasks=[
+                        {"goal": "Investigate the first independent concern"},
+                        {"goal": "Investigate the second independent concern"},
+                    ],
+                    parent_agent=parent,
+                )
+
+        caller = threading.Thread(target=run_delegate, daemon=True)
+        caller.start()
+        workers_started.wait(timeout=2)
+        parent._interrupt_requested = True
+        caller.join(timeout=3)
+        returned_before_workers = not caller.is_alive()
+
+        release_workers.set()
+        caller.join(timeout=2)
+
+        self.assertTrue(
+            returned_before_workers,
+            "foreground delegate_task waited for wedged executor workers after interrupt",
+        )
+        self.assertIn("value", result_holder)
+
+    def test_foreground_batch_interrupt_does_not_cancel_queued_children(self):
+        """Queued children must still enter the child runner after interruption."""
+        from tools.daemon_pool import DaemonThreadPoolExecutor
+
+        first_started = threading.Event()
+        second_started = threading.Event()
+        release_first = threading.Event()
+        parent = _make_mock_parent(depth=0)
+        parent._interrupt_requested = False
+
+        def child_run(task_index, task, child):
+            if task_index == 0:
+                first_started.set()
+                release_first.wait(timeout=5)
+            else:
+                second_started.set()
+            return {
+                "task_index": task_index,
+                "status": "interrupted",
+                "summary": None,
+                "api_calls": 0,
+                "duration_seconds": 0,
+            }
+
+        children = [MagicMock(), MagicMock()]
+
+        def one_worker_pool(**kwargs):
+            return DaemonThreadPoolExecutor(max_workers=1)
+
+        def run_delegate():
+            with (
+                patch(
+                    "tools.delegate_tool._build_child_preserving_parent_tools",
+                    side_effect=children,
+                ),
+                patch("tools.delegate_tool_dispatch._Batch.run_child", side_effect=child_run),
+                patch(
+                    "tools.daemon_pool.DaemonThreadPoolExecutor",
+                    side_effect=one_worker_pool,
+                ),
+            ):
+                delegate_task(
+                    tasks=[
+                        {"goal": "Investigate the first independent concern"},
+                        {"goal": "Investigate the second independent concern"},
+                    ],
+                    parent_agent=parent,
+                )
+
+        caller = threading.Thread(target=run_delegate, daemon=True)
+        caller.start()
+        self.assertTrue(first_started.wait(timeout=2))
+        parent._interrupt_requested = True
+        caller.join(timeout=3)
+        self.assertFalse(caller.is_alive())
+
+        release_first.set()
+        queued_child_ran = second_started.wait(timeout=2)
+        caller.join(timeout=2)
+
+        self.assertTrue(
+            queued_child_ran,
+            "shutdown canceled a queued child before it entered the child runner",
+        )
+
 
 class TestDelegateEventEnum(unittest.TestCase):
     """Tests for DelegateEvent enum and back-compat aliases."""
