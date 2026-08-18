@@ -141,18 +141,14 @@ def _run_children_parallel(batch: _Batch, results: list, *, honor_parent_interru
             return _fabricated_entry(idx, "error", str(exc), _child_by_index.get(idx))
 
     executor = DaemonThreadPoolExecutor(max_workers=batch.max_children)
-    # ``with`` would join every worker on exit, so a child wedged in an
-    # uninterruptible call defeats the interrupt fast-path: the poll loop marks
-    # it interrupted and returns, then the join hangs forever. Shutdown without
-    # waiting on the interrupt path instead (same shape as moa_loop).
-    interrupted = False
+    abandon_workers = False
     try:
         futures = {executor.submit(contextvars.copy_context().run, batch.run_child, i, t, child): i for i, t, child in batch.children}
         pending = set(futures)
         while pending:
             if honor_parent_interrupt and getattr(parent_agent, "_interrupt_requested", False) is True:
+                abandon_workers = True
                 results.extend(_entry_of(f, futures[f]) for f in pending)
-                interrupted = True
                 break
             done, pending = _cf_wait(pending, timeout=0.5, return_when=FIRST_COMPLETED)
             for future in done:
@@ -172,9 +168,10 @@ def _run_children_parallel(batch: _Batch, results: list, *, honor_parent_interru
                         push_task_failure_notice(
                             batch.unit_id, {**entry, **({"live_transcript": _live} if _live else {})}, n_tasks=n_tasks)
     finally:
-        # Abandoned workers unwind on their own (daemon threads, and the
-        # child-run layer already applies the deferred-close transport drain).
-        executor.shutdown(wait=not interrupted, cancel_futures=interrupted)
+        # Context-manager exit always waits. On parent interruption, leave daemon
+        # workers to finish without blocking /stop; queued children are not
+        # cancelled so their lifecycle cleanup still runs.
+        executor.shutdown(wait=not abandon_workers, cancel_futures=False)
     results.sort(key=lambda r: r["task_index"])  # match input order
 
 def _execute_and_aggregate(batch: _Batch, *, honor_parent_interrupt: bool = True) -> dict:
