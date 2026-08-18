@@ -35,7 +35,8 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null
+      "origin": null,
+      "failure_streak": 0
     },
     {
       "id": "50f9df74cb16",
@@ -71,7 +72,8 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null
+      "origin": null,
+      "failure_streak": 0
     },
     {
       "id": "b5b791cd972b",
@@ -112,7 +114,8 @@
         "file",
         "terminal"
       ],
-      "no_agent": false
+      "no_agent": false,
+      "failure_streak": 0
     },
     {
       "id": "65b0c66d08ee",
@@ -148,7 +151,8 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null
+      "origin": null,
+      "failure_streak": 0
     },
     {
       "id": "edfaeb3aed5d",
