@@ -73,6 +73,8 @@ For each category:
 
 For complex `.xlsm` files with VBA, ActiveX, drawings, or unsupported OOXML extensions, avoid a full `openpyxl` or LibreOffice round trip. Patch only the targeted worksheet XML cells in a copy of the package, preserve all other ZIP members byte-for-byte, and set workbook calculation properties to request a full recalculation on open.
 
+Before implementing any workbook writer, read the project README/handoff and search for an existing known-good writer and assignment ledger. Reuse that writer for incremental changes. Do not parse and reserialize whole OOXML worksheet/workbook parts with a generic XML library: namespace-prefix rewrites can invalidate `mc:Ignorable` extension metadata even when ZIP integrity, formulas, VBA hashes, and XML parsing all pass.
+
 ### 5. Produce a readable mirror
 
 The human-readable report should include:
