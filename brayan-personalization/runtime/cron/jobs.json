@@ -188,7 +188,8 @@
       "last_error": null,
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null
+      "origin": null,
+      "failure_streak": 0
     },
     {
       "id": "92663af3d092",
@@ -232,7 +233,8 @@
         "file",
         "skills",
         "code_execution"
-      ]
+      ],
+      "failure_streak": 0
     },
     {
       "id": "64be0631db63",
@@ -460,7 +462,8 @@
         "file",
         "terminal"
       ],
-      "workdir": null
+      "workdir": null,
+      "failure_streak": 0
     },
     {
       "id": "d93ad4e6be8b",
@@ -503,7 +506,8 @@
         "file",
         "terminal"
       ],
-      "workdir": null
+      "workdir": null,
+      "failure_streak": 0
     }
   ]
 }
