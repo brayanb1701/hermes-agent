@@ -1,6 +1,6 @@
 # Portable hackathon skill profile
 
-This private branch is a clean, work-computer-safe Hermes baseline for Brayan's hackathon work.
+This portable branch is a clean, work-computer-safe Hermes baseline for Brayan's hackathon work. The fork is public, so everything here is intentionally sanitized for public visibility.
 
 It is based directly on official `upstream/main` and does not inherit the personal runtime branch. It contains no runtime configuration, memories, vault data, cron jobs, channel identifiers, sessions, logs, credentials, or personal project records.
 
