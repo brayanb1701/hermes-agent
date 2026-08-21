@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "name": "Brayan hackathon portable skill set",
+  "base_commit": "40643cbaf9b767af146694131ffb8f8160f25e1c",
+  "policy": {
+    "portable_skill_count": 28,
+    "load_phase_relevant_subset_only": true,
+    "methodology_packs_included": false,
+    "secrets_or_personal_runtime_state_included": false
+  },
+  "skills": [
+    {"name":"dspy","tier":"product-domain","source":"portable-hackathon/vendor-skills/mlops/research/dspy","license":"MIT","provenance":"Former Hermes bundled skill; upstream history includes 38d3c49aaf2e1751e414a312d7e7986df40994e3"},
+    {"name":"outlines","tier":"product-domain","source":"portable-hackathon/vendor-skills/mlops/inference/outlines","license":"MIT","provenance":"Former Hermes bundled skill; upstream history includes ded194eb6aca6c7999589168b19d139d1b785316"},
+    {"name":"ocr-and-documents","tier":"product-domain","source":"skills/productivity/ocr-and-documents","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"document-digitization-audit","tier":"product-domain","source":"portable-hackathon/vendor-skills/productivity/document-digitization-audit","license":"MIT","provenance":"Darwin-authored skill, user-authorized for this private portable branch"},
+    {"name":"cv-document-production","tier":"product-domain","source":"portable-hackathon/vendor-skills/productivity/cv-document-production","license":"MIT","provenance":"Darwin-authored skill, user-authorized for this private portable branch"},
+    {"name":"docx","tier":"product-domain","source":"skills/productivity/docx","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"pdf","tier":"product-domain","source":"skills/productivity/pdf","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"comfyui","tier":"product-domain","source":"skills/creative/comfyui","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"polymarket","tier":"product-domain","source":"portable-hackathon/vendor-skills/research/polymarket","license":"repository MIT","provenance":"Former Hermes bundled skill; upstream history includes 0957277f2f468bac22bbfcfa7c43029858c9597e"},
+    {"name":"grounded-citations","tier":"product-domain","source":"skills/research/grounded-citations","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+
+    {"name":"codex","tier":"build-orchestration-assurance","source":"skills/autonomous-ai-agents/codex","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"claude-code","tier":"build-orchestration-assurance","source":"skills/autonomous-ai-agents/claude-code","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit; retained as a portable option but excluded from the GPT-only rerun"},
+    {"name":"opencode","tier":"build-orchestration-assurance","source":"skills/autonomous-ai-agents/opencode","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"plan","tier":"build-orchestration-assurance","source":"skills/software-development/plan","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"writing-plans","tier":"build-orchestration-assurance","source":"portable-hackathon/vendor-skills/software-development/writing-plans","license":"MIT","provenance":"Hermes adaptation of obra/superpowers; upstream history includes 38d3c49aaf2e1751e414a312d7e7986df40994e3"},
+    {"name":"test-driven-development","tier":"build-orchestration-assurance","source":"skills/software-development/test-driven-development","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"systematic-debugging","tier":"build-orchestration-assurance","source":"skills/software-development/systematic-debugging","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"requesting-code-review","tier":"build-orchestration-assurance","source":"skills/software-development/requesting-code-review","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"github-pr-workflow","tier":"build-orchestration-assurance","source":"skills/github/github-pr-workflow","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"github-code-review","tier":"build-orchestration-assurance","source":"skills/github/github-code-review","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"dogfood","tier":"build-orchestration-assurance","source":"skills/software-development/dogfood","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"webapp-testing","tier":"build-orchestration-assurance","source":"portable-hackathon/vendor-skills/build-assurance/webapp-testing","license":"Apache-2.0","provenance":"anthropics/skills at 98669c11ca63e9c81c11501e1437e5c47b556621; LICENSE.txt retained"},
+
+    {"name":"sketch","tier":"creative-interface-demo","source":"skills/creative/sketch","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"popular-web-designs","tier":"creative-interface-demo","source":"skills/creative/popular-web-designs","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"claude-design","tier":"creative-interface-demo","source":"skills/creative/claude-design","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit; skill name does not require Claude Code execution"},
+    {"name":"architecture-diagram","tier":"creative-interface-demo","source":"skills/creative/architecture-diagram","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"baoyu-infographic","tier":"creative-interface-demo","source":"skills/creative/baoyu-infographic","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"},
+    {"name":"powerpoint","tier":"creative-interface-demo","source":"skills/productivity/powerpoint","license":"repository MIT","provenance":"Hermes upstream bundled skill at base commit"}
+  ]
+}
