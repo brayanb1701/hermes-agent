@@ -45,7 +45,7 @@ terminal(command="cd $(mktemp -d) && git init && codex exec 'Build a snake game 
 
 ```
 # Start in background with PTY
-terminal(command="codex --full-auto exec 'Refactor the auth module'", workdir="~/project", background=true, pty=true)
+terminal(command="codex --approve-for-me exec 'Refactor the auth module'", workdir="~/project", background=true, pty=true)
 # Returns session_id
 
 # Monitor progress
@@ -65,7 +65,7 @@ process(action="kill", session_id="<id>")
 |------|--------|
 | `exec "prompt"` | One-shot execution, exits when done |
 | `exec resume --last "prompt"` | Resume the most recent recorded exec session; useful for supervisor loops |
-| `--full-auto` | Sandboxed but auto-approves file changes in workspace |
+| `--approve-for-me` | Sandboxed but auto-approves file changes in workspace |
 | `--dangerously-bypass-approvals-and-sandbox` | No sandbox, no approvals (fastest, most dangerous; use only when the environment/workspace is trusted) |
 | `-C, --cd <DIR>` | Working root for the agent |
 | `--add-dir <DIR>` | Additional writable directory |
@@ -121,7 +121,7 @@ terminal(command="gh pr comment 86 --body '<review>'", workdir="~/project")
 1. **PTY depends on mode** — use `pty=true` for interactive TUI sessions; `codex exec` can run non-interactively and is suitable for background/systemd supervisors.
 2. **Git repo required** — Codex won't run outside a git directory. Use `mktemp -d && git init` for scratch
 3. **Use `exec` for one-shots** — `codex exec "prompt"` runs and exits cleanly
-4. **`--full-auto` for building** — auto-approves changes within the sandbox
+4. **`--approve-for-me` for building** — auto-approves changes within the sandbox
 5. **Background for long tasks** — use `background=true` and monitor with `process` tool
 6. **Don't interfere without authorization** — monitor with `poll`/`log` and be patient. A status/analysis request is not permission to kill, restart, create STOP files, edit prompts, or change policy unless there is immediate safety/spend risk or Brayan explicitly asks.
 7. **Keep project policy out of this generic skill** — if a Codex run needs cloud GPUs, paid APIs, challenge-specific budgets, watchdogs, STOP files, or experiment run cards, put that policy in the project workspace (`AGENTS.md`, `RUNBOOK.md`, status/control files) or a class-level paid-compute/autoresearch skill. Do not pollute the generic Codex skill with one-project details.
