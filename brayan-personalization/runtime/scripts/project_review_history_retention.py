@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-DEFAULT_VAULT = Path.home() / "personal_vault"
+DEFAULT_VAULT = Path.home() / "personal-vault"
 DEFAULT_KEEP = 5
 SECTION_RE = re.compile(r"^## (?:(?:Cadence )?Review notes|Review log)\s*$", re.MULTILINE | re.IGNORECASE)
 NEXT_H2_RE = re.compile(r"(?m)^## (?!#)")

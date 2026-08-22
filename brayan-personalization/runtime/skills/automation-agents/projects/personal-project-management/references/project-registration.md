@@ -2,7 +2,7 @@
 
 Use when a capture might become a project.
 
-Canonical vault workflow: `~/personal_vault/_meta/workflows/projects/project-registration-workflow.md`.
+Canonical vault workflow: `~/personal-vault/_meta/workflows/projects/project-registration-workflow.md`.
 
 ## Decision rule
 
@@ -10,7 +10,7 @@ A capture can become a project if it has a concrete outcome, plausible next acti
 
 ## Seed output
 
-- `~/personal_vault/projects/<slug>/README.md`
+- `~/personal-vault/projects/<slug>/README.md`
 - `status: seed`
 - `external_workspace: null`
 - row in `projects/backlog.md`

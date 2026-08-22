@@ -2,7 +2,7 @@
 """Wake-gate for Darwin's inbox triage cron.
 
 This script is intentionally deterministic and cheap. It scans
-~/personal_vault/inbox for actionable transient items. If the inbox contains
+~/personal-vault/inbox for actionable transient items. If the inbox contains
 only README.md / hidden-noise files, it emits {"wakeAgent": false} so Hermes
 cron skips the LLM call. If actionable items exist, it emits compact JSON for
 the cron agent to use as context.
@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-DEFAULT_VAULT = Path(os.environ.get("PERSONAL_VAULT", "~/personal_vault")).expanduser()
+DEFAULT_VAULT = Path(os.environ.get("PERSONAL_VAULT", "~/personal-vault")).expanduser()
 INBOX_DIR = DEFAULT_VAULT / "inbox"
 PROMPT_TEMPLATE = Path("~/.hermes/agents/inbox-triage/prompt-template.md").expanduser()
 

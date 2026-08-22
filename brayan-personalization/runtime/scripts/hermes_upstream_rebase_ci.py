@@ -9,7 +9,7 @@ protecting the live gateway checkout during rebase/testing:
 - Rebases/tests run in an isolated detached git worktree under
   /home/brayan/.hermes/worktrees/hermes-upstream-rebase-ci.
 - The worktree starts from the newer compatible base between the live target
-  branch and origin/brayan/personal-hermes-customizations.
+  branch and origin/second-computer-evolution.
 - Brayan's current runtime personalization bundle is synced into that worktree,
   committed if changed, rebased onto upstream/main, tested, and pushed only to
   the personalization branch.
@@ -17,7 +17,7 @@ protecting the live gateway checkout during rebase/testing:
   isolated worktree. The live checkout used by the gateway is not left with
   conflict markers or mixed source files.
 - After a verified candidate is pushed, a detached systemd transient unit runs
-  ``hermes update --branch brayan/personal-hermes-customizations``. That
+  ``hermes update --branch second-computer-evolution``. That
   supported updater path activates the verified commit, refreshes dependencies
   and config, and restarts the gateway without killing this cron run early.
 
@@ -37,7 +37,7 @@ from typing import Any
 LIVE_REPO = Path("/home/brayan/.hermes/hermes-agent")
 WORKTREE = Path("/home/brayan/.hermes/worktrees/hermes-upstream-rebase-ci")
 REPO = WORKTREE
-TARGET_BRANCH = "brayan/personal-hermes-customizations"
+TARGET_BRANCH = "second-computer-evolution"
 PYTHON = LIVE_REPO / "venv/bin/python"
 HERMES_CLI = Path("/home/brayan/.local/bin/hermes")
 RUNTIME_SCRIPT = Path("/home/brayan/.hermes/scripts/hermes_upstream_rebase_ci.py")

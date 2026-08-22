@@ -18,7 +18,7 @@ from pathlib import Path
 from vault_generated_retention import apply_retention
 
 HOME = Path.home()
-VAULT = HOME / "personal_vault"
+VAULT = HOME / "personal-vault"
 AUDIT_DIR = VAULT / "_meta" / "audits"
 TODAY = date.today().isoformat()
 REPORT_PATH = AUDIT_DIR / f"{TODAY}-vault-structure-audit.md"

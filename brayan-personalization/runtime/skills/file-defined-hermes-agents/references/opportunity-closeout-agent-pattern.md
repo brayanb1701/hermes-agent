@@ -18,9 +18,9 @@ cron job: darwin-opportunity-closing-agent
 Deterministic scaffold surfaces:
 
 ```text
-~/personal_vault/_meta/templates/opportunity-closeout-input-template.md
+~/personal-vault/_meta/templates/opportunity-closeout-input-template.md
 ~/.hermes/scripts/opportunity_scaffold.py
-~/personal_vault/opportunities/<slug>/closeout-input.example.md
+~/personal-vault/opportunities/<slug>/closeout-input.example.md
 ```
 
 ## Closeout input contract
@@ -36,7 +36,7 @@ Deterministic scaffold surfaces:
 Use a deterministic helper such as:
 
 ```bash
-python3 ~/.hermes/scripts/opportunity_scaffold.py --opportunity ~/personal_vault/opportunities/<slug>/opportunity.md
+python3 ~/.hermes/scripts/opportunity_scaffold.py --opportunity ~/personal-vault/opportunities/<slug>/opportunity.md
 python3 ~/.hermes/scripts/opportunity_scaffold.py --all --examples-only --dry-run
 python3 ~/.hermes/scripts/opportunity_scaffold.py --all --examples-only
 ```

@@ -8,7 +8,7 @@ Repository:
 - `https://github.com/brayanb1701/hermes-agent`
 
 Default maintained branch:
-- `brayan/personal-hermes-customizations`
+- `second-computer-evolution`
 
 Official upstream kept as a remote:
 - `https://github.com/NousResearch/hermes-agent`
@@ -27,21 +27,21 @@ Important boundary:
 On Linux, macOS, or WSL2:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash
+curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/second-computer-evolution/scripts/install-brayan-personalized.sh | bash
 ```
 
-The installer defaults to `brayan/personal-hermes-customizations`, applies the safe personalization bundle on a fresh install while preserving setup/auth config, and records that branch as the future update target.
+The installer defaults to `second-computer-evolution`, applies the safe personalization bundle on a fresh install while preserving setup/auth config, and records that branch as the future update target.
 
 If you want an independent experimental line on another computer instead:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash -s -- --branch second-computer-evolution
+curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/second-computer-evolution/scripts/install-brayan-personalized.sh | bash -s -- --branch second-computer-evolution
 ```
 
 If you want a lab install that does not replace an existing `~/.hermes/hermes-agent` checkout:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash -s -- --dir ~/.hermes/hermes-agent-lab --hermes-home ~/.hermes-lab
+curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/second-computer-evolution/scripts/install-brayan-personalized.sh | bash -s -- --dir ~/.hermes/hermes-agent-lab --hermes-home ~/.hermes-lab
 ```
 
 ## After install
@@ -71,7 +71,7 @@ git branch --show-current
 Expected for the default maintained installation:
 
 ```text
-branch: brayan/personal-hermes-customizations
+branch: second-computer-evolution
 origin:   brayanb1701/hermes-agent
 upstream: NousResearch/hermes-agent
 ```
@@ -241,7 +241,7 @@ If install was interrupted:
 
 ```bash
 rm -rf ~/.hermes/hermes-agent
-curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash
+curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/second-computer-evolution/scripts/install-brayan-personalized.sh | bash
 ```
 
 If the maintained branch is wrong:
@@ -249,8 +249,8 @@ If the maintained branch is wrong:
 ```bash
 cd ~/.hermes/hermes-agent
 git fetch origin
-git switch brayan/personal-hermes-customizations
-hermes config set updates.branch brayan/personal-hermes-customizations
+git switch second-computer-evolution
+hermes config set updates.branch second-computer-evolution
 ```
 
 If local changes block an update:
@@ -259,6 +259,6 @@ If local changes block an update:
 cd ~/.hermes/hermes-agent
 git status --short
 git stash push --include-untracked -m "before-update"
-hermes update --branch brayan/personal-hermes-customizations --yes
+hermes update --branch second-computer-evolution --yes
 git stash apply
 ```

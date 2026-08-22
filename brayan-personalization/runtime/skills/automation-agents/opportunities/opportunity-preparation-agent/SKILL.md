@@ -37,11 +37,11 @@ If any field is `unknown`, recover it from the opportunity note when possible an
 
 Read these before drafting:
 
-1. `~/personal_vault/_meta/schema.md`
-2. `~/personal_vault/_meta/index.md`
-3. `~/personal_vault/_meta/log.md`
-4. `~/personal_vault/_meta/workflows/opportunities/opportunity-preparation-agent-automation.md`
-5. `~/personal_vault/_meta/templates/opportunity-preparation-packet-template.md`
+1. `~/personal-vault/_meta/schema.md`
+2. `~/personal-vault/_meta/index.md`
+3. `~/personal-vault/_meta/log.md`
+4. `~/personal-vault/_meta/workflows/opportunities/opportunity-preparation-agent-automation.md`
+5. `~/personal-vault/_meta/templates/opportunity-preparation-packet-template.md`
 6. The provided opportunity note path
 
 Then follow the mode-specific reference below.
@@ -65,7 +65,7 @@ Use secondary references only when the opportunity genuinely needs mixed artifac
 
 Create or update:
 
-`~/personal_vault/opportunities/<stem>/application/preparation-packet.md`
+`~/personal-vault/opportunities/<stem>/application/preparation-packet.md`
 
 Optionally create mode-specific companion files only when useful:
 

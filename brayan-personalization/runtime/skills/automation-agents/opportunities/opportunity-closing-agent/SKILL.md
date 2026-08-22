@@ -38,11 +38,11 @@ Process only those paths. Do not scan or close other opportunities in the same s
 
 Read, in this order:
 
-1. `~/personal_vault/_meta/schema.md`
-2. `~/personal_vault/_meta/index.md`
-3. `~/personal_vault/_meta/log.md`
-4. `~/personal_vault/_meta/workflows/opportunities/opportunity-closing-workflow.md`
-5. `~/personal_vault/_meta/templates/opportunity-final-result-section-template.md`
+1. `~/personal-vault/_meta/schema.md`
+2. `~/personal-vault/_meta/index.md`
+3. `~/personal-vault/_meta/log.md`
+4. `~/personal-vault/_meta/workflows/opportunities/opportunity-closing-workflow.md`
+5. `~/personal-vault/_meta/templates/opportunity-final-result-section-template.md`
 6. The provided `closeout-input.md`
 7. The provided `opportunity.md`
 

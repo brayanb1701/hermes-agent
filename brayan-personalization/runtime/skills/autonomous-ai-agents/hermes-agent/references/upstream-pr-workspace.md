@@ -75,8 +75,8 @@ Typical requirements observed in Hermes Agent:
 ## Vault tracking
 
 When the work is a pending Darwin/Hermes improvement, record it in the vault control layer, usually:
-- `~/personal_vault/projects/darwin-improvement/README.md`
-- append a concise structural entry to `~/personal_vault/_meta/log.md`
+- `~/personal-vault/projects/darwin-improvement/README.md`
+- append a concise structural entry to `~/personal-vault/_meta/log.md`
 
 Record workspace path, branch names, live-checkout separation, contribution discipline, and the next action. Do not create a new vault project for every individual bugfix unless it becomes a substantial independent project.
 

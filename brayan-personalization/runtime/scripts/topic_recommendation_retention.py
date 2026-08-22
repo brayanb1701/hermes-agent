@@ -7,7 +7,7 @@ import json
 import re
 from pathlib import Path
 
-DEFAULT_PATH = Path.home() / "personal_vault" / "queries" / "topic-recommendations.md"
+DEFAULT_PATH = Path.home() / "personal-vault" / "queries" / "topic-recommendations.md"
 ENTRY_RE = re.compile(r"(?m)^## (\d{4}-\d{2}-\d{2}) recommendation set\s*$", re.IGNORECASE)
 
 

@@ -12,15 +12,15 @@ license: MIT
 If this is running from the scheduled topic-recommendations agent, first read `~/.hermes/agents/topic-recommendations/prompt-template.md` when present or explicitly requested by the cron prompt; it may carry delivery/silence instructions that should override generic output wording.
 
 Read:
-1. `~/personal_vault/_meta/schema.md`
-2. `~/personal_vault/_meta/index.md`
-3. `~/personal_vault/queries/topic-recommendations.md`
-4. `~/personal_vault/domains/ai/ai-map.md`
-5. `~/personal_vault/domains/physics/physics-map.md`
-6. `~/personal_vault/domains/coding/coding-map.md`
-7. `~/personal_vault/domains/creative/creative-map.md`
-8. `~/personal_vault/domains/economy/economy-map.md`
-9. `~/personal_vault/projects/dashboard.md`
+1. `~/personal-vault/_meta/schema.md`
+2. `~/personal-vault/_meta/index.md`
+3. `~/personal-vault/queries/topic-recommendations.md`
+4. `~/personal-vault/domains/ai/ai-map.md`
+5. `~/personal-vault/domains/physics/physics-map.md`
+6. `~/personal-vault/domains/coding/coding-map.md`
+7. `~/personal-vault/domains/creative/creative-map.md`
+8. `~/personal-vault/domains/economy/economy-map.md`
+9. `~/personal-vault/projects/dashboard.md`
 
 ## Recommendation balance
 Propose 3-5 recommendations balanced across:
@@ -49,10 +49,10 @@ When a daily/project review has already rolled the same ready-but-unexecuted ite
 ## Quality bar
 Prefer topics that compound Brayan's skill, agency, earning potential, or durable knowledge. Avoid random trivia.
 
-Append only strong reusable recommendations to `~/personal_vault/queries/topic-recommendations.md`; do not spam the file with weak one-offs. If today's daily review materially changes pressure/ordering, it is valid to append a new set even when some themes repeat from yesterday; make the delta explicit instead of producing novelty for its own sake. A tightening countdown, newly confirmed stale-dashboard drift, or a shift from broad prioritization into a concrete near-deadline action window counts as a material delta — recommend sharper next artifacts rather than inventing unrelated novelty.
+Append only strong reusable recommendations to `~/personal-vault/queries/topic-recommendations.md`; do not spam the file with weak one-offs. If today's daily review materially changes pressure/ordering, it is valid to append a new set even when some themes repeat from yesterday; make the delta explicit instead of producing novelty for its own sake. A tightening countdown, newly confirmed stale-dashboard drift, or a shift from broad prioritization into a concrete near-deadline action window counts as a material delta — recommend sharper next artifacts rather than inventing unrelated novelty.
 
 ## Run procedure
-1. After the required reads, check whether today's daily review exists under `~/personal_vault/daily/YYYY-MM-DD.md`; if present, use it as the pressure/priority signal so recommendations reflect current deadlines and blockers rather than repeating older sets. Daily reviews have five-note rolling retention, so inspect only the retained recent notes and never assume older dated daily files still exist. In durable recommendation/log text, refer to daily snapshots with plain code paths such as `daily/YYYY-MM-DD.md`, not wikilinks.
+1. After the required reads, check whether today's daily review exists under `~/personal-vault/daily/YYYY-MM-DD.md`; if present, use it as the pressure/priority signal so recommendations reflect current deadlines and blockers rather than repeating older sets. Daily reviews have five-note rolling retention, so inspect only the retained recent notes and never assume older dated daily files still exist. In durable recommendation/log text, refer to daily snapshots with plain code paths such as `daily/YYYY-MM-DD.md`, not wikilinks.
    - If today's daily review does not exist, do not stall or invent it. Use the latest available daily review plus current dashboards/registers/workspace status files as the pressure signal, and explicitly mention that fallback in the recommendation delta if writing a durable set.
    - In cron windows where another daily-review job may be running concurrently, re-check today's daily note immediately before writing the durable recommendation/log entry. If the note appeared after the first check, anchor the durable delta/log to today's daily note instead of preserving an obsolete “no daily note exists yet” fallback phrase.
    - When a previously urgent opportunity/resource deadline has passed since the latest daily review, pivot from countdown/submit language to final-state classification (`submitted`, `skipped/no-submission`, `unknown`, or `user-status-needed`) unless there is explicit evidence of manual submission.

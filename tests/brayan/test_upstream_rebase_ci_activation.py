@@ -36,7 +36,7 @@ def test_activation_command_targets_personalization_branch_and_runs_detached():
     assert cmd[:2] == ["systemd-run", "--user"]
     assert "--on-active=5s" in cmd
     assert "hermes-personalization-activate-abcdef123456" in rendered
-    assert "update --branch brayan/personal-hermes-customizations --yes --no-backup" in rendered
+    assert "update --branch second-computer-evolution --yes --no-backup" in rendered
 
 
 def test_non_target_live_branch_can_recover_from_remote_candidate(monkeypatch):
@@ -53,7 +53,7 @@ def test_non_target_live_branch_can_recover_from_remote_candidate(monkeypatch):
             return {"returncode": 0, "stdout": "", "stderr": ""}
         if args[:2] == ("fetch", "origin"):
             return {"returncode": 0, "stdout": "", "stderr": ""}
-        if args == ("rev-parse", "origin/brayan/personal-hermes-customizations"):
+        if args == ("rev-parse", "origin/second-computer-evolution"):
             return {"returncode": 0, "stdout": "remote-head\n", "stderr": ""}
         raise AssertionError(f"unexpected git call: {args}")
 

@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 HOME = Path.home()
-VAULT = HOME / "personal_vault"
+VAULT = HOME / "personal-vault"
 WORKSPACE_ROOT = HOME / "projects"
 TEMPLATE_DIR = VAULT / "_meta" / "templates"
 TODAY = date.today().isoformat()

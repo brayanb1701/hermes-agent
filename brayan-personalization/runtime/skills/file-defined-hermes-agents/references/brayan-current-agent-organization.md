@@ -101,7 +101,7 @@ Current recurring cron jobs load canonical skills by bare name:
   - skills: `personal-vault-ops`, `inbox-triage-agent`
   - script: `inbox_triage_wake_gate.py`
   - schedule: `0 10,18 * * *`
-  - wake gate: skips the agent when `~/personal_vault/inbox/` has no actionable items beyond `README.md` / hidden-noise files
+  - wake gate: skips the agent when `~/personal-vault/inbox/` has no actionable items beyond `README.md` / hidden-noise files
 - `darwin-decision-reminders`
   - skills: `personal-vault-ops`, `decision-reminders-agent`
   - schedule: `0 12,17 * * *`

@@ -62,6 +62,7 @@ IGNORE_FILE_NAMES = {
     ".skills_prompt_snapshot.json",
     ".usage.json",
     ".curator_state",
+    ".curator_ledger.jsonl",
 }
 
 
@@ -123,6 +124,7 @@ def normalize_cron_jobs(raw: dict[str, Any]) -> dict[str, Any]:
         keep.pop("fire_claim", None)
         for key in volatile_null:
             keep[key] = None
+        keep["failure_streak"] = 0
         if isinstance(keep.get("repeat"), dict):
             keep["repeat"] = {**keep["repeat"], "completed": 0}
         keep["state"] = "scheduled" if keep.get("enabled", True) else "paused"

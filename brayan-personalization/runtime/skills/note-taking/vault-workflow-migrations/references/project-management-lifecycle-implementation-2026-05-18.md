@@ -2,7 +2,7 @@
 
 Session source: Brayan reviewed a project lifecycle proposal and clarified how project automation should differ from the opportunity workflow.
 
-Use this reference when planning or implementing Brayan's project-management lifecycle across `~/personal_vault`, `/home/brayan/projects`, and Hermes runtime automation.
+Use this reference when planning or implementing Brayan's project-management lifecycle across `~/personal-vault`, `/home/brayan/projects`, and Hermes runtime automation.
 
 ## Key design decisions
 
@@ -11,7 +11,7 @@ Use this reference when planning or implementing Brayan's project-management lif
   - Projects should use one umbrella class-level skill, recommended `personal-project-management`, with references to registration, activation, review, pausing/reopening, and closing workflows.
 - Project registration is the entry point.
   - A capture can become `seed` or directly `active` depending on evidence and commitment.
-  - `seed` projects live only in `~/personal_vault/projects/<slug>/README.md` and a backlog surface.
+  - `seed` projects live only in `~/personal-vault/projects/<slug>/README.md` and a backlog surface.
   - `active` projects require an external workspace under `/home/brayan/projects/<slug>/`.
 - Active project work happens in `/home/brayan/projects/<slug>/`; the vault project note is only the control/documentation layer.
 - Use one non-active register for seed + paused projects: `projects/backlog.md`.
@@ -47,7 +47,7 @@ Optional/requested handoff files:
 Important distinction:
 
 - `PROJECT_CLOSEOUT.md` is a workspace handoff/input from where development happened.
-- `personal_vault/projects/<slug>/closeout.md` is the canonical durable vault closeout.
+- `personal-vault/projects/<slug>/closeout.md` is the canonical durable vault closeout.
 - They are not duplicate purposes; the workspace file feeds the vault closeout and is preserved/marked processed.
 
 ## Runtime automation pattern

@@ -26,6 +26,7 @@ def test_cron_normalization_drops_snapshot_time():
                 "id": "job",
                 "name": "demo",
                 "last_run_at": "volatile",
+                "failure_streak": 7,
                 "fire_claim": {"at": "2026-08-10T00:00:00Z", "by": "gateway"},
             }
         ],
@@ -38,6 +39,7 @@ def test_cron_normalization_drops_snapshot_time():
     assert first == second
     assert "updated_at" not in first
     assert "fire_claim" not in first["jobs"][0]
+    assert first["jobs"][0]["failure_streak"] == 0
 
 
 def test_skill_usage_and_curator_state_are_not_snapshot_inputs(tmp_path):
@@ -45,6 +47,7 @@ def test_skill_usage_and_curator_state_are_not_snapshot_inputs(tmp_path):
 
     assert sync.should_ignore(tmp_path / "skills" / ".usage.json")
     assert sync.should_ignore(tmp_path / "skills" / ".curator_state")
+    assert sync.should_ignore(tmp_path / "skills" / ".curator_ledger.jsonl")
 
 
 def test_channel_directory_normalization_drops_rebuild_time():

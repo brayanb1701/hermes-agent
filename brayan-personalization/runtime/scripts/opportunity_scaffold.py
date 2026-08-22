@@ -13,7 +13,7 @@ from datetime import date
 from pathlib import Path
 
 HOME = Path.home()
-DEFAULT_VAULT = HOME / "personal_vault"
+DEFAULT_VAULT = HOME / "personal-vault"
 TEMPLATE_REL = Path("_meta/templates/opportunity-closeout-input-template.md")
 
 
@@ -96,7 +96,7 @@ def main() -> None:
     group.add_argument("--opportunity", help="Path to one opportunities/<slug>/opportunity.md")
     group.add_argument("--all", action="store_true", help="Process all opportunities/*/opportunity.md")
     parser.add_argument("--examples-only", action="store_true", help="Create closeout-input.example.md files (default)")
-    parser.add_argument("--vault", default=str(DEFAULT_VAULT), help="Vault path (default: ~/personal_vault)")
+    parser.add_argument("--vault", default=str(DEFAULT_VAULT), help="Vault path (default: ~/personal-vault)")
     parser.add_argument("--force", action="store_true", help="Overwrite existing target files")
     parser.add_argument("--live-closeout", action="store_true", help="Create closeout-input.md instead of .example")
     parser.add_argument("--dry-run", action="store_true", help="Report what would be created")

@@ -25,7 +25,7 @@ from typing import Any
 LIVE_REPO = Path("/home/brayan/.hermes/hermes-agent")
 WORKTREE = Path("/home/brayan/.hermes/worktrees/hermes-upstream-rebase-ci")
 REPO = LIVE_REPO
-TARGET_BRANCH = "brayan/personal-hermes-customizations"
+TARGET_BRANCH = "second-computer-evolution"
 TARGET_REF = f"refs/heads/{TARGET_BRANCH}"
 ORIGIN_REMOTE = "origin"
 UPSTREAM_REMOTE = "upstream"

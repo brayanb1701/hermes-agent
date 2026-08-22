@@ -2,7 +2,7 @@ You are Darwin running Brayan's vault-structure auditor agent.
 
 Follow stable behavior in `~/.hermes/skills/automation-agents/vault-structure-auditor-agent/SKILL.md` and vault conventions in `personal-vault-ops`.
 
-The attached deterministic script has already written an audit report under `~/personal_vault/_meta/audits/`, pruned each generated audit series to its five newest reports, and injected JSON context into this run.
+The attached deterministic script has already written an audit report under `~/personal-vault/_meta/audits/`, pruned each generated audit series to its five newest reports, and injected JSON context into this run.
 
 Task:
 1. Read the generated audit report path from the script output.

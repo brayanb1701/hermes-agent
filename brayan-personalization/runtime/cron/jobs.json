@@ -78,7 +78,7 @@
     {
       "id": "b5b791cd972b",
       "name": "darwin-inbox-triage",
-      "prompt": "You are Darwin running Brayan's wake-gated inbox triage cron agent. The pre-run script `inbox_triage_wake_gate.py` is the wake gate: if `~/personal_vault/inbox/` has no actionable items, it returns `wakeAgent: false` and this agent is skipped. If this prompt is running, actionable inbox items were found in Script Output. Read and follow `~/.hermes/agents/inbox-triage/prompt-template.md`; stable behavior lives in `~/.hermes/skills/automation-agents/inbox-triage-agent/SKILL.md`. Keep the inbox transient: preserve raw source material, route items into the correct durable vault locations, and remove only verified duplicates.",
+      "prompt": "You are Darwin running Brayan's wake-gated inbox triage cron agent. The pre-run script `inbox_triage_wake_gate.py` is the wake gate: if `~/personal-vault/inbox/` has no actionable items, it returns `wakeAgent: false` and this agent is skipped. If this prompt is running, actionable inbox items were found in Script Output. Read and follow `~/.hermes/agents/inbox-triage/prompt-template.md`; stable behavior lives in `~/.hermes/skills/automation-agents/inbox-triage-agent/SKILL.md`. Keep the inbox transient: preserve raw source material, route items into the correct durable vault locations, and remove only verified duplicates.",
       "skills": [
         "personal-vault-ops",
         "inbox-triage-agent"
@@ -157,7 +157,7 @@
     {
       "id": "edfaeb3aed5d",
       "name": "darwin-opportunity-preparation-agent",
-      "prompt": "You are Darwin, Brayan's opportunity-preparation cron dispatcher reporter/fallback. The attached pre-run script `opportunity_preparation_ready_scan.py` is the primary dispatcher: it scans `~/personal_vault/opportunities/*/opportunity.md` for `status: preparation-ready` plus `automation_route: opportunity-preparation`, skips records with an existing `application/preparation-packet.md`, and launches up to three independent Hermes sessions using `personal-vault-ops` and `opportunity-preparation-agent`.\n\nYour job is fallback-only:\n- Read the script output injected into this cron run.\n- If `wakeAgent` is false and there are no errors, stay concise: report no action needed only if a response is required by the scheduler.\n- If errors occurred, diagnose the dispatcher/runtime issue and tell Brayan exactly what needs repair.\n- Do not process opportunities yourself in this parent cron session.\n- Do not submit applications, forms, public PRs/posts, grants, bounty reports, payments, or paid compute actions.\n\nRelevant files:\n- Workflow: `~/personal_vault/_meta/workflows/opportunities/opportunity-preparation-agent-automation.md`\n- Prompt template: `~/.hermes/agents/opportunity-preparation/prompt-template.md`\n- Skill: `~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-agent/SKILL.md`\n- Script: `~/.hermes/scripts/opportunity_preparation_ready_scan.py`",
+      "prompt": "You are Darwin, Brayan's opportunity-preparation cron dispatcher reporter/fallback. The attached pre-run script `opportunity_preparation_ready_scan.py` is the primary dispatcher: it scans `~/personal-vault/opportunities/*/opportunity.md` for `status: preparation-ready` plus `automation_route: opportunity-preparation`, skips records with an existing `application/preparation-packet.md`, and launches up to three independent Hermes sessions using `personal-vault-ops` and `opportunity-preparation-agent`.\n\nYour job is fallback-only:\n- Read the script output injected into this cron run.\n- If `wakeAgent` is false and there are no errors, stay concise: report no action needed only if a response is required by the scheduler.\n- If errors occurred, diagnose the dispatcher/runtime issue and tell Brayan exactly what needs repair.\n- Do not process opportunities yourself in this parent cron session.\n- Do not submit applications, forms, public PRs/posts, grants, bounty reports, payments, or paid compute actions.\n\nRelevant files:\n- Workflow: `~/personal-vault/_meta/workflows/opportunities/opportunity-preparation-agent-automation.md`\n- Prompt template: `~/.hermes/agents/opportunity-preparation/prompt-template.md`\n- Skill: `~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-agent/SKILL.md`\n- Script: `~/.hermes/scripts/opportunity_preparation_ready_scan.py`",
       "skills": [
         "personal-vault-ops",
         "opportunity-preparation-agent"
@@ -270,7 +270,8 @@
       "origin": null,
       "enabled_toolsets": [
         "file"
-      ]
+      ],
+      "failure_streak": 0
     },
     {
       "id": "84999fa7645a",
@@ -306,7 +307,8 @@
       "origin": null,
       "enabled_toolsets": [
         "file"
-      ]
+      ],
+      "failure_streak": 0
     },
     {
       "id": "f5fc18167064",
@@ -342,12 +344,13 @@
       "origin": null,
       "enabled_toolsets": [
         "file"
-      ]
+      ],
+      "failure_streak": 0
     },
     {
       "id": "ad098fa6c877",
       "name": "erasmus-icetex-deadline-window-check",
-      "prompt": "Reminder/task for Darwin: start the likely Erasmus/Erasmus Mundus and ICETEX scholarship deadline window check for Brayan. Use ~/personal_vault/opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch/opportunity.md, ~/personal_vault/opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch/application/application-strategy.md, and ~/personal_vault/opportunities/2026-04-28-icetex-international-scholarships-search-watch/opportunity.md. Check current public pages if possible, summarize next deadlines/requisites if verifiable, and tell Brayan what to decide/prep next. Do not submit applications.",
+      "prompt": "Reminder/task for Darwin: start the likely Erasmus/Erasmus Mundus and ICETEX scholarship deadline window check for Brayan. Use ~/personal-vault/opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch/opportunity.md, ~/personal-vault/opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch/application/application-strategy.md, and ~/personal-vault/opportunities/2026-04-28-icetex-international-scholarships-search-watch/opportunity.md. Check current public pages if possible, summarize next deadlines/requisites if verifiable, and tell Brayan what to decide/prep next. Do not submit applications.",
       "skills": [],
       "skill": null,
       "model": null,
@@ -379,12 +382,13 @@
       "enabled_toolsets": [
         "file",
         "web"
-      ]
+      ],
+      "failure_streak": 0
     },
     {
       "id": "ea904b1d1a01",
       "name": "vault-structure-auditor",
-      "prompt": "You are Darwin running Brayan's weekly Vault v2 structure auditor. Read and follow `~/.hermes/agents/vault-structure-auditor/prompt-template.md` and the loaded `personal-vault-ops` + `vault-structure-auditor-agent` skills.\n\nA deterministic pre-run script (`vault_structure_audit.py`) has already executed and injected JSON context plus a report path. Treat that script output as the first-pass inventory, not the whole audit.\n\nYour task:\n1. Read the generated audit report under `~/personal_vault/_meta/audits/`.\n2. Use the script findings for counts, broken links, frontmatter errors, retired-path references, semantic location issues, and git status.\n3. Independently perform a systematic semantic organization pass: inspect suspicious filenames/titles and representative notes from every top-level folder; verify passive tool/resource catalogs live under `references/`; verify `inbox/` has no durable `_captures` store; verify true projects use `projects/<slug>/README.md`; verify opportunities use `opportunities/<slug>/opportunity.md` plus optional `application/` materials; verify workflows/guides/architecture remain under `_meta/`.\n4. If there are issues, send a concise Telegram report with exact patch proposal groups, affected paths, risk level, and recommended next action.\n5. Do not move/delete/archive notes or apply patches in this cron run. This weekly job is report-only unless Brayan later approves fixes interactively.\n6. Return `[SILENT]` if both the deterministic script and your semantic pass find no meaningful issue.",
+      "prompt": "You are Darwin running Brayan's weekly Vault v2 structure auditor. Read and follow `~/.hermes/agents/vault-structure-auditor/prompt-template.md` and the loaded `personal-vault-ops` + `vault-structure-auditor-agent` skills.\n\nA deterministic pre-run script (`vault_structure_audit.py`) has already executed and injected JSON context plus a report path. Treat that script output as the first-pass inventory, not the whole audit.\n\nYour task:\n1. Read the generated audit report under `~/personal-vault/_meta/audits/`.\n2. Use the script findings for counts, broken links, frontmatter errors, retired-path references, semantic location issues, and git status.\n3. Independently perform a systematic semantic organization pass: inspect suspicious filenames/titles and representative notes from every top-level folder; verify passive tool/resource catalogs live under `references/`; verify `inbox/` has no durable `_captures` store; verify true projects use `projects/<slug>/README.md`; verify opportunities use `opportunities/<slug>/opportunity.md` plus optional `application/` materials; verify workflows/guides/architecture remain under `_meta/`.\n4. If there are issues, send a concise Telegram report with exact patch proposal groups, affected paths, risk level, and recommended next action.\n5. Do not move/delete/archive notes or apply patches in this cron run. This weekly job is report-only unless Brayan later approves fixes interactively.\n6. Return `[SILENT]` if both the deterministic script and your semantic pass find no meaningful issue.",
       "skills": [
         "personal-vault-ops",
         "vault-structure-auditor-agent"
@@ -419,7 +423,8 @@
       "enabled_toolsets": [
         "file",
         "terminal"
-      ]
+      ],
+      "failure_streak": 0
     },
     {
       "id": "c77f4c0f5cd9",

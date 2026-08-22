@@ -37,7 +37,7 @@ Do not repeat rejected alternatives in active canonical docs unless the user exp
 
 For migrations like this, verify all affected layers:
 
-- `cd ~/personal_vault && git diff --check`
+- `cd ~/personal-vault && git diff --check`
 - `cd ~/.hermes/hermes-agent && git diff --check`
 - compile changed scripts, e.g. `python3 -m py_compile ~/.hermes/scripts/<script>.py`
 - dry-run scanners/dispatchers, e.g. `python3 ~/.hermes/scripts/opportunity_closeout_scan.py --dry-run`

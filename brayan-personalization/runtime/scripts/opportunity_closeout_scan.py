@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 HOME = Path.home()
-VAULT = HOME / "personal_vault"
+VAULT = HOME / "personal-vault"
 HERMES_HOME = HOME / ".hermes"
 OPPORTUNITIES_DIR = VAULT / "opportunities"
 AGENT_DIR = HERMES_HOME / "agents" / "opportunity-closing"

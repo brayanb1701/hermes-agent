@@ -7,7 +7,7 @@ This is Brayan's concrete example of the independent-session fanout pattern. It 
 - The recurring cron job is `darwin-opportunity-preparation-agent`.
 - The cron job runs once daily.
 - The pre-run script is `~/.hermes/scripts/opportunity_preparation_ready_scan.py`.
-- The script scans `~/personal_vault/opportunities/<slug>/opportunity.md` records.
+- The script scans `~/personal-vault/opportunities/<slug>/opportunity.md` records.
 - Launchable records have:
   - `status: preparation-ready`
   - `automation_route: opportunity-preparation`

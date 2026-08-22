@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 HOME = Path.home()
-VAULT = HOME / "personal_vault"
+VAULT = HOME / "personal-vault"
 HERMES_HOME = HOME / ".hermes"
 PROJECTS_DIR = VAULT / "projects"
 WORKSPACE_ROOT = HOME / "projects"

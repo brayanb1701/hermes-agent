@@ -31,10 +31,10 @@ The general vault audit now includes project-lifecycle audit output from `~/.her
 
 ## Required reads
 
-1. `~/personal_vault/_meta/schema.md`
-2. `~/personal_vault/_meta/vault-organization-v2.md`
-3. `~/personal_vault/_meta/routing-matrix.md`
-4. The latest audit report under `~/personal_vault/_meta/audits/`
+1. `~/personal-vault/_meta/schema.md`
+2. `~/personal-vault/_meta/vault-organization-v2.md`
+3. `~/personal-vault/_meta/routing-matrix.md`
+4. The latest audit report under `~/personal-vault/_meta/audits/`
 5. Directly relevant notes for any proposed patch group
 
 ## Deterministic script + semantic pass
@@ -45,7 +45,7 @@ Primary inventory is produced by:
 
 It writes:
 
-`~/personal_vault/_meta/audits/YYYY-MM-DD-vault-structure-audit.md`
+`~/personal-vault/_meta/audits/YYYY-MM-DD-vault-structure-audit.md`
 
 Generated audit history is bounded automatically: keep the five newest `*-vault-structure-audit.md` reports and the five newest `*-project-state-audit.md` reports. The scripts prune only their own dated report series; unrelated/manual files under `_meta/audits/` are untouched. Treat older reports as transient diagnostics, and avoid durable wikilinks to reports that will age out.
 
@@ -114,6 +114,6 @@ A patch proposal should be concrete enough that a later interactive Darwin sessi
 After any approved cleanup:
 
 - run `python3 ~/.hermes/scripts/vault_structure_audit.py`;
-- run `git diff --check` in `~/personal_vault`;
+- run `git diff --check` in `~/personal-vault`;
 - run the opportunity-preparation dry run if opportunity paths, statuses, routing fields, or packet fields changed;
 - report remaining issues separately from fixed issues.

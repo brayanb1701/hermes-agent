@@ -5,7 +5,7 @@ Use this reference when Brayan asks to set up a project that has runnable code, 
 ## Convention
 
 - `/home/brayan/projects/<repo-or-experiment>/` is the live runnable workspace.
-- `~/personal_vault/projects/<slug>/README.md` is the project documentation/control note.
+- `~/personal-vault/projects/<slug>/README.md` is the project documentation/control note.
 - The vault should link to code/log/status paths instead of becoming a checkout or artifact dump.
 
 ## Recommended live files for active project workspaces
@@ -30,4 +30,4 @@ Inside `/home/brayan/projects/<experiment>/`:
 
 ## Pitfall
 
-Do not create or clone full software repositories inside `~/personal_vault/projects/`. That folder is for true project notes and control documentation, not for bulky code workspaces.
+Do not create or clone full software repositories inside `~/personal-vault/projects/`. That folder is for true project notes and control documentation, not for bulky code workspaces.

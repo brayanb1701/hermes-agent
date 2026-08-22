@@ -1,6 +1,6 @@
 # Daily review approval-sensitive probe — 2026-07-30
 
-Context: unattended daily review cron over `~/personal_vault` needed fresh evidence for bakeoff status, Hugging Face role availability, cwd-marker fallback state, and portfolio no-buy safety.
+Context: unattended daily review cron over `~/personal-vault` needed fresh evidence for bakeoff status, Hugging Face role availability, cwd-marker fallback state, and portfolio no-buy safety.
 
 ## Useful pattern
 

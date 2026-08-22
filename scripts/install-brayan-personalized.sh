@@ -3,11 +3,11 @@
 #
 # Default target:
 #   repo:   brayanb1701/hermes-agent
-#   branch: brayan/personal-hermes-customizations
+#   branch: second-computer-evolution
 #   dir:    ~/.hermes/hermes-agent
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/second-computer-evolution/scripts/install-brayan-personalized.sh | bash
 #
 # Options are forwarded to scripts/install.sh. Common examples:
 #   bash install-brayan-personalized.sh --branch main
@@ -18,7 +18,7 @@ set -euo pipefail
 
 FORK_OWNER="${HERMES_PERSONAL_FORK_OWNER:-brayanb1701}"
 FORK_REPO="${HERMES_PERSONAL_FORK_REPO:-hermes-agent}"
-DEFAULT_BRANCH="${HERMES_PERSONAL_BRANCH:-brayan/personal-hermes-customizations}"
+DEFAULT_BRANCH="${HERMES_PERSONAL_BRANCH:-second-computer-evolution}"
 INSTALL_SH_BRANCH="$DEFAULT_BRANCH"
 INSTALL_DIR="${HERMES_INSTALL_DIR:-${HOME}/.hermes/hermes-agent}"
 HERMES_HOME_DIR="${HERMES_HOME:-${HOME}/.hermes}"
@@ -53,12 +53,12 @@ Install Brayan's personalized Hermes Agent fork.
 
 Defaults:
   repo:   brayanb1701/hermes-agent
-  branch: brayan/personal-hermes-customizations
+  branch: second-computer-evolution
   dir:    ~/.hermes/hermes-agent
 
 Usage:
-  curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash
-  curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/brayan%2Fpersonal-hermes-customizations/scripts/install-brayan-personalized.sh | bash -s -- --branch second-computer-evolution
+  curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/second-computer-evolution/scripts/install-brayan-personalized.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/brayanb1701/hermes-agent/second-computer-evolution/scripts/install-brayan-personalized.sh | bash -s -- --branch second-computer-evolution
 
 Forwarded options from scripts/install.sh:
   --branch NAME        Branch to install

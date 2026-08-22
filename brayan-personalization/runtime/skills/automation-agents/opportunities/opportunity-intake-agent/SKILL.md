@@ -14,22 +14,22 @@ Use this skill when Brayan sends a job link, role listing, internship, fellowshi
 
 Create or update one durable opportunity record under:
 
-`~/personal_vault/opportunities/<slug>/opportunity.md`
+`~/personal-vault/opportunities/<slug>/opportunity.md`
 
 Use the canonical template:
 
-`~/personal_vault/_meta/templates/opportunity-template.md`
+`~/personal-vault/_meta/templates/opportunity-template.md`
 
 The intake agent does not prepare the final review packet. It researches, classifies, and routes the opportunity so the adaptive opportunity preparation agent can create the right materials later.
 
 ## Required orientation
 
 Read:
-1. `~/personal_vault/_meta/schema.md`
-2. `~/personal_vault/_meta/index.md`
-3. `~/personal_vault/_meta/log.md`
-4. `~/personal_vault/_meta/workflows/opportunities/opportunity-intake-and-routing-workflow.md`
-5. `~/personal_vault/_meta/templates/opportunity-template.md`
+1. `~/personal-vault/_meta/schema.md`
+2. `~/personal-vault/_meta/index.md`
+3. `~/personal-vault/_meta/log.md`
+4. `~/personal-vault/_meta/workflows/opportunities/opportunity-intake-and-routing-workflow.md`
+5. `~/personal-vault/_meta/templates/opportunity-template.md`
 
 Follow `personal-vault-ops` for vault conventions, raw preservation, links, and log updates.
 
@@ -99,7 +99,7 @@ The helper creates/ensures `closeout-input.example.md`. Do not hand-write the ex
 
 ## Dashboard update requirement
 
-After creating or materially updating an opportunity record, update `~/personal_vault/opportunities/dashboard.md` in the same pass.
+After creating or materially updating an opportunity record, update `~/personal-vault/opportunities/dashboard.md` in the same pass.
 
 - Add a row for new opportunities and update existing rows when status, priority, deadline, kind, or next action changes.
 - Keep the dashboard sorted by Brayan's review priority order: exact `P0`, mixed/ranged `P0/P1` or `P0-P1`, exact `P1`, mixed/ranged `P1/P2` or `P1-P2`, exact `P2`, mixed/ranged `P2/P3` or `P2-P3`, then exact `P3`. Within the same tier, sort by urgency/deadline when known.

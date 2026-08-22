@@ -1,6 +1,6 @@
 # Project pausing and reopening
 
-Canonical vault workflow: `~/personal_vault/_meta/workflows/projects/project-pausing-and-reopening-workflow.md`.
+Canonical vault workflow: `~/personal-vault/_meta/workflows/projects/project-pausing-and-reopening-workflow.md`.
 
 ## Pause
 

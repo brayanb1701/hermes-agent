@@ -36,7 +36,7 @@ cd ~/.hermes/hermes-agent
 scripts/sync-brayan-personalization.py
 ```
 
-The daily `hermes-upstream-rebase-ci` script also runs this sync and commits changes to **`brayan/personal-hermes-customizations` only** when the personalization bundle changed. Its required order is: fetch `upstream/main`, fetch the fork personalization branch, sync/commit current local personalization, rebase onto `upstream/main`, test, push only `HEAD:brayan/personal-hermes-customizations`, then schedule detached live activation through `hermes update --branch brayan/personal-hermes-customizations`. It must never push this bundle to `main`.
+The daily `hermes-upstream-rebase-ci` script also runs this sync and commits changes to **`second-computer-evolution` only** when the personalization bundle changed. Its required order is: fetch `upstream/main`, fetch the fork personalization branch, sync/commit current local personalization, rebase onto `upstream/main`, test, push only `HEAD:second-computer-evolution`, then schedule detached live activation through `hermes update --branch second-computer-evolution`. It must never push this bundle to `main`.
 
 See `docs/brayan-personalization-branch-workflow.md` for the full branch/CI rulebook.
 
@@ -46,8 +46,8 @@ From that machine's Hermes fork checkout:
 
 ```bash
 cd ~/.hermes/hermes-agent
-git switch brayan/personal-hermes-customizations
-git pull --ff-only origin brayan/personal-hermes-customizations
+git switch second-computer-evolution
+git pull --ff-only origin second-computer-evolution
 scripts/apply-brayan-personalization.py          # dry run
 scripts/apply-brayan-personalization.py --apply  # copy into ~/.hermes
 # Preserve an already-configured machine's auth/provider config:
@@ -63,7 +63,7 @@ hermes gateway restart
 hermes gateway status
 ```
 
-Set `updates.branch: brayan/personal-hermes-customizations` in the destination's live config so future CLI and gateway updates remain on the integrated branch.
+Set `updates.branch: second-computer-evolution` in the destination's live config so future CLI and gateway updates remain on the integrated branch.
 
 If the new machine should use a different Telegram bot/chat/vault path, edit `~/.hermes/config.yaml` after applying.
 

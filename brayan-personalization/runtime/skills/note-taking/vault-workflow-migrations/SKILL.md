@@ -8,7 +8,7 @@ license: MIT
 
 # Vault Workflow Migrations
 
-Use this skill when Brayan asks to rename, generalize, migrate, consolidate, or audit an existing workflow in `~/personal_vault`, especially when the change touches vault schema, templates, dashboards, Hermes skills, cron jobs, agent prompts, or runtime scripts.
+Use this skill when Brayan asks to rename, generalize, migrate, consolidate, or audit an existing workflow in `~/personal-vault`, especially when the change touches vault schema, templates, dashboards, Hermes skills, cron jobs, agent prompts, or runtime scripts.
 
 This is a class-level migration skill. It should stay reusable across migration types. Keep one-time migration details in `references/` or vault `_meta/tmp_analysis/` / archive notes, not in the main `SKILL.md`.
 
@@ -21,9 +21,9 @@ Scope before editing. Brayan often wants a targeted migration, not a vault-wide 
 ## Migration workflow
 
 1. Orient with:
-   - `~/personal_vault/_meta/schema.md`
-   - `~/personal_vault/_meta/index.md`
-   - `~/personal_vault/_meta/log.md`
+   - `~/personal-vault/_meta/schema.md`
+   - `~/personal-vault/_meta/index.md`
+   - `~/personal-vault/_meta/log.md`
    - the active workflow/template/dashboard files being changed
    - affected Hermes skills, agent prompts, scripts, cron jobs, and config when automation changes
 2. Define the migration contract before editing:
@@ -78,7 +78,7 @@ When touching any dashboard, index, or queue:
 
 Before reporting done:
 
-1. Run `git diff --check` in `~/personal_vault` if the vault changed.
+1. Run `git diff --check` in `~/personal-vault` if the vault changed.
 2. If Hermes runtime/personalization changed, run `git diff --check` in the Hermes personalization checkout too.
 3. Compile affected Python scripts with `python3 -m py_compile`.
 4. Dry-run affected scanners/dispatchers when available.

@@ -1,6 +1,6 @@
 # Project closing
 
-Canonical vault workflow: `~/personal_vault/_meta/workflows/projects/project-closing-workflow.md`.
+Canonical vault workflow: `~/personal-vault/_meta/workflows/projects/project-closing-workflow.md`.
 
 ## Trigger
 

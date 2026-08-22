@@ -64,7 +64,7 @@ For a specialized workflow, prefer this shape:
 ~/.hermes/scripts/<workflow-dispatcher>.py
 ```
 
-For vault-related workflows, also document meaningful architecture in the vault, usually under `~/personal_vault/_meta/workflows/...`, `~/personal_vault/projects/...`, or `~/personal_vault/_meta/log.md` depending on the workflow.
+For vault-related workflows, also document meaningful architecture in the vault, usually under `~/personal-vault/_meta/workflows/...`, `~/personal-vault/projects/...`, or `~/personal-vault/_meta/log.md` depending on the workflow.
 
 ## Scope rule: inventory all created agents first
 

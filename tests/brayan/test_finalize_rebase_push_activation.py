@@ -41,4 +41,4 @@ def test_finalizer_activation_command_uses_verified_personalization_branch():
     assert command[:2] == ["systemd-run", "--user"]
     assert "--on-active=5s" in command
     assert "hermes-personalization-activate-abcdef123456" in rendered
-    assert "update --branch brayan/personal-hermes-customizations --yes --no-backup" in rendered
+    assert "update --branch second-computer-evolution --yes --no-backup" in rendered

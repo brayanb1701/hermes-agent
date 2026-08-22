@@ -10,9 +10,9 @@ license: MIT
 
 ## Required reads
 Read:
-1. `~/personal_vault/decisions/pending.md`
-2. `~/personal_vault/projects/dashboard.md`
-3. `~/personal_vault/inbox/README.md`
+1. `~/personal-vault/decisions/pending.md`
+2. `~/personal-vault/projects/dashboard.md`
+3. `~/personal-vault/inbox/README.md`
 
 ## Behavior
 - Identify decisions that block meaningful progress.

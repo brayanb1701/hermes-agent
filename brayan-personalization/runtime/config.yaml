@@ -1,7 +1,7 @@
 model:
-  default: gpt-5.6-sol
-  provider: openai-codex
-  base_url: ''
+  default: stealth/ox-alpha
+  provider: nous
+  base_url: https://inference-api.nousresearch.com/v1
   context_length: 256000
 fallback_providers: []
 toolsets:
@@ -89,10 +89,9 @@ terminal:
   persistent_shell: true
   lifetime_seconds: 300
 web:
-  backend: firecrawl
+  backend: nous
   search_backend: ddgs
   extract_backend: ''
-  use_gateway: false
 browser:
   inactivity_timeout: 120
   command_timeout: 30
@@ -110,8 +109,7 @@ browser:
     adopt_existing_tab: false
     rewrite_loopback_urls: false
     loopback_host_alias: host.docker.internal
-  cloud_provider: local
-  use_gateway: false
+  cloud_provider: nous
 checkpoints:
   enabled: true
   max_snapshots: 50
@@ -274,6 +272,7 @@ display:
   bell_on_complete: false
   show_reasoning: true
   memory_notifications: 'on'
+  background_process_notifications: concise
   streaming: true
   timestamps: false
   final_response_markdown: strip
@@ -309,7 +308,6 @@ display:
       - cwd
   copy_shortcut: auto
   tool_progress: all
-  background_process_notifications: concise
 dashboard:
   theme: default
   show_token_analytics: false
@@ -326,7 +324,7 @@ dashboard:
 privacy:
   redact_pii: false
 tts:
-  provider: edge
+  provider: nous
   edge:
     voice: en-US-AriaNeural
   elevenlabs:
@@ -355,10 +353,8 @@ tts:
     device: cpu
   piper:
     voice: en_US-lessac-medium
-  use_gateway: false
 stt:
   enabled: true
-  provider: local
   local:
     model: base
     language: ''
@@ -371,6 +367,7 @@ stt:
     language_code: ''
     tag_audio_events: false
     diarize: false
+  provider: nous
 voice:
   record_key: ctrl+b
   max_recording_seconds: 120
@@ -390,8 +387,8 @@ memory:
   write_approval: false
   memory_char_limit: 2200
   user_char_limit: 1375
-  provider: ''
   nudge_interval: 10
+  provider: ''
   flush_min_turns: 6
 delegation:
   model: gpt-5.6-luna
@@ -566,10 +563,10 @@ onboarding:
     tool_progress_prompt: true
   profile_build: ask
 updates:
+  branch: second-computer-evolution
   pre_update_backup: false
   backup_keep: 5
   non_interactive_local_changes: stash
-  branch: brayan/personal-hermes-customizations
 lsp:
   enabled: true
   wait_mode: document
@@ -591,7 +588,7 @@ secrets:
 paste_collapse_threshold: 5
 paste_collapse_threshold_fallback: 0
 paste_collapse_char_threshold: 2000
-_config_version: 37
+_config_version: 38
 notes_intake:
   enabled: true
   vision_provider: main
@@ -601,7 +598,7 @@ notes_intake:
   auto_new_session_per_capture: true
   source_chat_ids:
     - '-1003960601334'
-  transcript_dir: ~/personal_vault/raw/transcripts/media
+  transcript_dir: ~/personal-vault/raw/transcripts/media
   image_classifier_engines:
     - local_clip
     - vision
@@ -680,3 +677,5 @@ plugins:
   enabled:
     - notes_preprocessor
   disabled: []
+image_gen:
+  provider: nous

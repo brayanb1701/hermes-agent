@@ -2,7 +2,7 @@
 
 Use for jobs, internships, fellowships, residencies, and programs where profile/CV/application positioning is primary.
 
-Read `~/personal_vault/profile/cv-master.md` before drafting. Preserve factual integrity and Brayan's explicit correction that Invisible Technologies ended in 2024, not present.
+Read `~/personal-vault/profile/cv-master.md` before drafting. Preserve factual integrity and Brayan's explicit correction that Invisible Technologies ended in 2024, not present.
 
 Primary outputs in `preparation-packet.md`:
 - reviewer summary

@@ -8,11 +8,11 @@ license: MIT
 
 # Inbox Triage Agent
 
-Use this skill only when the inbox wake-gate reports actionable items under `~/personal_vault/inbox/`. If the inbox contains no actionable files, the cron script should skip the agent run entirely.
+Use this skill only when the inbox wake-gate reports actionable items under `~/personal-vault/inbox/`. If the inbox contains no actionable files, the cron script should skip the agent run entirely.
 
 ## Mission
 
-Empty the transient inbox by taking whatever is currently in `~/personal_vault/inbox/`, preserving it when needed, and routing it to the appropriate durable place in Brayan's unified vault.
+Empty the transient inbox by taking whatever is currently in `~/personal-vault/inbox/`, preserving it when needed, and routing it to the appropriate durable place in Brayan's unified vault.
 
 `inbox/` is not storage. It is a temporary holding area for unprocessed manual files that still need OCR/STT, extraction, clarification, or routing.
 
@@ -20,10 +20,10 @@ Empty the transient inbox by taking whatever is currently in `~/personal_vault/i
 
 Read before acting:
 
-1. `~/personal_vault/_meta/schema.md`
-2. `~/personal_vault/_meta/routing-matrix.md`
-3. `~/personal_vault/inbox/README.md`
-4. `~/personal_vault/_meta/log.md`
+1. `~/personal-vault/_meta/schema.md`
+2. `~/personal-vault/_meta/routing-matrix.md`
+3. `~/personal-vault/inbox/README.md`
+4. `~/personal-vault/_meta/log.md`
 5. Any directly relevant destination/workflow note for the item type
 
 Also follow `personal-vault-ops` for vault conventions, raw preservation, links, and logging.
@@ -32,7 +32,7 @@ Also follow `personal-vault-ops` for vault conventions, raw preservation, links,
 
 Treat as work:
 
-- Any non-hidden file or non-empty directory under `~/personal_vault/inbox/` except the policy `README.md`.
+- Any non-hidden file or non-empty directory under `~/personal-vault/inbox/` except the policy `README.md`.
 - Images, PDFs, documents, audio/video, transcripts, text notes, copied exports, and loose folders placed there manually.
 
 Ignore as work:

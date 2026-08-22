@@ -2,7 +2,7 @@
 """Dispatch independent Hermes opportunity-preparation sessions for ready opportunities.
 
 Dispatcher-only responsibilities:
-1. Scan ~/personal_vault/opportunities/*/opportunity.md for `preparation-ready` opportunities.
+1. Scan ~/personal-vault/opportunities/*/opportunity.md for `preparation-ready` opportunities.
 2. Require automation_route: opportunity-preparation.
 3. Sort/select at most MAX_SESSIONS launchable opportunities.
 4. Render ~/.hermes/agents/opportunity-preparation/prompt-template.md with opportunity fields.
@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 HOME = Path.home()
-VAULT = HOME / "personal_vault"
+VAULT = HOME / "personal-vault"
 HERMES_HOME = HOME / ".hermes"
 OPPORTUNITIES_DIR = VAULT / "opportunities"
 AGENT_DIR = HERMES_HOME / "agents" / "opportunity-preparation"

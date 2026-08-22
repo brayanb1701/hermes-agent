@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-DEFAULT_VAULT = Path.home() / "personal_vault"
+DEFAULT_VAULT = Path.home() / "personal-vault"
 DEFAULT_KEEP = 5
 DATE_NOTE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
 AUDIT_PATTERNS = {

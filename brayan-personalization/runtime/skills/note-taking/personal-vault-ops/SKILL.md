@@ -1,6 +1,6 @@
 ---
 name: personal-vault-ops
-description: Operate Brayan's unified personal vault at ~/personal_vault — a combined Obsidian vault and LLM wiki used by Darwin for capture, routing, linking, reviews, and project support.
+description: Operate Brayan's unified personal vault at ~/personal-vault — a combined Obsidian vault and LLM wiki used by Darwin for capture, routing, linking, reviews, and project support.
 version: 1.1.0
 author: Darwin
 license: MIT
@@ -14,15 +14,15 @@ This is the stable vault navigation and management skill. It should explain how 
 
 ## Vault location
 
-- `~/personal_vault`
+- `~/personal-vault`
 
 ## Orientation order
 
 At the start of any vault-related session, read:
 
-1. `~/personal_vault/_meta/schema.md`
-2. `~/personal_vault/_meta/index.md`
-3. `~/personal_vault/_meta/log.md`
+1. `~/personal-vault/_meta/schema.md`
+2. `~/personal-vault/_meta/index.md`
+3. `~/personal-vault/_meta/log.md`
 4. Any directly relevant domain/project/workflow notes
 
 ## Core principle
@@ -59,7 +59,7 @@ The vault `projects/<slug>/README.md` remains the documentation/control layer: o
 
 For project lifecycle/workspace-control design, keep two layers distinct:
 
-- Vault layer: `~/personal_vault/projects/<slug>/README.md`, dashboards/registers, workflow docs, and final closeout records.
+- Vault layer: `~/personal-vault/projects/<slug>/README.md`, dashboards/registers, workflow docs, and final closeout records.
 - Workspace layer: `/home/brayan/projects/<slug>/` for active development, runtime artifacts, and live status/change files.
 
 For active coding/research projects, prefer a required workspace control pair from activation onward: `PROJECT_STATUS.md` for the current snapshot and `PROJECT_CHANGELOG.md` for chronological, parser-friendly updates. Do not rely on the vault README alone to infer live project state.
@@ -117,12 +117,12 @@ For the reusable setup pattern, see `references/project-workspace-control-layer.
 
 Read these when relevant:
 
-- `~/personal_vault/_meta/architecture/notes-intake-ingestion-pipeline.md`
-- `~/personal_vault/_meta/workflows/notes-intake/ocr-workflow.md`
-- `~/personal_vault/_meta/architecture/review-cron-system.md`
-- `~/personal_vault/_meta/architecture/vault-access-layer.md`
-- `~/personal_vault/_meta/routing-matrix.md`
-- `~/personal_vault/_meta/architecture/local-ai-stack.md`
+- `~/personal-vault/_meta/architecture/notes-intake-ingestion-pipeline.md`
+- `~/personal-vault/_meta/workflows/notes-intake/ocr-workflow.md`
+- `~/personal-vault/_meta/architecture/review-cron-system.md`
+- `~/personal-vault/_meta/architecture/vault-access-layer.md`
+- `~/personal-vault/_meta/routing-matrix.md`
+- `~/personal-vault/_meta/architecture/local-ai-stack.md`
 
 ## Current runtime helpers
 
@@ -185,7 +185,7 @@ Load these only when the task needs extra detail:
 
 ## Vault GitHub tracking / backup workflow
 
-Use this when initializing or maintaining git/GitHub tracking for `~/personal_vault`.
+Use this when initializing or maintaining git/GitHub tracking for `~/personal-vault`.
 
 1. Orient first with `_meta/schema.md`, `_meta/index.md`, and `_meta/log.md`.
 2. Check auth and repo state before changing anything:

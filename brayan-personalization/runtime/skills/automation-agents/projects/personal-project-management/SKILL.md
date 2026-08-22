@@ -8,7 +8,7 @@ license: MIT
 
 # Personal Project Management
 
-Use this skill whenever Darwin registers, activates, reviews, pauses, reopens, closes, audits, or repairs Brayan's personal projects across `~/personal_vault/projects/` and `/home/brayan/projects/`.
+Use this skill whenever Darwin registers, activates, reviews, pauses, reopens, closes, audits, or repairs Brayan's personal projects across `~/personal-vault/projects/` and `/home/brayan/projects/`.
 
 This is the single umbrella project-management skill. Do not create separate `project-intake-agent`, `project-activation-agent`, `project-review-agent`, or `project-closing-agent` skills unless Brayan later explicitly changes the architecture.
 
@@ -16,7 +16,7 @@ This is the single umbrella project-management skill. Do not create separate `pr
 
 Projects have two layers:
 
-- Vault control layer: `~/personal_vault/projects/<slug>/README.md`, `projects/dashboard.md`, `projects/backlog.md`, `projects/finished.md`, and final `projects/<slug>/closeout.md` records.
+- Vault control layer: `~/personal-vault/projects/<slug>/README.md`, `projects/dashboard.md`, `projects/backlog.md`, `projects/finished.md`, and final `projects/<slug>/closeout.md` records.
 - External workspace layer: `/home/brayan/projects/<slug>/` for active project execution, code, experiments, artifacts, and workspace handoff/control files.
 
 Canonical project statuses are exactly:
@@ -41,7 +41,7 @@ Canonical project statuses are exactly:
 
 For any project-management session:
 
-1. Read `~/personal_vault/_meta/schema.md`.
+1. Read `~/personal-vault/_meta/schema.md`.
 2. Read the assigned project README before touching any other project file.
 3. Load the relevant internal reference below with `skill_view(name="personal-project-management", file_path="references/<file>.md")`.
 4. If the project is active or workspace-related, inspect `PROJECT_STATUS.md` and `PROJECT_CHANGELOG.md` after the vault README.
@@ -114,13 +114,13 @@ PROJECT_REOPEN.md + project README + PROJECT_STATUS.md + PROJECT_CHANGELOG.md + 
 Prefer scripts over hand-writing repetitive boilerplate:
 
 ```bash
-python3 ~/.hermes/scripts/project_scaffold.py --project /home/brayan/personal_vault/projects/<slug>/README.md --seed
-python3 ~/.hermes/scripts/project_scaffold.py --project /home/brayan/personal_vault/projects/<slug>/README.md --activate
-python3 ~/.hermes/scripts/project_scaffold.py --project /home/brayan/personal_vault/projects/<slug>/README.md --closeout
-python3 ~/.hermes/scripts/project_scaffold.py --project /home/brayan/personal_vault/projects/<slug>/README.md --reopen
+python3 ~/.hermes/scripts/project_scaffold.py --project /home/brayan/personal-vault/projects/<slug>/README.md --seed
+python3 ~/.hermes/scripts/project_scaffold.py --project /home/brayan/personal-vault/projects/<slug>/README.md --activate
+python3 ~/.hermes/scripts/project_scaffold.py --project /home/brayan/personal-vault/projects/<slug>/README.md --closeout
+python3 ~/.hermes/scripts/project_scaffold.py --project /home/brayan/personal-vault/projects/<slug>/README.md --reopen
 python3 ~/.hermes/scripts/project_scaffold.py --all-active --dry-run
 - `python3 ~/.hermes/scripts/project_review_scan.py --dry-run`
-- `python3 ~/.hermes/scripts/project_review_history_retention.py --project /home/brayan/personal_vault/projects/<slug>/README.md --keep 5`
+- `python3 ~/.hermes/scripts/project_review_history_retention.py --project /home/brayan/personal-vault/projects/<slug>/README.md --keep 5`
 - `python3 ~/.hermes/scripts/project_state_audit.py --dry-run`
 ```
 
@@ -132,6 +132,6 @@ Before finishing a project-management change:
 - Dashboard/backlog/finished membership matches status exactly.
 - Active projects have workspace, `PROJECT_STATUS.md`, and `PROJECT_CHANGELOG.md`.
 - `PROJECT_CLOSEOUT.md`/`PROJECT_REOPEN.md` was preserved and marked complete/paused when processed.
-- `python3 ~/.hermes/scripts/project_review_history_retention.py --project /home/brayan/personal_vault/projects/<slug>/README.md --keep 5` leaves no more than five dated review-history entries in the project hub.
+- `python3 ~/.hermes/scripts/project_review_history_retention.py --project /home/brayan/personal-vault/projects/<slug>/README.md --keep 5` leaves no more than five dated review-history entries in the project hub.
 - `python3 ~/.hermes/scripts/project_state_audit.py --dry-run` does not show newly introduced drift for the touched project.
-- `git diff --check` passes in `~/personal_vault` when vault files changed.
+- `git diff --check` passes in `~/personal-vault` when vault files changed.

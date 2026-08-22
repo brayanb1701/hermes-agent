@@ -9,19 +9,19 @@ past that); see the **routing table** at the end and read the area file before e
 
 ## Brayan personalization branch rules
 
-**Critical:** Brayan's local/runtime personalization bundle belongs only on the branch `brayan/personal-hermes-customizations`.
+**Critical:** Brayan's local/runtime personalization bundle belongs only on the branch `second-computer-evolution`.
 
 - Do **not** add, commit, or push `brayan-personalization/`, local config snapshots, cronjobs, local skills, local plugins, or `~/.hermes/scripts` snapshots to `main`.
 - Before changing personalization assets, run:
   ```bash
-  git switch brayan/personal-hermes-customizations
+  git switch second-computer-evolution
   git status --short --branch
   ```
 - The `main` branch should stay a clean source-code baseline for Brayan's fork and upstream tracking.
-- Personalization sync/CI jobs must push to `origin/brayan/personal-hermes-customizations`, not `origin/main`.
-- Daily CI order: fetch official `upstream/main`, fetch the fork personalization branch, sync/commit local runtime personalization, rebase onto `upstream/main`, test, push only `HEAD:brayan/personal-hermes-customizations`, then schedule detached live activation through the branch-safe Hermes updater.
-- Keep `updates.branch: brayan/personal-hermes-customizations` in live config so terminal `hermes update` and gateway `/update` do not switch the checkout to `main`.
-- If personalization accidentally lands on `main`, immediately move/save the commit to `brayan/personal-hermes-customizations`, then reset `main` back and push with `--force-with-lease`.
+- Personalization sync/CI jobs must push to `origin/second-computer-evolution`, not `origin/main`.
+- Daily CI order: fetch official `upstream/main`, fetch the fork personalization branch, sync/commit local runtime personalization, rebase onto `upstream/main`, test, push only `HEAD:second-computer-evolution`, then schedule detached live activation through the branch-safe Hermes updater.
+- Keep `updates.branch: second-computer-evolution` in live config so terminal `hermes update` and gateway `/update` do not switch the checkout to `main`.
+- If personalization accidentally lands on `main`, immediately move/save the commit to `second-computer-evolution`, then reset `main` back and push with `--force-with-lease`.
 - Full workflow doc: `docs/brayan-personalization-branch-workflow.md`.
 
 ## What Hermes Is

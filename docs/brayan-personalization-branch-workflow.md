@@ -6,7 +6,7 @@ This document is the canonical repo-local rulebook for Brayan's personal Hermes 
 
 `main` is the clean source/upstream-tracking line for Brayan's fork.
 
-`brayan/personal-hermes-customizations` is the only branch that should contain Brayan/Darwin local runtime personalization, including:
+`second-computer-evolution` is the only branch that should contain Brayan/Darwin local runtime personalization, including:
 
 - `brayan-personalization/runtime/config.yaml`
 - `brayan-personalization/runtime/SOUL.md`
@@ -34,14 +34,14 @@ The daily Hermes upstream CI for this setup should do this, in order:
    ```
 5. Fetch the fork's personalization branch:
    ```bash
-   git fetch origin brayan/personal-hermes-customizations
+   git fetch origin second-computer-evolution
    ```
-6. Fast-forward the local personalization branch from `origin/brayan/personal-hermes-customizations` if needed.
+6. Fast-forward the local personalization branch from `origin/second-computer-evolution` if needed.
 7. Sync the current live local personalization state into `brayan-personalization/runtime/`:
    ```bash
    scripts/sync-brayan-personalization.py
    ```
-8. If the sync changed only allowed personalization files, commit them on `brayan/personal-hermes-customizations`.
+8. If the sync changed only allowed personalization files, commit them on `second-computer-evolution`.
 9. Rebase the personalization branch onto the latest official upstream source:
    ```bash
    git rebase upstream/main
@@ -53,11 +53,11 @@ The daily Hermes upstream CI for this setup should do this, in order:
     - `hermes config check`
 11. Push only the personalization branch:
     ```bash
-    git push --force-with-lease origin HEAD:brayan/personal-hermes-customizations
+    git push --force-with-lease origin HEAD:second-computer-evolution
     ```
 12. When the verified candidate differs from the live checkout, schedule a detached transient unit that runs:
     ```bash
-    hermes update --branch brayan/personal-hermes-customizations --yes --no-backup
+    hermes update --branch second-computer-evolution --yes --no-backup
     ```
     This activates the candidate through Hermes' supported updater, refreshes dependencies/config, and restarts the gateway without killing the cron run before it records its result.
 13. Emit compact JSON:
@@ -96,8 +96,8 @@ hermes gateway status
 ```bash
 cd ~/.hermes/hermes-agent
 git fetch origin
-git switch brayan/personal-hermes-customizations
-git pull --ff-only origin brayan/personal-hermes-customizations
+git switch second-computer-evolution
+git pull --ff-only origin second-computer-evolution
 scripts/apply-brayan-personalization.py          # dry run
 scripts/apply-brayan-personalization.py --apply  # writes into ~/.hermes with backups
 hermes config check
@@ -105,7 +105,7 @@ hermes config check
 
 Restore secrets locally after applying. Do not commit `.env`, `auth.json`, provider credentials, Telegram tokens, chat IDs, logs, sessions, state DBs, venvs, checkpoints, model caches, or cron output.
 
-Keep `updates.branch: brayan/personal-hermes-customizations` in `~/.hermes/config.yaml`. This makes both terminal `hermes update` and gateway `/update` target the integration branch instead of switching the live checkout to `main`.
+Keep `updates.branch: second-computer-evolution` in `~/.hermes/config.yaml`. This makes both terminal `hermes update` and gateway `/update` target the integration branch instead of switching the live checkout to `main`.
 
 ## Recovery if personalization lands on main
 
@@ -114,8 +114,8 @@ If `brayan-personalization/` or equivalent local runtime snapshots accidentally 
 ```bash
 cd ~/.hermes/hermes-agent
 BAD_COMMIT=$(git rev-parse HEAD)
-git branch -f brayan/personal-hermes-customizations "$BAD_COMMIT"
-git push --force-with-lease origin brayan/personal-hermes-customizations
+git branch -f second-computer-evolution "$BAD_COMMIT"
+git push --force-with-lease origin second-computer-evolution
 git switch main
 git reset --hard <previous-clean-main-commit>
 git push --force-with-lease origin main
