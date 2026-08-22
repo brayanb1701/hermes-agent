@@ -1,7 +1,7 @@
 model:
-  default: stealth/ox-alpha
-  provider: nous
-  base_url: https://inference-api.nousresearch.com/v1
+  default: gpt5.6-sol
+  provider: openai-codex
+  base_url: null
   context_length: 256000
 fallback_providers: []
 toolsets:
