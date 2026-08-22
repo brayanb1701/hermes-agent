@@ -508,6 +508,56 @@
       ],
       "workdir": null,
       "failure_streak": 0
+    },
+    {
+      "id": "f43697b1a2b5",
+      "name": "Finish Ouroboros approach 03 recovery",
+      "prompt": "Finish the existing native Ouroboros approach 03 run and report only when complete or genuinely blocked. Repository: /home/brayan/projects/coding-agent-methodology-bakeoff-hackathon-v2/approaches/03-ouroboros. Never inspect sibling approaches. Use pinned prefix: HOME=\"$PWD/.bakeoff-home\" OUROBOROS_TELEMETRY=0 uvx --python 3.12 --from 'ouroboros-ai[mcp]==0.51.14' ouroboros. Existing failed session orch_05c21ba76eab, execution exec_27a6443e3ea2, auto session auto_0de78211cab1, worktree .bakeoff-home/.ouroboros/worktrees/03-ouroboros/orch_05c21ba76eab, branch ooo/orch_05c21ba76eab. A recovery coordinator preserved artifact commit 96368a7 and started native Ralph lineage ralph-9a1cec27df0e924de926b5467c00d7 via detached job job_ae040fc5d6f3; at 2026-08-21 09:32 -05 it was actively running with worker PID 237675 and a Codex worker in the Ralph worktree. A streamable-http Ouroboros MCP server may still be on port 47992. Do not start duplicate implementation or duplicate Ralph while this job/process is alive. First inspect current exact job/process/branch state. If job is still active, wait for terminal completion using its native job wait/result path rather than polling repeatedly; if the owner/server died, use the supported pinned CLI/MCP recovery/reconcile path. Then consume the formal evaluation/evolution result, reconcile any commits into ooo/orch_05c21ba76eab, fix only remaining verified spec gaps through native Ouroboros/Codex gpt-5.6-sol with worker concurrency 1, and complete fresh test/typecheck/lint/build/MV3/audit plus real isolated Chromium verification. PROJECT_SPEC.md is the sole locked contract and must remain byte-identical. Required product remains complete local-only Manifest V3 TypeScript Focus Gate with URL patterns, shared/per-site composable schedules, all five interventions, separate config and append-only events/aggregates/feedback, dashboard/local exports, and X plus deterministic mock-feed Show/Hide/Mute/Flag labeling. RUN_LOG.md and RESULT.md must be evidence-backed and honestly record failed/recovery methodology. Commit meaningful milestones, merge/reconcile the finished approach branch into main without losing the prerequisite commit, verify main is clean, and remove .bakeoff-home/.codex/auth.json only after all Ouroboros/Codex work is done. Stop orphan MCP/worker processes only after completion. Return main commit, exact formal evaluation verdict, exact verification results, clean-tree state, and any blocker. Do not merely summarize a still-running job.",
+      "skills": [
+        "requesting-code-review"
+      ],
+      "skill": "requesting-code-review",
+      "model": null,
+      "provider": null,
+      "provider_snapshot": "openai-codex",
+      "model_snapshot": "gpt-5.6-sol",
+      "base_url": null,
+      "script": null,
+      "no_agent": false,
+      "monitor_script": null,
+      "monitor_url": null,
+      "monitor_state": null,
+      "context_from": null,
+      "schedule": {
+        "kind": "once",
+        "run_at": "2026-08-21T09:45:32.441944-05:00",
+        "display": "once in 10m"
+      },
+      "schedule_display": "once in 10m",
+      "repeat": {
+        "times": 1,
+        "completed": 0
+      },
+      "enabled": false,
+      "state": "paused",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-08-21T09:35:32.441973-05:00",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "failure_streak": 0,
+      "deliver": "origin",
+      "origin": null,
+      "enabled_toolsets": [
+        "terminal",
+        "file",
+        "delegation"
+      ],
+      "workdir": null,
+      "run_claim": null
     }
   ]
 }
