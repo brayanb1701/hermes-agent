@@ -419,7 +419,8 @@
       "enabled_toolsets": [
         "file",
         "terminal"
-      ]
+      ],
+      "failure_streak": 0
     },
     {
       "id": "c77f4c0f5cd9",
