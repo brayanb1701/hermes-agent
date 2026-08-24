@@ -20,7 +20,7 @@ Read:
 6. `~/personal-vault/domains/coding/coding-map.md`
 7. `~/personal-vault/domains/creative/creative-map.md`
 8. `~/personal-vault/domains/economy/economy-map.md`
-9. `~/personal-vault/projects/dashboard.md`
+9. `~/personal-vault/_meta/dashboards/project-dashboard.md`
 
 ## Recommendation balance
 Propose 3-5 recommendations balanced across:

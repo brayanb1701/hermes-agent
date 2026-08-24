@@ -74,7 +74,7 @@ For the reusable setup pattern, see `references/project-workspace-control-layer.
 - `domains/creative/creative-map.md`
 - `domains/economy/economy-map.md`
 - `domains/opportunities/opportunities-map.md`
-- `projects/dashboard.md`
+- `_meta/dashboards/project-dashboard.md`
 - `projects/finished.md`
 - `opportunities/dashboard.md`
 - `opportunities/finished.md`
