@@ -1,7 +1,7 @@
 ---
 name: antigravity-cli
 description: Use when calling Google Antigravity agents through agy. Run headless, interactive, resumed, structured, or custom-agent workflows safely and verify their work.
-version: 0.3.0-local
+version: 0.3.1-local
 author: Tony Simons (asimons81), Hermes Agent; updated for agy 1.1.22
 license: MIT
 platforms: [linux, macos, windows]
@@ -14,6 +14,10 @@ metadata:
 # Antigravity CLI (`agy`)
 
 Use Google Antigravity as a coding worker, reviewer, research agent, or custom agent through Hermes' `terminal` and `process` tools. Prefer headless JSON mode for automation. Use the TUI only when the user needs a live conversation, approvals, artifact review, or subagent monitoring.
+
+## Default model
+
+Use the newest available Gemini Flash model by default. At the start of an Antigravity workflow, run `agy models`, select the highest-version `gemini-*-flash-high` slug, and pass it explicitly with `--model`. As of `agy` 1.1.22, that slug is `gemini-3.7-flash-high`. Do not rely on Antigravity's saved model because it can drift between sessions. Use another model only when the user requests it or the task explicitly calls for a different model comparison.
 
 Official docs:
 
@@ -65,7 +69,7 @@ This is the default for Hermes automation. Run inside the target project directo
 
 ```text
 terminal(
-  command="agy -p 'Review the current diff. Report concrete bugs with file and line references. Do not edit files.' --output-format json --print-timeout 10m",
+  command="agy -p 'Review the current diff. Report concrete bugs with file and line references. Do not edit files.' --output-format json --model <latest-flash-slug> --print-timeout 10m",
   workdir="/path/to/repo",
   timeout=600
 )
@@ -88,7 +92,7 @@ Use `--json-schema` when Hermes must consume fields rather than prose. It accept
 
 ```text
 terminal(
-  command="agy -p 'Review the current diff' --output-format json --json-schema review-schema.json --print-timeout 10m",
+  command="agy -p 'Review the current diff' --output-format json --json-schema review-schema.json --model <latest-flash-slug> --print-timeout 10m",
   workdir="/path/to/repo",
   timeout=600
 )
@@ -102,7 +106,7 @@ Use a tracked background process for work that may exceed the foreground limit:
 
 ```text
 terminal(
-  command="agy -p 'Implement TASK.md, run the focused tests, and report changed files and exact test results.' --output-format json --print-timeout 30m",
+  command="agy -p 'Implement TASK.md, run the focused tests, and report changed files and exact test results.' --output-format json --model <latest-flash-slug> --print-timeout 30m",
   workdir="/path/to/worktree",
   background=true,
   notify_on_complete=true
@@ -116,7 +120,7 @@ Do not poll repeatedly. Continue other work and inspect the process output when 
 Capture `conversation_id` from JSON output, then resume that exact session:
 
 ```text
-agy -p 'Now address the two review findings and rerun tests.' --conversation <conversation-id> --output-format json
+agy -p 'Now address the two review findings and rerun tests.' --conversation <conversation-id> --output-format json --model <latest-flash-slug>
 ```
 
 `--continue` or `-c` resumes the most recent conversation, which is convenient but unsafe when several agents run concurrently. Prefer `--conversation <id>` in automation.
@@ -126,7 +130,7 @@ agy -p 'Now address the two review findings and rerun tests.' --conversation <co
 For several dependent turns without startup overhead, use both stream formats:
 
 ```text
-agy --input-format stream-json --output-format stream-json
+agy --input-format stream-json --output-format stream-json --model <latest-flash-slug>
 ```
 
 Write one NDJSON line per turn:
@@ -144,7 +148,7 @@ The output sequence is one `init`, any number of `step_update` events, and one `
 Start a live session only when interactivity matters:
 
 ```text
-terminal(command="agy", workdir="/path/to/repo", background=true, pty=true, notify_on_complete=true)
+terminal(command="agy --model <latest-flash-slug>", workdir="/path/to/repo", background=true, pty=true, notify_on_complete=true)
 ```
 
 Use `process(action="write", data="<prompt>\r", session_id=...)` to submit TUI input. A carriage return may work where a newline does not. Useful in-session commands include `/agents`, `/tasks`, `/diff`, `/permissions`, `/model`, `/skills`, `/resume`, and `/exit`.
@@ -163,7 +167,7 @@ Run one headlessly:
 
 ```text
 terminal(
-  command="agy -p 'Review the current branch against main.' --agent code-reviewer --output-format json --print-timeout 10m",
+  command="agy -p 'Review the current branch against main.' --agent code-reviewer --output-format json --model <latest-flash-slug> --print-timeout 10m",
   workdir="/path/to/repo",
   timeout=600
 )
@@ -253,7 +257,7 @@ Antigravity's final message is a self-report. Verify independently before tellin
 - [ ] `command -v agy` resolves and `agy --version` succeeds.
 - [ ] Cached authentication supports a headless run.
 - [ ] JSON output parses and reports `SUCCESS`.
-- [ ] The requested model or custom agent was selected explicitly when needed.
+- [ ] `agy models` was checked and the newest `gemini-*-flash-high` slug was passed explicitly, unless the user requested another model.
 - [ ] Permission scope matches the task.
 - [ ] The target workspace or worktree is correct.
 - [ ] File changes and tests were independently verified.
