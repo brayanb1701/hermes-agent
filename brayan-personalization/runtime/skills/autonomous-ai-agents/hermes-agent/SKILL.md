@@ -621,6 +621,7 @@ terminal(command="tmux new-session -d -s resumed 'hermes --resume 20260225_14305
 - **Use `hermes chat -q` for fire-and-forget** — no PTY needed
 - **Use tmux for interactive sessions** — raw PTY mode has `\r` vs `\n` issues with prompt_toolkit
 - **For scheduled tasks**, use the `cronjob` tool instead of spawning — handles delivery and retry
+- **DarkArmy → Calcifer persistent work:** use Brayan's `calcifer-agent` helper rather than raw SSH. It provides reconnectable tmux sessions and detached systemd goals with explicit guarded/trusted permission policies. See `references/calcifer-remote-hermes.md`.
 
 ---
 
