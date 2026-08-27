@@ -54,7 +54,12 @@ def parse_budget(value: str) -> int:
 
 
 def build_goal_command(
-    *, prompt_path: str, budget_seconds: int, trusted: bool, workdir: str | None
+    *,
+    prompt_path: str,
+    budget_seconds: int,
+    trusted: bool,
+    workdir: str | None,
+    reasoning: str | None = None,
 ) -> list[str]:
     """Build the process-scoped Hermes command for a detached goal."""
     command = [REMOTE_HERMES, "chat", "--query-file", prompt_path, "--quiet"]
@@ -62,6 +67,8 @@ def build_goal_command(
         command.extend(["--in", workdir])
     if budget_seconds:
         command.extend(["--run-budget", str(budget_seconds)])
+    if reasoning:
+        command.extend(["--reasoning", reasoning])
     if trusted:
         command.append("--yolo")
     command.extend(["--source", "calcifer-agent"])
@@ -223,6 +230,7 @@ def command_run(args: argparse.Namespace) -> int:
         "permission_policy": "trusted-yolo" if args.trusted else "guarded-deny",
         "budget_seconds": budget,
         "workdir": args.workdir,
+        "reasoning": args.reasoning,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "unit": unit,
     }
@@ -241,6 +249,7 @@ def command_run(args: argparse.Namespace) -> int:
         budget_seconds=budget,
         trusted=args.trusted,
         workdir=args.workdir,
+        reasoning=args.reasoning,
     )
     systemd_command = [
         "systemd-run",
@@ -481,6 +490,11 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--budget", default=DEFAULT_BUDGET, help="wall-clock budget: 90m, 4h, 1d, or 0 for unlimited")
     run.add_argument("--trusted", action="store_true", help="process-scoped --yolo; bypass ordinary approvals")
     run.add_argument("--workdir", help="remote working directory")
+    run.add_argument(
+        "--reasoning",
+        choices=("none", "minimal", "low", "medium", "high", "xhigh"),
+        help="reasoning effort for this detached Hermes goal",
+    )
     run.set_defaults(func=command_run)
 
     list_parser = subparsers.add_parser("list", help="list active sessions and loaded goal units")

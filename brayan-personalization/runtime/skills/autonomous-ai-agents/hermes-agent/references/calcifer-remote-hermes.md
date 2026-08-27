@@ -44,6 +44,7 @@ The default session uses Calcifer's persisted approval mode. If Hermes reaches a
 ```bash
 calcifer-agent run <name> --budget 4h --workdir /remote/project 'SELF-CONTAINED GOAL'
 calcifer-agent run <name> --file /local/path/goal.md --budget 1d
+calcifer-agent run <name> --reasoning high --trusted --file /local/path/goal.md --budget 1d
 printf '%s\n' 'SELF-CONTAINED GOAL' | calcifer-agent run <name> --budget 90m
 ```
 
@@ -57,7 +58,7 @@ calcifer-agent logs <name> --follow
 calcifer-agent stop <name> --goal
 ```
 
-The remote process runs under Calcifer's systemd user manager. Calcifer has user lingering enabled, so it survives the initiating SSH connection and having no logged-in shell. `--budget` is a wall-clock safety ceiling; the default is `4h`, and `0` means unlimited.
+The remote process runs under Calcifer's systemd user manager. Calcifer has user lingering enabled, so it survives the initiating SSH connection and having no logged-in shell. `--budget` is a wall-clock safety ceiling; the default is `4h`, and `0` means unlimited. Use `--reasoning none|minimal|low|medium|high|xhigh` to pin reasoning effort for a detached goal instead of changing Calcifer's global default.
 
 ## Permission policies
 

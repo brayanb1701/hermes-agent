@@ -88,6 +88,16 @@ class HermesCommandTests(unittest.TestCase):
         self.assertNotIn("--run-budget", command)
         self.assertEqual(command[command.index("--in") + 1], "/home/brayan/projects/example")
 
+    def test_goal_can_pin_reasoning_for_long_orchestration(self) -> None:
+        command = calcifer_agent.build_goal_command(
+            prompt_path="/tmp/prompt.txt",
+            budget_seconds=3600,
+            trusted=True,
+            workdir=None,
+            reasoning="high",
+        )
+        self.assertEqual(command[command.index("--reasoning") + 1], "high")
+
     def test_interactive_command_uses_same_explicit_trust_policy(self) -> None:
         guarded = calcifer_agent.build_session_command(trusted=False, workdir=None)
         trusted = calcifer_agent.build_session_command(trusted=True, workdir="/tmp/work")
