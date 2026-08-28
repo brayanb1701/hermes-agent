@@ -1,3 +1,4 @@
+import base64
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -321,7 +322,10 @@ def test_make_vision_messages_sniffs_mime_type_from_image_bytes(tmp_path):
     from gateway import notes_intake
 
     image = tmp_path / "capture.bin"
-    image.write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 8)
+    image.write_bytes(base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/"
+        "AAX+Av4N70a4AAAAAElFTkSuQmCC"
+    ))
 
     messages = notes_intake._make_vision_messages("describe", str(image))
 
