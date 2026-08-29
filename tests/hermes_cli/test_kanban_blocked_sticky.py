@@ -50,6 +50,34 @@ def kanban_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 
 # ---------------------------------------------------------------------------
+# Explicitly initial-blocked tasks must be sticky
+# ---------------------------------------------------------------------------
+
+
+def test_initial_blocked_task_is_not_auto_promoted_by_recompute_ready(
+    kanban_home: Path,
+) -> None:
+    """A task deliberately created blocked must wait for explicit unblock.
+
+    Parentless tasks are otherwise immediately eligible for dispatch, so the
+    creation path must preserve the operator's explicit parking decision across
+    dispatcher promotion sweeps.
+    """
+    with kb.connect() as conn:
+        tid = kb.create_task(
+            conn,
+            title="parked until capacity is available",
+            initial_status="blocked",
+        )
+
+        for _ in range(3):
+            assert kb.recompute_ready(conn) == 0
+            task = kb.get_task(conn, tid)
+            assert task is not None
+            assert task.status == "blocked"
+
+
+# ---------------------------------------------------------------------------
 # Worker-initiated kanban_block must be sticky
 # ---------------------------------------------------------------------------
 
