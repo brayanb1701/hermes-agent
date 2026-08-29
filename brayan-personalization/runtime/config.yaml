@@ -514,6 +514,7 @@ kanban:
   auto_decompose: true
   auto_decompose_per_tick: 3
   dispatch_stale_timeout_seconds: 14400
+  max_in_progress: 3
 code_execution:
   mode: project
   timeout: 300
