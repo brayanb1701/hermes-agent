@@ -1,5 +1,12 @@
 {
   "platforms": {
-    "telegram": []
+    "telegram": [
+      {
+        "id": "875925495",
+        "name": "Brayan xd",
+        "type": "dm",
+        "thread_id": null
+      }
+    ]
   }
 }
