@@ -256,8 +256,8 @@
         "times": 1,
         "completed": 0
       },
-      "enabled": true,
-      "state": "scheduled",
+      "enabled": false,
+      "state": "paused",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T18:24:57.201587-05:00",
@@ -270,7 +270,9 @@
       "origin": null,
       "enabled_toolsets": [
         "file"
-      ]
+      ],
+      "run_claim": null,
+      "failure_streak": 0
     },
     {
       "id": "84999fa7645a",
@@ -364,8 +366,8 @@
         "times": 1,
         "completed": 0
       },
-      "enabled": true,
-      "state": "scheduled",
+      "enabled": false,
+      "state": "paused",
       "paused_at": null,
       "paused_reason": null,
       "created_at": "2026-04-28T19:01:40.249481-05:00",
@@ -379,7 +381,9 @@
       "enabled_toolsets": [
         "file",
         "web"
-      ]
+      ],
+      "run_claim": null,
+      "failure_streak": 0
     },
     {
       "id": "ea904b1d1a01",
