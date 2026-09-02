@@ -559,6 +559,59 @@
       ],
       "workdir": null,
       "run_claim": null
+    },
+    {
+      "id": "10a7bd12f8dd",
+      "name": "AI learning path morning verification",
+      "prompt": "Morning verification for Brayan's Lean Group Learning import mission. No user is present; do not ask questions. Read /home/brayan/ai-engineer-learning-path-import-agent-brief.md and /home/brayan/Downloads/AI_Engineer_Learning_Path_Junior_REVIEWED/SCORM/platform-final/import-ledger.json. Inspect tmux session ai-learning-import before acting. If the live agent is still actively making progress, do not compete for the dedicated Chromium session; verify the ledger and local artifacts only and report that it is still running. If the live agent has stopped or completed, independently verify the final outcome. Required checks: six newly created draft courses, exact source-matching totals of 25 modules and 67 topics, 6 assessments and 60 questions unless a documented hard platform blocker exists, nonempty lesson content, no prohibited internal Related docs or inaccessible package-relative links, representative learner Preview checks without the known HTTP 400 rich-content stream error, zero assignments, no publication, and one draft learning path containing exactly the six new final course IDs in specified order. Read back the exact platform objects before claiming success. If a small safe repair is possible within the run, perform and verify it; otherwise write precise blocker evidence into the ledger/report. Never publish, assign, delete, archive, or edit unrelated content. Use only the dedicated Hermes Chromium profile/CDP endpoint. Produce a concise local verification report with IDs, URLs, counts, failures, and next action.",
+      "skills": [
+        "scheduled-agent-verification",
+        "computer-use",
+        "hermes-agent"
+      ],
+      "skill": "scheduled-agent-verification",
+      "model": null,
+      "provider": null,
+      "provider_snapshot": "openai-codex",
+      "model_snapshot": "gpt-5.6-sol",
+      "base_url": null,
+      "script": null,
+      "no_agent": false,
+      "monitor_script": null,
+      "monitor_url": null,
+      "monitor_state": null,
+      "context_from": null,
+      "schedule": {
+        "kind": "once",
+        "run_at": "2026-09-02T08:03:27.012017-05:00",
+        "display": "once in 6h"
+      },
+      "schedule_display": "once in 6h",
+      "repeat": {
+        "times": 1,
+        "completed": 0
+      },
+      "enabled": false,
+      "state": "paused",
+      "paused_at": null,
+      "paused_reason": null,
+      "created_at": "2026-09-02T02:03:27.012106-05:00",
+      "next_run_at": null,
+      "last_run_at": null,
+      "last_status": null,
+      "last_error": null,
+      "last_delivery_error": null,
+      "failure_streak": 0,
+      "deliver": "local",
+      "origin": null,
+      "enabled_toolsets": [
+        "terminal",
+        "file",
+        "browser",
+        "skills"
+      ],
+      "workdir": "/home/brayan/Downloads/AI_Engineer_Learning_Path_Junior_REVIEWED",
+      "run_claim": null
     }
   ]
 }
