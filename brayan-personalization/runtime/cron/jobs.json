@@ -36,7 +36,13 @@
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
       "origin": null,
-      "failure_streak": 0
+      "failure_streak": 0,
+      "last_dispatch": {
+        "scheduled_at": "2026-09-03T09:00:00-05:00",
+        "dispatched_at": "2026-09-03T09:00:42.539164-05:00",
+        "lateness_seconds": 42.5,
+        "kind": "on_time"
+      }
     },
     {
       "id": "50f9df74cb16",
@@ -73,7 +79,13 @@
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
       "origin": null,
-      "failure_streak": 0
+      "failure_streak": 0,
+      "last_dispatch": {
+        "scheduled_at": "2026-09-02T19:00:00-05:00",
+        "dispatched_at": "2026-09-02T19:00:39.051144-05:00",
+        "lateness_seconds": 39.1,
+        "kind": "on_time"
+      }
     },
     {
       "id": "b5b791cd972b",
@@ -115,7 +127,13 @@
         "terminal"
       ],
       "no_agent": false,
-      "failure_streak": 0
+      "failure_streak": 0,
+      "last_dispatch": {
+        "scheduled_at": "2026-09-02T18:00:00-05:00",
+        "dispatched_at": "2026-09-02T18:00:38.522776-05:00",
+        "lateness_seconds": 38.5,
+        "kind": "on_time"
+      }
     },
     {
       "id": "65b0c66d08ee",
@@ -152,7 +170,13 @@
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
       "origin": null,
-      "failure_streak": 0
+      "failure_streak": 0,
+      "last_dispatch": {
+        "scheduled_at": "2026-09-02T17:00:00-05:00",
+        "dispatched_at": "2026-09-02T17:00:37.979087-05:00",
+        "lateness_seconds": 38.0,
+        "kind": "on_time"
+      }
     },
     {
       "id": "edfaeb3aed5d",
@@ -189,7 +213,13 @@
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
       "origin": null,
-      "failure_streak": 0
+      "failure_streak": 0,
+      "last_dispatch": {
+        "scheduled_at": "2026-09-02T11:00:00-05:00",
+        "dispatched_at": "2026-09-02T11:00:34.240336-05:00",
+        "lateness_seconds": 34.2,
+        "kind": "on_time"
+      }
     },
     {
       "id": "92663af3d092",
@@ -234,7 +264,13 @@
         "skills",
         "code_execution"
       ],
-      "failure_streak": 0
+      "failure_streak": 0,
+      "last_dispatch": {
+        "scheduled_at": "2026-09-03T09:30:00-05:00",
+        "dispatched_at": "2026-09-03T09:30:45.295258-05:00",
+        "lateness_seconds": 45.3,
+        "kind": "on_time"
+      }
     },
     {
       "id": "64be0631db63",
@@ -468,7 +504,13 @@
         "terminal"
       ],
       "workdir": null,
-      "failure_streak": 0
+      "failure_streak": 0,
+      "last_dispatch": {
+        "scheduled_at": "2026-09-02T11:30:00-05:00",
+        "dispatched_at": "2026-09-02T11:30:34.538495-05:00",
+        "lateness_seconds": 34.5,
+        "kind": "on_time"
+      }
     },
     {
       "id": "d93ad4e6be8b",
@@ -512,7 +554,13 @@
         "terminal"
       ],
       "workdir": null,
-      "failure_streak": 0
+      "failure_streak": 0,
+      "last_dispatch": {
+        "scheduled_at": "2026-09-02T11:45:00-05:00",
+        "dispatched_at": "2026-09-02T11:45:34.697657-05:00",
+        "lateness_seconds": 34.7,
+        "kind": "on_time"
+      }
     },
     {
       "id": "5938efec6555",
