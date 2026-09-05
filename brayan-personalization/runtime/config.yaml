@@ -1,5 +1,5 @@
 model:
-  default: gpt-5.6-sol
+  default: gpt-6-astra
   provider: openai-codex
   base_url: https://inference-api.nousresearch.com/v1
   context_length: 256000
@@ -169,12 +169,6 @@ auxiliary:
     api_key: ''
     timeout: 120
     download_timeout: 30
-  web_extract:
-    provider: auto
-    model: ''
-    base_url: ''
-    api_key: ''
-    timeout: 360
   compression:
     provider: auto
     model: ''
@@ -241,6 +235,12 @@ auxiliary:
     base_url: ''
     api_key: ''
     timeout: 60
+  web_extract:
+    provider: auto
+    model: ''
+    base_url: ''
+    api_key: ''
+    timeout: 360
   session_search:
     provider: auto
     model: ''
@@ -487,6 +487,10 @@ approvals:
   mcp_reload_confirm: true
   destructive_slash_confirm: false
 command_allowlist: []
+plugins:
+  enabled:
+    - notes_preprocessor
+  disabled: []
 hooks_auto_accept: false
 security:
   allow_private_urls: false
@@ -511,10 +515,10 @@ kanban:
   worker_log_backup_count: 1
   orchestrator_profile: ''
   default_assignee: ''
+  max_in_progress: 3
   auto_decompose: true
   auto_decompose_per_tick: 3
   dispatch_stale_timeout_seconds: 14400
-  max_in_progress: 3
 code_execution:
   mode: project
   timeout: 300
@@ -618,10 +622,12 @@ platform_toolsets:
     - browser
     - clarify
     - code_execution
+    - computer_use
     - cronjob
     - delegation
     - file
     - image_gen
+    - kanban
     - memory
     - session_search
     - skills
@@ -673,12 +679,49 @@ platform_toolsets:
   qqbot:
     - hermes-qqbot
 TELEGRAM_HOME_CHANNEL: '875925495'
-plugins:
-  enabled:
-    - notes_preprocessor
-  disabled: []
 image_gen:
-  provider: nous
+  provider: openai-codex
+  model: gpt-image-2-medium
+known_plugin_toolsets:
+  cli:
+    - a2a
+    - spotify
+known_builtin_toolsets:
+  cli:
+    - browser
+    - clarify
+    - code_execution
+    - computer_use
+    - context_engine
+    - cronjob
+    - delegation
+    - discord
+    - discord_admin
+    - file
+    - homeassistant
+    - image_gen
+    - memory
+    - session_search
+    - skills
+    - spotify
+    - stt
+    - terminal
+    - todo
+    - tts
+    - video
+    - video_gen
+    - vision
+    - web
+    - x_search
+    - yuanbao
+API_SERVER_ENABLED: true
+API_SERVER_HOST: 100.74.99.60
+API_SERVER_PORT: 8377
+bot_peers:
+  darkarmy:
+    url: http://100.91.135.34:8377
+    note: Private Tailscale peer; explicit scoped requests only. Never auto-forward
+      replies or ping peers recursively.
 
 # ── Fallback Model ────────────────────────────────────────────────────
 # Automatic provider failover when primary is unavailable.
