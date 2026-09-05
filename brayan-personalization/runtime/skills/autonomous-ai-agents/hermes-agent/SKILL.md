@@ -557,6 +557,13 @@ Current implementation lives in `tools/delegate_tool.py`:
 
 For coding-subagent experiments, a strong reusable pattern is for the parent to first create a compact shared mission brief — overall goal, repo/workspace path, key constraints, non-goals, success criteria, known pitfalls — and prepend that brief to each task-specific `context`. Test this against baseline delegation by measuring correctness, duplicated discovery work, constraint adherence, file conflicts/staleness, tool calls, token usage, elapsed time, and parent synthesis quality.
 
+### Explicit model routes and auditable long runs
+
+- Inspect installed `hermes chat --help` before spawning. When supported, use `--query-file PATH --oneshot --reasoning medium --max-turns N --run-budget SECONDS` so prompts are not shell-interpreted and effort/budgets stay session-local. Pin `--provider` and `--model`; global delegation settings may select a different model/effort.
+- For Brayan's Grok replacement, use `--provider xai-oauth --model grok-4.6`, not `--provider xai`, which requires a separate API key. Smoke-test the actual route before launching expensive work. Ox-alpha is no longer available.
+- For a Fable 5.1 advisor, use Claude Code `--model claude-fable-5-1 --effort medium --output-format json`; inspect `is_error` and `modelUsage`, since `subtype: success` can accompany an API error. If the API rejects the client version, update Claude Code and repeat the smoke test before dispatch.
+- For independent background coordinators, persist mission, process PID, log, final result and exit receipt per lane. Use terminal `background=true, notify=true`, verify startup once, and review exact artifacts after completion notifications rather than polling. Assign non-overlapping write ownership and prohibit global config changes during parallel audits.
+
 ### One-Shot Mode
 
 ```
