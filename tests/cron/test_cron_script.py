@@ -404,7 +404,7 @@ class TestRunJobScript:
         assert output  # a message is always produced, never a silent drop
 
     def test_script_empty_output(self, cron_env):
-        from cron.scheduler import _run_job_script
+        from cron.scheduler_script import _run_job_script
 
         script = cron_env / "scripts" / "empty.py"
         script.write_text("# no output\n")
@@ -416,7 +416,7 @@ class TestRunJobScript:
     @pytest.mark.live_system_guard_bypass
     def test_script_timeout(self, cron_env, monkeypatch):
         from cron import scheduler as sched_mod
-        from cron.scheduler import _run_job_script
+        from cron.scheduler_script import _run_job_script
 
         # Use a very short timeout
         monkeypatch.setattr(sched_mod, "_SCRIPT_TIMEOUT", 1)
@@ -430,7 +430,7 @@ class TestRunJobScript:
 
     def test_script_json_output(self, cron_env):
         """Scripts can output structured JSON for the LLM to parse."""
-        from cron.scheduler import _run_job_script
+        from cron.scheduler_script import _run_job_script
 
         script = cron_env / "scripts" / "json_out.py"
         script.write_text(textwrap.dedent("""\
