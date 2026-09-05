@@ -38,10 +38,10 @@
       "origin": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-03T09:00:00-05:00",
-        "dispatched_at": "2026-09-03T09:00:42.539164-05:00",
-        "lateness_seconds": 42.5,
-        "kind": "on_time"
+        "scheduled_at": "2026-09-04T09:00:00-05:00",
+        "dispatched_at": "2026-09-04T21:19:27.706723-05:00",
+        "lateness_seconds": 44367.7,
+        "kind": "catch_up"
       }
     },
     {
@@ -81,10 +81,10 @@
       "origin": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-02T19:00:00-05:00",
-        "dispatched_at": "2026-09-02T19:00:39.051144-05:00",
-        "lateness_seconds": 39.1,
-        "kind": "on_time"
+        "scheduled_at": "2026-09-04T19:00:00-05:00",
+        "dispatched_at": "2026-09-04T21:19:27.706723-05:00",
+        "lateness_seconds": 8367.7,
+        "kind": "catch_up"
       }
     },
     {
@@ -129,10 +129,10 @@
       "no_agent": false,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-02T18:00:00-05:00",
-        "dispatched_at": "2026-09-02T18:00:38.522776-05:00",
-        "lateness_seconds": 38.5,
-        "kind": "on_time"
+        "scheduled_at": "2026-09-04T10:00:00-05:00",
+        "dispatched_at": "2026-09-04T21:19:27.706723-05:00",
+        "lateness_seconds": 40767.7,
+        "kind": "catch_up"
       }
     },
     {
@@ -172,10 +172,10 @@
       "origin": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-02T17:00:00-05:00",
-        "dispatched_at": "2026-09-02T17:00:37.979087-05:00",
-        "lateness_seconds": 38.0,
-        "kind": "on_time"
+        "scheduled_at": "2026-09-04T12:00:00-05:00",
+        "dispatched_at": "2026-09-04T21:19:27.706723-05:00",
+        "lateness_seconds": 33567.7,
+        "kind": "catch_up"
       }
     },
     {
@@ -215,10 +215,10 @@
       "origin": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-02T11:00:00-05:00",
-        "dispatched_at": "2026-09-02T11:00:34.240336-05:00",
-        "lateness_seconds": 34.2,
-        "kind": "on_time"
+        "scheduled_at": "2026-09-04T11:00:00-05:00",
+        "dispatched_at": "2026-09-04T21:19:27.706723-05:00",
+        "lateness_seconds": 37167.7,
+        "kind": "catch_up"
       }
     },
     {
@@ -266,10 +266,10 @@
       ],
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-03T09:30:00-05:00",
-        "dispatched_at": "2026-09-03T09:30:45.295258-05:00",
-        "lateness_seconds": 45.3,
-        "kind": "on_time"
+        "scheduled_at": "2026-09-04T09:30:00-05:00",
+        "dispatched_at": "2026-09-04T21:19:27.706723-05:00",
+        "lateness_seconds": 42567.7,
+        "kind": "catch_up"
       }
     },
     {
@@ -506,10 +506,10 @@
       "workdir": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-02T11:30:00-05:00",
-        "dispatched_at": "2026-09-02T11:30:34.538495-05:00",
-        "lateness_seconds": 34.5,
-        "kind": "on_time"
+        "scheduled_at": "2026-09-04T11:30:00-05:00",
+        "dispatched_at": "2026-09-04T21:19:27.706723-05:00",
+        "lateness_seconds": 35367.7,
+        "kind": "catch_up"
       }
     },
     {
@@ -556,57 +556,11 @@
       "workdir": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-02T11:45:00-05:00",
-        "dispatched_at": "2026-09-02T11:45:34.697657-05:00",
-        "lateness_seconds": 34.7,
-        "kind": "on_time"
+        "scheduled_at": "2026-09-04T11:45:00-05:00",
+        "dispatched_at": "2026-09-04T21:19:27.706723-05:00",
+        "lateness_seconds": 34467.7,
+        "kind": "catch_up"
       }
-    },
-    {
-      "id": "5938efec6555",
-      "name": "verify-kanban-sticky-block-and-cap",
-      "prompt": "Verify the just-applied Hermes Kanban fix after a scheduled gateway restart. This is read-only verification; do not modify files, config, tasks, or services. Run commands from /home/brayan/.hermes/hermes-agent using its venv. Acceptance checks: (1) `systemctl --user show hermes-gateway.service -p MainPID -p ActiveEnterTimestamp -p ActiveState -p SubState` shows active/running and MainPID is not the pre-restart PID 4001685; (2) `~/.hermes/config.yaml` resolves `kanban.max_in_progress` to integer 3 using `venv/bin/python` plus `hermes_cli.config.load_config` and `hermes_cli.kanban_db.resolve_max_in_progress`; (3) recent gateway/agent journal or agent.log after 2026-08-28 19:55:00 -05:00 includes the dispatcher startup message `kanban dispatcher: max_in_progress=3`; (4) run `venv/bin/python -m pytest tests/hermes_cli/test_kanban_blocked_sticky.py -q -o addopts=` and require all three tests pass; (5) run `hermes kanban --board methodology-bakeoff-finish-v2 stats` and confirm running count is <=3 (do not alter the board); (6) report the live source commit and personalization config commit from `git log --oneline -3`. Return a compact PASS/FAIL matrix with exact observed PID, configured/resolved cap, test result, and board running count. If startup is still in progress, wait up to 30 seconds and retry status/log checks before concluding.",
-      "skills": [],
-      "skill": null,
-      "model": null,
-      "provider": null,
-      "provider_snapshot": "openai-codex",
-      "model_snapshot": "gpt-5.6-sol",
-      "base_url": null,
-      "script": null,
-      "no_agent": false,
-      "monitor_script": null,
-      "monitor_url": null,
-      "monitor_state": null,
-      "context_from": null,
-      "schedule": {
-        "kind": "once",
-        "run_at": "2026-08-28T19:58:20-05:00",
-        "display": "once at 2026-08-28 19:58"
-      },
-      "schedule_display": "once at 2026-08-28 19:58",
-      "repeat": {
-        "times": 1,
-        "completed": 0
-      },
-      "enabled": false,
-      "state": "paused",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-08-28T19:55:20.047195-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
-      "failure_streak": 0,
-      "deliver": "origin",
-      "origin": null,
-      "enabled_toolsets": [
-        "terminal"
-      ],
-      "workdir": null,
-      "run_claim": null
     },
     {
       "id": "10a7bd12f8dd",
