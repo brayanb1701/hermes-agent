@@ -38,10 +38,10 @@
       "origin": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-04T09:00:00-05:00",
-        "dispatched_at": "2026-09-04T21:19:27.706723-05:00",
-        "lateness_seconds": 44367.7,
-        "kind": "catch_up"
+        "scheduled_at": "2026-09-05T09:00:00-05:00",
+        "dispatched_at": "2026-09-05T09:00:24.532361-05:00",
+        "lateness_seconds": 24.5,
+        "kind": "on_time"
       }
     },
     {
@@ -266,10 +266,10 @@
       ],
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-04T09:30:00-05:00",
-        "dispatched_at": "2026-09-04T21:19:27.706723-05:00",
-        "lateness_seconds": 42567.7,
-        "kind": "catch_up"
+        "scheduled_at": "2026-09-05T09:30:00-05:00",
+        "dispatched_at": "2026-09-05T09:30:25.640053-05:00",
+        "lateness_seconds": 25.6,
+        "kind": "on_time"
       }
     },
     {
