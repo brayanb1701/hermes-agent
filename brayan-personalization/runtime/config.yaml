@@ -489,6 +489,7 @@ approvals:
 command_allowlist: []
 plugins:
   enabled:
+    - herdr-agent-state
     - notes_preprocessor
   disabled: []
 hooks_auto_accept: false
