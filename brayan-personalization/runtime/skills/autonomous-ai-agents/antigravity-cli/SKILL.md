@@ -262,3 +262,8 @@ Antigravity's final message is a self-report. Verify independently before tellin
 - [ ] The target workspace or worktree is correct.
 - [ ] File changes and tests were independently verified.
 - [ ] The final report includes the exact executed result, not a plausible summary.
+
+
+## Herdr fleet routing (local extension)
+
+Use native Herdr commands and its official skill inside Herdr panes for persistent local/remote agent sessions. Brayan removed custom agent-manager wrappers and their systemd/tmux backends; do not recreate them. Preserve host/session/pane ownership, worktree isolation, subscriptions and approvals. Inspect startup dialogs and verify actual results. Native headless CLI modes remain available without a custom supervisor. Claude subscription runs omit --max-turns and --max-budget-usd; headless output uses stream-json --verbose saved to JSONL.
