@@ -127,3 +127,7 @@ terminal(command="gh pr comment 86 --body '<review>'", workdir="~/project")
 7. **Keep project policy out of this generic skill** — if a Codex run needs cloud GPUs, paid APIs, challenge-specific budgets, watchdogs, STOP files, or experiment run cards, put that policy in the project workspace (`AGENTS.md`, `RUNBOOK.md`, status/control files) or a class-level paid-compute/autoresearch skill. Do not pollute the generic Codex skill with one-project details.
 8. **Remote paid jobs need separate verification** — stopping a local Codex process/supervisor does not prove external work stopped. Check provider-side app/task/billing state separately before saying spend is contained.
 9. **Parallel is fine** — run multiple Codex processes at once for batch work
+
+## Herdr fleet routing (local extension)
+
+Use native Herdr commands and its official skill inside Herdr panes for persistent local/remote agent sessions. Brayan removed custom agent-manager wrappers and their systemd/tmux backends; do not recreate them. Preserve host/session/pane ownership, worktree isolation, subscriptions and approvals. Inspect startup dialogs and verify actual results. Native headless CLI modes remain available without a custom supervisor. Claude subscription runs omit --max-turns and --max-budget-usd; headless output uses stream-json --verbose saved to JSONL.
