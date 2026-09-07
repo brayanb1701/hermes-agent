@@ -593,7 +593,7 @@ secrets:
 paste_collapse_threshold: 5
 paste_collapse_threshold_fallback: 0
 paste_collapse_char_threshold: 2000
-_config_version: 40
+_config_version: 41
 notes_intake:
   enabled: true
   vision_provider: main
