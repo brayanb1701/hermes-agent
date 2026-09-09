@@ -530,7 +530,7 @@ _DESCRIPTION_HEAD = (
     "final summary returns to you. Pass every task in `tasks` — one entry spawns one subagent, several run in parallel "
     "(limit in the tasks description).\n\n"
     "Waits for all children by default. Use background=true only for work irrelevant to this answer: returns "
-    "immediately, then one completion per call; delegation.independent_completions splits by task/group. Background "
+    "immediately, then {delivery}. Background "
     "results arrive BETWEEN turns: finish independent work, END YOUR TURN. Never wait or poll on transcripts, artifacts, or CI. "
     "While children run, `action` (list/steer/stop) controls them live — steer when a transcript shows a "
     "child drifting.\n\n"
