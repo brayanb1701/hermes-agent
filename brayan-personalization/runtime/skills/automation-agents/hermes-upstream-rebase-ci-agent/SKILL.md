@@ -95,6 +95,9 @@ Do not bypass finalizer refusals. The finalizer intentionally hard-codes repo, b
 
 ## Known conflict patterns
 
+- For banner update-branch conflicts, preserve both `_check_via_local_git(..., branch="main")` and upstream's config-isolated origin URL probe (`network=True`). Restrict the official-main SSH fast path to `branch == "main"`; keep both the real-git `insteadOf` regression and configured-branch tests.
+- When delegation description conflicts involve upstream dynamic delivery text, retain `{delivery}` in `_DESCRIPTION_HEAD` rather than hard-coding task/group wording. The existing builder hides group guidance when `independent_completions` is disabled. Preserve foreground-default semantics and the background `wait or poll` prohibition; run `test_delegate_group_schema.py` alongside the delegation suites after all rebase commits replay, since later description-shortening commits can silently replace the placeholder.
+
 - Preserve both `updates.check` from upstream and `updates.branch` from the integration-branch patch when they collide in `hermes_cli/config_defaults.py`; they are independent settings. Verify update-branch, passive-update-opt-out, and updater tests.
 - After upstream adds `delegation.independent_completions`, preserve foreground-by-default behavior but describe explicit background delivery as one consolidated completion by default, split by task/group only with that opt-in. Keep the description within its schema budget and retain the explicit `wait or poll` prohibition for background work. In dispatch conflicts, preserve upstream child-result recording and early failure notices alongside non-blocking executor shutdown. Run delegation and async-delegation tests through `scripts/run_tests.sh` with bounded workers.
 
