@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import socket
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
@@ -207,12 +208,17 @@ def next_review(last: str, cadence: str) -> str:
     return (start + timedelta(days=days)).isoformat()
 
 
-def project_values(path: Path, fm: dict[str, Any]) -> dict[str, Any]:
+def project_values(path: Path, fm: dict[str, Any], workspace: Path) -> dict[str, Any]:
     slug = path.parent.name
     title = fm.get("title") or slug_title(slug)
     last = fm.get("last_meaningful_update") or fm.get("updated") or TODAY
+    resolved_path = path.resolve()
     return {
         "slug": slug,
+        "vault_project_path": str(resolved_path),
+        "workspace": str(workspace.resolve()),
+        "execution_host": fm.get("execution_host", ""),
+        "project_closeout_path": str(resolved_path.with_name("closeout.md")),
         "Project Title": title,
         "title": title,
         "YYYY-MM-DD": TODAY,
@@ -232,6 +238,10 @@ def create_from_template(path: Path, template_name: str, target: Path, values: d
         result["errors"].append(f"missing template: {TEMPLATE_DIR / template_name}")
         return
     rendered = render_template(text, values)
+    unresolved = re.findall(r"\{\{[^{}]+\}\}", rendered)
+    if unresolved:
+        result["errors"].append(f"unresolved template placeholders in {target}: {', '.join(unresolved)}")
+        return
     if target.exists() and not force:
         result["skipped_existing"].append(str(target))
         return
@@ -253,9 +263,11 @@ def activate_project(path: Path, result: dict[str, Any], dry_run: bool, force: b
         result["errors"].append(f"cannot activate {path}: missing {', '.join(missing)}")
         return
     slug = path.parent.name
-    workspace = Path(str(fm.get("external_workspace") or WORKSPACE_ROOT / slug))
-    if str(workspace).lower() in {"null", "none", ""}:
-        workspace = WORKSPACE_ROOT / slug
+    workspace_value = str(fm.get("external_workspace") or WORKSPACE_ROOT / slug)
+    if workspace_value.lower() in {"null", "none", ""}:
+        workspace = (WORKSPACE_ROOT / slug).resolve()
+    else:
+        workspace = Path(workspace_value).expanduser().resolve()
     fm["status"] = "active"
     fm["external_workspace"] = str(workspace)
     fm.setdefault("last_meaningful_update", fm.get("updated") or TODAY)
@@ -267,7 +279,7 @@ def activate_project(path: Path, result: dict[str, Any], dry_run: bool, force: b
         workspace.mkdir(parents=True, exist_ok=True)
         if str(workspace) not in result["created"] and str(workspace) not in result["skipped_existing"]:
             result["created" if not workspace.exists() else "skipped_existing"].append(str(workspace))
-    values = project_values(path, fm)
+    values = project_values(path, fm, workspace)
     create_from_template(path, "project-workspace-status-template.md", workspace / "PROJECT_STATUS.md", values, result, dry_run, force)
     create_from_template(path, "project-workspace-changelog-template.md", workspace / "PROJECT_CHANGELOG.md", values, result, dry_run, force)
 
@@ -281,11 +293,13 @@ def seed_project(path: Path, result: dict[str, Any], dry_run: bool, force: bool)
 
 def closeout_or_reopen(path: Path, kind: str, result: dict[str, Any], dry_run: bool, force: bool) -> None:
     fm, _ = load_project(path)
-    values = project_values(path, fm)
     slug = path.parent.name
-    workspace = Path(str(fm.get("external_workspace") or WORKSPACE_ROOT / slug))
-    if str(workspace).lower() in {"null", "none", ""}:
-        workspace = WORKSPACE_ROOT / slug
+    workspace_value = str(fm.get("external_workspace") or WORKSPACE_ROOT / slug)
+    if workspace_value.lower() in {"null", "none", ""}:
+        workspace = (WORKSPACE_ROOT / slug).resolve()
+    else:
+        workspace = Path(workspace_value).expanduser().resolve()
+    values = project_values(path, fm, workspace)
     if dry_run and not workspace.exists():
         result["would_create"].append(str(workspace))
     elif not dry_run:
@@ -303,6 +317,22 @@ def active_projects(vault: Path) -> list[Path]:
         if fm.get("status") == "active":
             out.append(path)
     return out
+
+
+def execution_host_errors(projects: list[Path]) -> list[str]:
+    actual_host = socket.gethostname()
+    errors: list[str] = []
+    for project in projects:
+        fm, _ = load_project(project)
+        recorded_host = fm.get("execution_host")
+        if recorded_host is None or str(recorded_host).casefold() in {"", "unknown", "null", "none"}:
+            errors.append(f"refusing workspace mutation for {project}: execution_host is missing or unknown")
+        elif recorded_host != actual_host:
+            errors.append(
+                f"refusing workspace mutation for {project}: execution_host {recorded_host!r} "
+                f"does not match actual hostname {actual_host!r}"
+            )
+    return errors
 
 
 def main() -> None:
@@ -349,6 +379,33 @@ def main() -> None:
         "skipped_existing": [],
         "errors": [],
     }
+    if mode != "seed":
+        summary["errors"].extend(execution_host_errors(projects))
+        templates = {
+            "activate": ("project-workspace-status-template.md", "project-workspace-changelog-template.md"),
+            "closeout": ("project-workspace-closeout-template.md",),
+            "reopen": ("project-workspace-reopen-template.md",),
+        }[mode]
+        # Vault templates evolve separately from this helper. Check the batch
+        # before mutating project state; this is not a filesystem transaction.
+        if not summary["errors"]:
+            for project in projects:
+                fm, _ = load_project(project)
+                raw_workspace = str(fm.get("external_workspace") or "")
+                workspace = WORKSPACE_ROOT / project.parent.name if raw_workspace.lower() in {"", "null", "none"} else Path(raw_workspace).expanduser()
+                values = project_values(project, fm, workspace)
+                for template in templates:
+                    text = template_body(template)
+                    if not text:
+                        summary["errors"].append(f"missing template: {TEMPLATE_DIR / template}")
+                        continue
+                    unresolved = re.findall(r"\{\{[^{}]+\}\}", render_template(text, values))
+                    if unresolved:
+                        summary["errors"].append(f"unresolved template placeholders in {template}: {', '.join(unresolved)}")
+        if summary["errors"]:
+            summary["wakeAgent"] = True
+            print(json.dumps(summary, indent=2, ensure_ascii=False))
+            raise SystemExit(1)
     for project in projects:
         if mode == "seed":
             seed_project(project, summary, args.dry_run, args.force)
