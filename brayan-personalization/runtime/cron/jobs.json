@@ -38,10 +38,10 @@
       "origin": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-07T09:00:00-05:00",
-        "dispatched_at": "2026-09-07T09:13:52.595043-05:00",
-        "lateness_seconds": 832.6,
-        "kind": "late"
+        "scheduled_at": "2026-09-09T09:00:00-05:00",
+        "dispatched_at": "2026-09-09T09:00:47.937861-05:00",
+        "lateness_seconds": 47.9,
+        "kind": "on_time"
       }
     },
     {
@@ -79,11 +79,11 @@
       "last_delivery_error": null,
       "deliver": "telegram:875925495",
       "origin": null,
-      "failure_streak": 0,
+      "failure_streak": 1,
       "last_dispatch": {
-        "scheduled_at": "2026-09-06T19:00:00-05:00",
-        "dispatched_at": "2026-09-06T19:00:43.019941-05:00",
-        "lateness_seconds": 43.0,
+        "scheduled_at": "2026-09-08T19:00:00-05:00",
+        "dispatched_at": "2026-09-08T19:00:15.755049-05:00",
+        "lateness_seconds": 15.8,
         "kind": "on_time"
       }
     },
@@ -129,9 +129,9 @@
       "no_agent": false,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-06T18:00:00-05:00",
-        "dispatched_at": "2026-09-06T18:00:42.445722-05:00",
-        "lateness_seconds": 42.4,
+        "scheduled_at": "2026-09-08T18:00:00-05:00",
+        "dispatched_at": "2026-09-08T18:00:13.847871-05:00",
+        "lateness_seconds": 13.8,
         "kind": "on_time"
       }
     },
@@ -172,9 +172,9 @@
       "origin": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-06T17:00:00-05:00",
-        "dispatched_at": "2026-09-06T17:00:41.846099-05:00",
-        "lateness_seconds": 41.8,
+        "scheduled_at": "2026-09-08T17:00:00-05:00",
+        "dispatched_at": "2026-09-08T17:00:12.047153-05:00",
+        "lateness_seconds": 12.0,
         "kind": "on_time"
       }
     },
@@ -215,9 +215,9 @@
       "origin": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-06T11:00:00-05:00",
-        "dispatched_at": "2026-09-06T11:00:38.004140-05:00",
-        "lateness_seconds": 38.0,
+        "scheduled_at": "2026-09-08T11:00:00-05:00",
+        "dispatched_at": "2026-09-08T11:00:01.286819-05:00",
+        "lateness_seconds": 1.3,
         "kind": "on_time"
       }
     },
@@ -266,49 +266,11 @@
       ],
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-07T09:30:00-05:00",
-        "dispatched_at": "2026-09-07T09:30:52.873643-05:00",
-        "lateness_seconds": 52.9,
+        "scheduled_at": "2026-09-09T09:30:00-05:00",
+        "dispatched_at": "2026-09-09T09:30:48.686427-05:00",
+        "lateness_seconds": 48.7,
         "kind": "on_time"
       }
-    },
-    {
-      "id": "64be0631db63",
-      "name": "max-planck-cs-internship-2027-prep-reminder",
-      "prompt": "Remind Brayan to start the P0 Max Planck CS Research Internships 2027 preparation project. Context: vault note [[opportunities/2026-04-28-max-planck-cs-research-internships-2027/opportunity]]. Summer-start internships are due November 1 of the previous year. Recommended actions: choose target start window, shortlist MPI faculty/research groups, audit transcript/CV/research-portfolio gaps, identify recommender, and decide whether to build a small aligned proof-of-work project.",
-      "skills": [],
-      "skill": null,
-      "model": null,
-      "provider": null,
-      "base_url": null,
-      "script": null,
-      "schedule": {
-        "kind": "once",
-        "run_at": "2026-09-01T09:00:00-05:00",
-        "display": "once at 2026-09-01 09:00"
-      },
-      "schedule_display": "once at 2026-09-01 09:00",
-      "repeat": {
-        "times": 1,
-        "completed": 0
-      },
-      "enabled": false,
-      "state": "paused",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-04-28T18:24:57.201587-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
-      "deliver": "origin",
-      "origin": null,
-      "enabled_toolsets": [
-        "file"
-      ],
-      "run_claim": null,
-      "failure_streak": 0
     },
     {
       "id": "84999fa7645a",
@@ -381,45 +343,6 @@
       "enabled_toolsets": [
         "file"
       ]
-    },
-    {
-      "id": "ad098fa6c877",
-      "name": "erasmus-icetex-deadline-window-check",
-      "prompt": "Reminder/task for Darwin: start the likely Erasmus/Erasmus Mundus and ICETEX scholarship deadline window check for Brayan. Use ~/personal_vault/opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch/opportunity.md, ~/personal_vault/opportunities/2026-04-28-erasmus-scholarship-international-mobility-watch/application/application-strategy.md, and ~/personal_vault/opportunities/2026-04-28-icetex-international-scholarships-search-watch/opportunity.md. Check current public pages if possible, summarize next deadlines/requisites if verifiable, and tell Brayan what to decide/prep next. Do not submit applications.",
-      "skills": [],
-      "skill": null,
-      "model": null,
-      "provider": null,
-      "base_url": null,
-      "script": null,
-      "schedule": {
-        "kind": "once",
-        "run_at": "2026-09-01T09:00:00-05:00",
-        "display": "once at 2026-09-01 09:00"
-      },
-      "schedule_display": "once at 2026-09-01 09:00",
-      "repeat": {
-        "times": 1,
-        "completed": 0
-      },
-      "enabled": false,
-      "state": "paused",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-04-28T19:01:40.249481-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
-      "deliver": "origin",
-      "origin": null,
-      "enabled_toolsets": [
-        "file",
-        "web"
-      ],
-      "run_claim": null,
-      "failure_streak": 0
     },
     {
       "id": "ea904b1d1a01",
@@ -512,9 +435,9 @@
       "workdir": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-06T11:30:00-05:00",
-        "dispatched_at": "2026-09-06T11:30:38.301960-05:00",
-        "lateness_seconds": 38.3,
+        "scheduled_at": "2026-09-08T11:30:00-05:00",
+        "dispatched_at": "2026-09-08T11:30:02.282573-05:00",
+        "lateness_seconds": 2.3,
         "kind": "on_time"
       }
     },
@@ -562,64 +485,11 @@
       "workdir": null,
       "failure_streak": 0,
       "last_dispatch": {
-        "scheduled_at": "2026-09-06T11:45:00-05:00",
-        "dispatched_at": "2026-09-06T11:45:38.478546-05:00",
-        "lateness_seconds": 38.5,
+        "scheduled_at": "2026-09-08T11:45:00-05:00",
+        "dispatched_at": "2026-09-08T11:45:02.840889-05:00",
+        "lateness_seconds": 2.8,
         "kind": "on_time"
       }
-    },
-    {
-      "id": "10a7bd12f8dd",
-      "name": "AI learning path morning verification",
-      "prompt": "Morning verification for Brayan's Lean Group Learning import mission. No user is present; do not ask questions. Read /home/brayan/ai-engineer-learning-path-import-agent-brief.md and /home/brayan/Downloads/AI_Engineer_Learning_Path_Junior_REVIEWED/SCORM/platform-final/import-ledger.json. Inspect tmux session ai-learning-import before acting. If the live agent is still actively making progress, do not compete for the dedicated Chromium session; verify the ledger and local artifacts only and report that it is still running. If the live agent has stopped or completed, independently verify the final outcome. Required checks: six newly created draft courses, exact source-matching totals of 25 modules and 67 topics, 6 assessments and 60 questions unless a documented hard platform blocker exists, nonempty lesson content, no prohibited internal Related docs or inaccessible package-relative links, representative learner Preview checks without the known HTTP 400 rich-content stream error, zero assignments, no publication, and one draft learning path containing exactly the six new final course IDs in specified order. Read back the exact platform objects before claiming success. If a small safe repair is possible within the run, perform and verify it; otherwise write precise blocker evidence into the ledger/report. Never publish, assign, delete, archive, or edit unrelated content. Use only the dedicated Hermes Chromium profile/CDP endpoint. Produce a concise local verification report with IDs, URLs, counts, failures, and next action.",
-      "skills": [
-        "scheduled-agent-verification",
-        "computer-use",
-        "hermes-agent"
-      ],
-      "skill": "scheduled-agent-verification",
-      "model": null,
-      "provider": null,
-      "provider_snapshot": "openai-codex",
-      "model_snapshot": "gpt-5.6-sol",
-      "base_url": null,
-      "script": null,
-      "no_agent": false,
-      "monitor_script": null,
-      "monitor_url": null,
-      "monitor_state": null,
-      "context_from": null,
-      "schedule": {
-        "kind": "once",
-        "run_at": "2026-09-02T08:03:27.012017-05:00",
-        "display": "once in 6h"
-      },
-      "schedule_display": "once in 6h",
-      "repeat": {
-        "times": 1,
-        "completed": 0
-      },
-      "enabled": false,
-      "state": "paused",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-09-02T02:03:27.012106-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
-      "failure_streak": 0,
-      "deliver": "local",
-      "origin": null,
-      "enabled_toolsets": [
-        "terminal",
-        "file",
-        "browser",
-        "skills"
-      ],
-      "workdir": "/home/brayan/Downloads/AI_Engineer_Learning_Path_Junior_REVIEWED",
-      "run_claim": null
     }
   ]
 }
