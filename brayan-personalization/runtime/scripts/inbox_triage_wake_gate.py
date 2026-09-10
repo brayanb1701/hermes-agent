@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-DEFAULT_VAULT = Path(os.environ.get("PERSONAL_VAULT", "~/personal_vault")).expanduser()
+DEFAULT_VAULT = Path(os.environ.get("HERMES_VAULT_ROOT", os.environ.get("PERSONAL_VAULT", "~/personal_vault"))).expanduser()
 INBOX_DIR = DEFAULT_VAULT / "inbox"
 PROMPT_TEMPLATE = Path("~/.hermes/agents/inbox-triage/prompt-template.md").expanduser()
 

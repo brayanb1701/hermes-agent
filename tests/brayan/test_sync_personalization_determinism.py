@@ -63,6 +63,10 @@ def test_manifest_does_not_change_only_because_time_passes(tmp_path, monkeypatch
     sync = load_sync_module()
     hermes_home = tmp_path / "home"
     hermes_home.mkdir()
+    from test_vault_ownership import contract, write_contract
+    cfg = contract(hermes_home)
+    cfg.update(managed_jobs={}, host_job_ids=[])
+    write_contract(hermes_home, cfg)
     (hermes_home / "SOUL.md").write_text("Darwin", encoding="utf-8")
     repo = tmp_path / "repo"
     bundle = repo / "brayan-personalization/runtime"

@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import re
 from pathlib import Path
 
-DEFAULT_PATH = Path.home() / "personal_vault" / "queries" / "topic-recommendations.md"
+DEFAULT_PATH = Path(os.environ.get("HERMES_VAULT_ROOT", Path.home() / "personal_vault")).expanduser() / "queries" / "topic-recommendations.md"
 ENTRY_RE = re.compile(r"(?m)^## (\d{4}-\d{2}-\d{2}) recommendation set\s*$", re.IGNORECASE)
 
 

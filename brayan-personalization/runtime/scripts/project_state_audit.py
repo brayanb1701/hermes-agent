@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import re
 import subprocess
@@ -14,9 +15,9 @@ from typing import Any
 from vault_generated_retention import apply_retention
 
 HOME = Path.home()
-VAULT = HOME / "personal_vault"
+VAULT = Path(os.environ.get("HERMES_VAULT_ROOT", HOME / "personal_vault")).expanduser()
 WORKSPACE_ROOT = HOME / "projects"
-HERMES_HOME = HOME / ".hermes"
+HERMES_HOME = Path(os.environ.get("HERMES_HOME", HOME / ".hermes")).expanduser()
 PROJECTS_DIR = VAULT / "projects"
 AUDIT_DIR = VAULT / "_meta" / "audits"
 TODAY = date.today().isoformat()
