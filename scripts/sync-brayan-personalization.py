@@ -183,8 +183,8 @@ def sync(hermes_home: Path, *, check_secrets: bool = True) -> dict[str, Any]:
     contract = load_contract(hermes_home)
     cron_src = hermes_home / "cron" / "jobs.json"
     original_src = Path(contract["state_dir"]) / "jobs-original.json"
-    exported_jobs = export_jobs(contract, json.loads(cron_src.read_text()) if cron_src.exists() else {"jobs": []},
-                                json.loads(original_src.read_text()) if original_src.exists() else {"jobs": []})
+    exported_jobs = export_jobs(contract, json.loads(cron_src.read_text(encoding="utf-8")) if cron_src.exists() else {"jobs": []},
+                                json.loads(original_src.read_text(encoding="utf-8")) if original_src.exists() else {"jobs": []})
     BUNDLE.mkdir(parents=True, exist_ok=True)
     manifest: dict[str, Any] = {
         "source_hermes_home": str(hermes_home),

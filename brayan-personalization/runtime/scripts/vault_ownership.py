@@ -33,7 +33,7 @@ def audit_script_for_background_escape(path):
     """Inventory launch sites; source inspection is not a sandbox."""
     if Path(path).suffix != '.py':
         return ['Non-Python gate requires explicit lifecycle audit']
-    tree = ast.parse(Path(path).read_text())
+    tree = ast.parse(Path(path).read_text(encoding='utf-8'))
     return [f'{node.lineno}: {ast.unparse(node.func)} requires lifecycle audit'
             for node in ast.walk(tree) if isinstance(node, ast.Call)
             and isinstance(node.func, ast.Attribute)
@@ -83,7 +83,7 @@ def _native_worker(payload, receipt):
     if sys.platform != 'linux' or ctypes.CDLL(None, use_errno=True).prctl(36, 1, 0, 0, 0):
         raise OwnershipError('Managed lifecycle requires Linux child subreaper support')
     from cron.scheduler import run_job
-    job = json.loads(Path(payload).read_text())
+    job = json.loads(Path(payload).read_text(encoding='utf-8'))
     try:
         success, document, response, error = run_job(job)
     finally:
@@ -97,7 +97,7 @@ def _native_worker(payload, receipt):
     if descendants:
         success, error = False, 'Native job left background descendants; stopped before publication'
     Path(receipt).write_text(json.dumps(dict(success=success, document=document,
-                                           response=response, error=error)))
+                                           response=response, error=error)), encoding='utf-8')
     return 0 if success else 1
 
 
