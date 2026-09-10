@@ -141,6 +141,8 @@ VALID_HOOKS: set[str] = {
     # fast-path of /new; see gateway/run.py::_interrupt_and_clear_session). Kwargs: session_key,
     # platform, reason, invalidation_reason. Return values are ignored.
     "agent_loop_stopped",
+    # Async context managers entered after admission, before native turn preprocessing.
+    "gateway_turn_scope",
     # Approval observers (returns ignored; veto via pre_tool_call). Kwargs: command, description, pattern_key,
     # pattern_keys, session_key, surface ("cli"|"gateway"|"smart"|"mcp-elicitation/<server>"|"mcp-trust/<server>"|
     # "vault-payment"); post_approval_response adds choice/decided_by. on_human_input_*: tools/human_input_hooks.py.
@@ -205,7 +207,7 @@ VALID_HOOKS: set[str] = {
 
 # Hooks whose directive the shell-hook response parser has no channel for. VALID_HOOKS doubles as
 # the shell-hook allow-list, so these are refused loudly instead of having output silently ignored.
-SHELL_UNSUPPORTED_HOOKS: set[str] = {"transform_api_error_classification"}
+SHELL_UNSUPPORTED_HOOKS: set[str] = {"transform_api_error_classification", "gateway_turn_scope"}
 
 _env_enabled = env_var_enabled  # imported by plugins/memory
 _UNSET = object()

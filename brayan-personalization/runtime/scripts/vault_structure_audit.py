@@ -8,6 +8,7 @@ emits compact JSON for a Hermes cron/agent to summarize.
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import re
 import subprocess
@@ -18,7 +19,7 @@ from pathlib import Path
 from vault_generated_retention import apply_retention
 
 HOME = Path.home()
-VAULT = HOME / "personal_vault"
+VAULT = Path(os.environ.get("HERMES_VAULT_ROOT", HOME / "personal_vault")).expanduser()
 AUDIT_DIR = VAULT / "_meta" / "audits"
 TODAY = date.today().isoformat()
 REPORT_PATH = AUDIT_DIR / f"{TODAY}-vault-structure-audit.md"
