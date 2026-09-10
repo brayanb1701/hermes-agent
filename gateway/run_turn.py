@@ -1975,6 +1975,7 @@ class GatewayTurnMixin:
                 persist_user_display_kind=prepared.persist_user_display_kind,
                 message_type=event.message_type,
             )
+            event._gateway_turn_result = agent_result
             _turn_seconds = time.monotonic() - _turn_started_monotonic
 
             await self._hmwa_stop_typing_for_turn(event, source)
@@ -2013,6 +2014,7 @@ class GatewayTurnMixin:
             )
 
         except Exception as e:
+            event._gateway_turn_error = e
             return await self._hmwa_agent_error_reply(e, event, source, session_entry, session_key, prepared)
         finally:
             # Restore session context variables to their pre-handler state

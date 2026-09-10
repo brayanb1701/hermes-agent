@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import re
 from pathlib import Path
 from typing import Any
 
-DEFAULT_VAULT = Path.home() / "personal-vault"
+DEFAULT_VAULT = Path(os.environ.get("HERMES_VAULT_ROOT", Path.home() / "personal-vault")).expanduser()
 DEFAULT_KEEP = 5
 SECTION_RE = re.compile(r"^## (?:(?:Cadence )?Review notes|Review log)\s*$", re.MULTILINE | re.IGNORECASE)
 NEXT_H2_RE = re.compile(r"(?m)^## (?!#)")

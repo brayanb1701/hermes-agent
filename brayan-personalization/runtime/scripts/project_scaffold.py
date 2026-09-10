@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import re
 import socket
@@ -11,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 HOME = Path.home()
-VAULT = HOME / "personal-vault"
+VAULT = Path(os.environ.get("HERMES_VAULT_ROOT", HOME / "personal-vault")).expanduser()
 WORKSPACE_ROOT = HOME / "projects"
 TEMPLATE_DIR = VAULT / "_meta" / "templates"
 TODAY = date.today().isoformat()

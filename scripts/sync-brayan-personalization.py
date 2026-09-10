@@ -18,6 +18,7 @@ checkpoints, OCR model caches, or generated cron output.
 from __future__ import annotations
 
 import argparse
+import sys
 import json
 import os
 import re
@@ -29,6 +30,9 @@ from typing import Any
 REPO = Path(__file__).resolve().parents[1]
 DEFAULT_HERMES_HOME = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes")).expanduser()
 BUNDLE = REPO / "brayan-personalization" / "runtime"
+sys.path.insert(0, str(BUNDLE / "scripts"))
+from vault_ownership_common import load_contract
+from vault_job_policy import reconcile, export_jobs
 
 COPY_DIRS = ["agents", "skills", "plugins", "scripts"]
 COPY_FILES = ["config.yaml", "SOUL.md"]
@@ -178,6 +182,11 @@ def scan_for_secrets(root: Path) -> list[str]:
 
 
 def sync(hermes_home: Path, *, check_secrets: bool = True) -> dict[str, Any]:
+    contract = load_contract(hermes_home)
+    cron_src = hermes_home / "cron" / "jobs.json"
+    original_src = Path(contract["state_dir"]) / "jobs-original.json"
+    exported_jobs = export_jobs(contract, json.loads(cron_src.read_text(encoding="utf-8")) if cron_src.exists() else {"jobs": []},
+                                json.loads(original_src.read_text(encoding="utf-8")) if original_src.exists() else {"jobs": []})
     BUNDLE.mkdir(parents=True, exist_ok=True)
     manifest: dict[str, Any] = {
         "source_hermes_home": str(hermes_home),
@@ -214,7 +223,7 @@ def sync(hermes_home: Path, *, check_secrets: bool = True) -> dict[str, Any]:
     cron_src = hermes_home / "cron" / "jobs.json"
     if cron_src.exists():
         raw = json.loads(cron_src.read_text(encoding="utf-8"))
-        write_json(BUNDLE / "cron" / "jobs.json", normalize_cron_jobs(raw))
+        write_json(BUNDLE / "cron" / "jobs.json", exported_jobs)
         manifest["copied_files"].append("cron/jobs.json")
 
     write_json(BUNDLE / "manifest.json", manifest)
