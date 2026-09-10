@@ -13,8 +13,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 HOME = Path.home()
-VAULT = HOME / "personal-vault"
-HERMES_HOME = HOME / ".hermes"
+VAULT = Path(os.environ.get("HERMES_VAULT_ROOT", HOME / "personal-vault")).expanduser()
+HERMES_HOME = Path(os.environ.get("HERMES_HOME", HOME / ".hermes")).expanduser()
 OPPORTUNITIES_DIR = VAULT / "opportunities"
 AGENT_DIR = HERMES_HOME / "agents" / "opportunity-closing"
 PROMPT_TEMPLATE_PATH = AGENT_DIR / "prompt-template.md"
@@ -207,14 +207,17 @@ def launch_closeout(item: dict[str, str]) -> dict[str, object]:
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    prompt = build_prompt(item)
+    prompt = build_prompt(item) + f"\nOnly writable vault root: {VAULT}. Honor HERMES_VAULT_ROOT in every helper and descendant. Never publish, modify the canonical checkout, or leave background writers."
     prompt_path = STATE_DIR / f"{item['stem']}.{timestamp}.prompt.txt"
     stdout_path = LOG_DIR / f"{item['stem']}.{timestamp}.log"
     lock_path = STATE_DIR / f"{item['stem']}.json"
     prompt_path.write_text(prompt, encoding="utf-8")
     cmd = [hermes, "--skills", SKILLS, "chat", "-Q", "--source", SOURCE_TAG, "-q", prompt]
     with stdout_path.open("ab") as stdout_fh:
-        proc = subprocess.Popen(cmd, cwd=str(VAULT), stdin=subprocess.DEVNULL, stdout=stdout_fh, stderr=subprocess.STDOUT, start_new_session=True, close_fds=True)
+        proc = subprocess.Popen(cmd, cwd=str(VAULT), stdin=subprocess.DEVNULL, stdout=stdout_fh, stderr=subprocess.STDOUT, start_new_session=False, close_fds=True)
+    # Foreground completion is part of the parent ownership transaction.
+    if proc.wait() != 0:
+        raise RuntimeError(f"Managed child failed with exit {proc.returncode}")
     lock_path.write_text(json.dumps({
         "closeout": item,
         "pid": proc.pid,

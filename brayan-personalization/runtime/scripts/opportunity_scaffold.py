@@ -7,13 +7,14 @@ This helper never calls an LLM. By default it creates only
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import re
 from datetime import date
 from pathlib import Path
 
 HOME = Path.home()
-DEFAULT_VAULT = HOME / "personal-vault"
+DEFAULT_VAULT = Path(os.environ.get("HERMES_VAULT_ROOT", HOME / "personal-vault")).expanduser()
 TEMPLATE_REL = Path("_meta/templates/opportunity-closeout-input-template.md")
 
 
