@@ -85,14 +85,14 @@ def main() -> None:
     print()
 
     def read_jobs(path):
-        return json.loads(path.read_text()) if path.exists() else {"jobs": []}
+        return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"jobs": []}
     cron_path = hermes_home / 'cron' / 'jobs.json'
     original_path = Path(contract['state_dir']) / 'jobs-original.json'
     planned, originals = reconcile(contract, read_jobs(BUNDLE / 'cron' / 'jobs.json'),
                                     read_jobs(cron_path), read_jobs(original_path))
     config_path = hermes_home / 'config.yaml'
     config_source = config_path if args.preserve_config and config_path.exists() else BUNDLE / 'config.yaml'
-    config = yaml.safe_load(config_source.read_text()) if config_source.exists() else {}
+    config = yaml.safe_load(config_source.read_text(encoding="utf-8")) if config_source.exists() else {}
     config.setdefault('notes_intake', {})['enabled'] = contract['role'] == 'owner'
     config.setdefault('updates', {})['branch'] = contract['maintenance_branch']
     print('Ownership jobs:', [(j['id'], j.get('enabled'), j.get('script')) for j in planned['jobs']])
@@ -112,7 +112,7 @@ def main() -> None:
             if path.exists() and backup:
                 shutil.copy2(path, backup_path(path))
             temporary = path.with_name(path.name + '.' + uuid4().hex + '.tmp')
-            temporary.write_text(text)
+            temporary.write_text(text, encoding="utf-8")
             temporary.replace(path)
         # Persist originals BEFORE any wrapper can become runnable. Quiescing
         # the scheduler/gateway is a deployment precondition, not an online upgrade.
