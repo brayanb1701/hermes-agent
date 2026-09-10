@@ -130,6 +130,8 @@ VALID_HOOKS: Set[str] = {
     # auth/pairing and dispatch. Kwargs: event, gateway, session_store. Return {"action": "skip",
     # "reason"} -> drop; {"action": "rewrite", "text"} -> replace event.text; "allow"/None -> normal.
     "pre_gateway_dispatch",
+    # Async context managers entered after admission, before native turn preprocessing.
+    "gateway_turn_scope",
     # Approval observers (tools/approval.py); returns ignored — plugins cannot veto or pre-answer
     # (use pre_tool_call). Kwargs: command, description, pattern_key, pattern_keys, session_key,
     # surface: "cli"|"gateway"|"smart"; post_approval_response adds choice ("once"|"session"|
@@ -189,7 +191,7 @@ VALID_HOOKS: Set[str] = {
 
 # Hooks whose directive the shell-hook response parser has no channel for. VALID_HOOKS doubles as
 # the shell-hook allow-list, so these are refused loudly instead of having output silently ignored.
-SHELL_UNSUPPORTED_HOOKS: Set[str] = {"transform_api_error_classification"}
+SHELL_UNSUPPORTED_HOOKS: Set[str] = {"transform_api_error_classification", "gateway_turn_scope"}
 
 _env_enabled = env_var_enabled  # imported by plugins/memory
 _UNSET = object()
