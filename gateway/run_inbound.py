@@ -1300,7 +1300,11 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayPluginInjectionMixin)
                 if _consumed:
                     return _consumer_reply
             try:
-                _agent_result = await self._handle_message_with_agent(event, source, _quick_key, _run_generation)
+                from gateway.turn_scope import run_scoped_turn
+                _agent_result = await run_scoped_turn(
+                    self._handle_message_with_agent, event, source, _quick_key,
+                    _run_generation, gateway=self,
+                )
             except TurnLeaseTimeoutError as exc:
                 # A rejected message, not a completed turn: return before the /goal judge so it
                 # cannot consume the resend notice and enqueue a synthetic continuation loop.
