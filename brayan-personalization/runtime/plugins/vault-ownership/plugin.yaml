@@ -1,0 +1,4 @@
+name: vault-ownership
+version: 1.0.0
+description: Explicit host ownership, pinned vault reads and durable owner-only capture intake.
+author: Darwin

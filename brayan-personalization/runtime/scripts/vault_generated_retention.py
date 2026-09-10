@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import re
 from pathlib import Path
 from typing import Any
 
-DEFAULT_VAULT = Path.home() / "personal_vault"
+DEFAULT_VAULT = Path(os.environ.get("HERMES_VAULT_ROOT", Path.home() / "personal_vault")).expanduser()
 DEFAULT_KEEP = 5
 DATE_NOTE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
 AUDIT_PATTERNS = {
