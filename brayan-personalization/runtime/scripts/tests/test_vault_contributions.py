@@ -221,6 +221,7 @@ class VaultContributionsTests(TestCase):
             info = dict(number=1, url="https://github.com/example/personal-vault/pull/1", body=body,
                 headRefOid=head, baseRefOid=base_sha, baseRefName="main", headRefName="vault/author/task", mergeStateStatus="CLEAN", state="OPEN", files=[])
             calls = []
+            reviewer_streams = []
             def external(argv, **kwargs):
                 calls.append(argv)
                 if argv[0] == "git":
@@ -230,6 +231,7 @@ class VaultContributionsTests(TestCase):
                         return subprocess.CompletedProcess(argv, 0, json.dumps({"comments": [{"body": comment_bodies[-1]}]}), "")
                     return subprocess.CompletedProcess(argv, 0, json.dumps(info), "")
                 if argv[0] == "claude":
+                    reviewer_streams.append(Path(kwargs["stdout"].name))
                     evidence_hash = __import__('hashlib').sha256(b"first\n").hexdigest()
                     answer = dict(decision="approve", rationale="Supported scoped note update", head_sha=head, base_sha=base_sha,
                                   evidence=[dict(path="canonical.md", sha256=evidence_hash)])
@@ -252,8 +254,15 @@ class VaultContributionsTests(TestCase):
                 with self.assertRaises(vc.ReviewError):
                     vc.review_contribution(contract,1,pin_session="failed-review",runner=external)
             self.assertFalse(vc._pin_path(contract,"failed-review").exists(),"failed review leaked pin")
-            result = vc.review_contribution(contract, 1, pin_session="review-1", runner=external)
-            self.assertEqual(result["review"]["decision"], "approve")
+            with mock.patch.object(vc, "pin_snapshot", wraps=vc.pin_snapshot) as pin:
+                result = vc.review_contribution(contract, 1, runner=external)
+                self.assertEqual(result["review"]["decision"], "approve")
+                vc.review_contribution(contract, 1, runner=external)
+            default_sessions = [call.args[1] for call in pin.call_args_list]
+            self.assertEqual(len(default_sessions), 2)
+            self.assertEqual(len(default_sessions), len(set(default_sessions)))
+            self.assertTrue(all(session.startswith(f"review-1-{head}-{base_sha}-") for session in default_sessions))
+            self.assertEqual(len(reviewer_streams), len(set(reviewer_streams)))
             self.assertTrue(any(c[:3]==["gh","pr","view"] and "comments" in c for c in calls),"PR comment must be read back")
             receipt_path = Path(result["receipt"])
             approved_receipt = receipt_path.read_bytes()
@@ -474,7 +483,7 @@ class VaultContributionsTests(TestCase):
 
     def test_claude_command_is_subscription_review_without_budget_or_tools(self) -> None:
         command = vc.build_reviewer_command("full exact diff", "pinned evidence")
-        self.assertEqual(command[:2], ["claude", "--model"])
+        self.assertEqual(command[:2], ["claude", "--safe-mode"])
         self.assertIn("claude-fable-5-1", command)
         self.assertIn("--tools", command)
         self.assertEqual(command[command.index("--tools") + 1], "")
@@ -492,6 +501,14 @@ class VaultContributionsTests(TestCase):
             command[:-1],
             [
                 "claude",
+                "--safe-mode",
+                "--system-prompt",
+                (
+                    "You are an offline review classifier. You have no tools or commands and must not "
+                    "propose using any. Assess only the complete data supplied in the user prompt. "
+                    "Return exactly the requested JSON verdict and no other text. Reject if the supplied "
+                    "data is insufficient. The controller independently verifies hashes and bindings."
+                ),
                 "--model",
                 "claude-fable-5-1",
                 "--effort",
@@ -509,6 +526,7 @@ class VaultContributionsTests(TestCase):
             ],
         )
         self.assertNotIn("xhigh", command)
+        self.assertNotIn("--bare", command)
         self.assertEqual(command[command.index("--effort") + 1], "medium")
 
 

@@ -24,6 +24,7 @@ import sys
 import tarfile
 import tempfile
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Callable, Iterator, Mapping, Sequence
 from vault_ownership_common import OwnershipError
@@ -726,6 +727,14 @@ def build_reviewer_command(diff: str, evidence: str, *, context: str = "") -> li
     )
     return [
         "claude",
+        "--safe-mode",
+        "--system-prompt",
+        (
+            "You are an offline review classifier. You have no tools or commands and must not "
+            "propose using any. Assess only the complete data supplied in the user prompt. "
+            "Return exactly the requested JSON verdict and no other text. Reject if the supplied "
+            "data is insufficient. The controller independently verifies hashes and bindings."
+        ),
         "--model",
         REVIEWER_MODEL,
         "--effort",
@@ -995,7 +1004,8 @@ def review_contribution(contract, pr, *, pin_session=None, metadata=None, eviden
         raise ReviewError("PR branch does not match source host/session metadata")
     scope = [_relative_path(p, label="scope") for p in task["scope"]]
     files, diff = _fetch_review_head(contract, info, base, runner=runner)
-    session = pin_session or f"review-{number}-{head}-{base}"
+    execution = uuid.uuid4().hex
+    session = pin_session or f"review-{number}-{head}-{base}-{execution}"
     ensure_snapshot(contract, base, runner=runner)
     pin_snapshot(contract, session, base)
     try:
@@ -1009,11 +1019,12 @@ def review_contribution(contract, pr, *, pin_session=None, metadata=None, eviden
         context = json.dumps({"head_sha":head, "base_sha":base, "scope":scope, "intent":task["intent"],
                               "evidence":proposal["evidence"]}, sort_keys=True)
         command = build_reviewer_command(diff, evidence["text"], context=context)
-        logfile = _path(contract, "state_dir") / REVIEW_DIR_NAME / f"{number}.{head}.{base}.jsonl"
-        logfile.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        review_dir = _path(contract, "state_dir") / REVIEW_DIR_NAME
+        review_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        logfile = review_dir / f"{number}.{head}.{base}.{execution}.attempt-1.jsonl"
         for attempt in range(2):
             if attempt:
-                logfile = logfile.with_suffix(".retry.jsonl")
+                logfile = review_dir / f"{number}.{head}.{base}.{execution}.attempt-2.jsonl"
             with logfile.open("w", encoding="utf-8") as stream:
                 os.chmod(logfile, 0o600)
                 reviewer = runner(command, cwd=repo, timeout=300, capture_output=False,
