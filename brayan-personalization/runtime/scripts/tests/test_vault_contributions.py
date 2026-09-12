@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -39,6 +40,7 @@ class VaultContributionsTests(TestCase):
             "role": "contributor",
             "owner_hostname": "Calcifer",
             "hermes_home": str(root / ".hermes"),
+            "hermes_source": str(SCRIPT_DIR.parents[2]),
             "vault_path": str(root / "personal-vault"),
             "repo_path": str(repo),
             "state_dir": str(root / ".hermes" / "vault-ownership"),
@@ -198,6 +200,21 @@ class VaultContributionsTests(TestCase):
             with self.subTest(invalid=invalid), self.assertRaises(vc.ContributionError):
                 vc._sha(invalid)
 
+    def test_default_pin_paths_keep_execution_identity_before_component_cap(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as temporary:
+            contract = {"state_dir": temporary}
+            head = "a" * 40
+            base = "b" * 40
+            sessions = [
+                f"review-7-{execution}-{head}-{base}"
+                for execution in ("1" * 32, "2" * 32)
+            ]
+            paths = [vc._pin_path(contract, session) for session in sessions]
+            self.assertEqual(len(paths), len(set(paths)))
+            self.assertTrue(all(len(path.stem) == 80 for path in paths))
+
     def test_complete_review_integration_uses_pinned_git_and_atomic_base(self):
         import tempfile, socket, base64
         with tempfile.TemporaryDirectory() as temporary:
@@ -221,6 +238,7 @@ class VaultContributionsTests(TestCase):
             info = dict(number=1, url="https://github.com/example/personal-vault/pull/1", body=body,
                 headRefOid=head, baseRefOid=base_sha, baseRefName="main", headRefName="vault/author/task", mergeStateStatus="CLEAN", state="OPEN", files=[])
             calls = []
+            reviewer_streams = []
             def external(argv, **kwargs):
                 calls.append(argv)
                 if argv[0] == "git":
@@ -229,12 +247,13 @@ class VaultContributionsTests(TestCase):
                     if "comments" in argv:
                         return subprocess.CompletedProcess(argv, 0, json.dumps({"comments": [{"body": comment_bodies[-1]}]}), "")
                     return subprocess.CompletedProcess(argv, 0, json.dumps(info), "")
-                if argv[0] == "claude":
+                if len(argv) > 2 and argv[2] == "_native-review":
+                    reviewer_streams.append(Path(kwargs["stdout"].name))
                     evidence_hash = __import__('hashlib').sha256(b"first\n").hexdigest()
                     answer = dict(decision="approve", rationale="Supported scoped note update", head_sha=head, base_sha=base_sha,
                                   evidence=[dict(path="canonical.md", sha256=evidence_hash)])
                     output = json.dumps({"type":"result", "subtype":"success", "is_error":False, "result":json.dumps(answer)}) + "\n"
-                    if sum(c[0] == "claude" for c in calls) == 1:
+                    if sum(len(c) > 2 and c[2] == "_native-review" for c in calls) == 1:
                         output = "malformed reviewer response\n"
                     if kwargs.get("stdout"):
                         kwargs["stdout"].write(output)
@@ -252,8 +271,22 @@ class VaultContributionsTests(TestCase):
                 with self.assertRaises(vc.ReviewError):
                     vc.review_contribution(contract,1,pin_session="failed-review",runner=external)
             self.assertFalse(vc._pin_path(contract,"failed-review").exists(),"failed review leaked pin")
-            result = vc.review_contribution(contract, 1, pin_session="review-1", runner=external)
-            self.assertEqual(result["review"]["decision"], "approve")
+            with mock.patch.object(vc, "pin_snapshot", wraps=vc.pin_snapshot) as pin:
+                result = vc.review_contribution(contract, 1, runner=external)
+                self.assertEqual(result["review"]["decision"], "approve")
+                vc.review_contribution(contract, 1, runner=external)
+            default_sessions = [call.args[1] for call in pin.call_args_list]
+            self.assertEqual(len(default_sessions), 2)
+            self.assertEqual(len(default_sessions), len(set(default_sessions)))
+            default_pin_paths = [vc._pin_path(contract, session) for session in default_sessions]
+            self.assertEqual(len(default_pin_paths), len(set(default_pin_paths)))
+            self.assertTrue(
+                all(
+                    re.fullmatch(f"review-1-[0-9a-f]{{32}}-{head}-{base_sha}", session)
+                    for session in default_sessions
+                )
+            )
+            self.assertEqual(len(reviewer_streams), len(set(reviewer_streams)))
             self.assertTrue(any(c[:3]==["gh","pr","view"] and "comments" in c for c in calls),"PR comment must be read back")
             receipt_path = Path(result["receipt"])
             approved_receipt = receipt_path.read_bytes()
@@ -472,44 +505,74 @@ class VaultContributionsTests(TestCase):
             with self.assertRaisesRegex(vc.ContributionError, "remote"):
                 vc.submit_contribution(contract, work, title="Update", runner=reject_external)
 
-    def test_claude_command_is_subscription_review_without_budget_or_tools(self) -> None:
-        command = vc.build_reviewer_command("full exact diff", "pinned evidence")
-        self.assertEqual(command[:2], ["claude", "--model"])
-        self.assertIn("claude-fable-5-1", command)
-        self.assertIn("--tools", command)
-        self.assertEqual(command[command.index("--tools") + 1], "")
-        self.assertIn("--output-format", command)
-        self.assertIn("stream-json", command)
-        self.assertIn("--verbose", command)
-        self.assertNotIn("--max-budget-usd", command)
-        self.assertNotIn("--max-turns", command)
+    def test_hermes_command_is_isolated_native_review(self) -> None:
+        command = vc.build_reviewer_command(
+            "full exact diff", "pinned evidence", session_id="vault-review-123"
+        )
+        self.assertEqual(
+            command[:5],
+            [sys.executable, str(Path(vc.__file__).resolve()), "_native-review", "--session", "vault-review-123"],
+        )
+        self.assertNotIn("claude", command)
         self.assertIn("full exact diff", command[-1])
         self.assertIn("pinned evidence", command[-1])
 
-    def test_reviewer_command_pins_effort_medium_exactly(self) -> None:
-        command = vc.build_reviewer_command("full exact diff", "pinned evidence")
-        self.assertEqual(
-            command[:-1],
-            [
-                "claude",
-                "--model",
-                "claude-fable-5-1",
-                "--effort",
-                "medium",
-                "--tools",
-                "",
-                "--output-format",
-                "stream-json",
-                "--verbose",
-                "--strict-mcp-config",
-                "--mcp-config",
-                '{"mcpServers":{}}',
-                "--disable-slash-commands",
-                "-p",
-            ],
+    def test_native_reviewer_pins_astra_codex_low_without_tools_or_memory(self) -> None:
+        seen = {}
+
+        def resolve_runtime_provider(**kwargs):
+            seen["resolution"] = kwargs
+            return {
+                "provider": "openai-codex",
+                "requested_provider": "openai-codex",
+                "api_mode": "codex_responses",
+                "base_url": "https://chatgpt.com/backend-api/codex",
+                "api_key": "oauth-placeholder",
+            }
+
+        class Agent:
+            def __init__(self, **kwargs):
+                seen["agent"] = kwargs
+                self.model = kwargs["model"]
+                self.provider = kwargs["provider"]
+                self.requested_provider = kwargs["requested_provider"]
+                self.api_mode = kwargs["api_mode"]
+                self.reasoning_config = kwargs["reasoning_config"]
+                self.tools = []
+
+            def run_conversation(self, prompt, *, system_message):
+                seen["prompt"] = prompt
+                seen["system_message"] = system_message
+                return {"final_response": '{"decision":"reject"}'}
+
+            def close(self):
+                seen["closed"] = True
+
+        event = vc._native_review(
+            "review payload",
+            "vault-review-123",
+            runtime_resolver=resolve_runtime_provider,
+            agent_class=Agent,
         )
-        self.assertNotIn("xhigh", command)
-        self.assertEqual(command[command.index("--effort") + 1], "medium")
+        self.assertEqual(seen["resolution"], {"requested": "openai-codex", "target_model": "gpt-6-astra"})
+        self.assertEqual(seen["agent"]["enabled_toolsets"], [])
+        self.assertEqual(seen["agent"]["model"], "gpt-6-astra")
+        self.assertEqual(seen["agent"]["provider"], "openai-codex")
+        self.assertEqual(seen["agent"]["requested_provider"], "openai-codex")
+        self.assertEqual(seen["agent"]["api_mode"], "codex_responses")
+        self.assertEqual(seen["agent"]["session_id"], "vault-review-123")
+        self.assertEqual(seen["agent"]["max_iterations"], 1)
+        self.assertTrue(seen["agent"]["skip_context_files"])
+        self.assertTrue(seen["agent"]["skip_memory"])
+        self.assertTrue(seen["agent"]["skip_background_review"])
+        self.assertFalse(seen["agent"]["save_trajectories"])
+        self.assertIsNone(seen["agent"]["session_db"])
+        self.assertEqual(seen["agent"]["reasoning_config"], {"enabled": True, "effort": "low"})
+        self.assertEqual(event["model"], "gpt-6-astra")
+        self.assertEqual(event["provider"], "openai-codex")
+        self.assertEqual(event["reasoning_effort"], "low")
+        self.assertEqual(event["tool_count"], 0)
+        self.assertTrue(seen["closed"])
 
 
 if __name__ == "__main__":
