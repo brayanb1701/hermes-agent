@@ -486,6 +486,31 @@ class VaultContributionsTests(TestCase):
         self.assertIn("full exact diff", command[-1])
         self.assertIn("pinned evidence", command[-1])
 
+    def test_reviewer_command_pins_effort_medium_exactly(self) -> None:
+        command = vc.build_reviewer_command("full exact diff", "pinned evidence")
+        self.assertEqual(
+            command[:-1],
+            [
+                "claude",
+                "--model",
+                "claude-fable-5-1",
+                "--effort",
+                "medium",
+                "--tools",
+                "",
+                "--output-format",
+                "stream-json",
+                "--verbose",
+                "--strict-mcp-config",
+                "--mcp-config",
+                '{"mcpServers":{}}',
+                "--disable-slash-commands",
+                "-p",
+            ],
+        )
+        self.assertNotIn("xhigh", command)
+        self.assertEqual(command[command.index("--effort") + 1], "medium")
+
 
 if __name__ == "__main__":
     TestCase.maxDiff = None
