@@ -728,6 +728,8 @@ def build_reviewer_command(diff: str, evidence: str, *, context: str = "") -> li
         "claude",
         "--model",
         REVIEWER_MODEL,
+        "--effort",
+        "medium",
         "--tools",
         "",
         "--output-format",
