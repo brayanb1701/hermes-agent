@@ -8,6 +8,7 @@ import os
 import socket
 import subprocess
 import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -247,3 +248,93 @@ def test_runner_audits_spawned_background_gate_before_worktree_creation(tmp_path
     findings = runner.audit_script_for_background_escape(script)
     assert findings
     assert any("Popen" in finding for finding in findings)
+
+
+@pytest.mark.linux_only
+def test_native_descendant_cleanup_reaps_zombie_but_refuses_live_process():
+    import psutil
+    import time
+
+    runner = load_module(RUNNER, "vault_ownership_runner_descendants")
+
+    zombie_pid = os.fork()  # windows-footgun: ok -- Linux-only real-zombie regression
+    if zombie_pid == 0:
+        os._exit(0)
+    deadline = time.monotonic() + 2
+    while time.monotonic() < deadline:
+        if psutil.Process(zombie_pid).status() == psutil.STATUS_ZOMBIE:
+            break
+        time.sleep(0.01)
+    else:
+        os.waitpid(zombie_pid, 0)
+        pytest.fail("child did not become a zombie")
+
+    zombie_result = runner.cleanup_native_descendants([psutil.Process(zombie_pid)])
+    assert zombie_result["live_count"] == 0
+    assert zombie_result["observed"][0]["status"] == psutil.STATUS_ZOMBIE
+    assert set(zombie_result["observed"][0]) == {
+        "pid", "ppid", "status", "executable", "start_time"
+    }
+    with pytest.raises(ChildProcessError):
+        os.waitpid(zombie_pid, os.WNOHANG)
+
+    live = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
+    try:
+        live_result = runner.cleanup_native_descendants([psutil.Process(live.pid)])
+        assert live_result["live_count"] == 1
+        assert live_result["survivor_count"] == 0
+        assert live_result["observed"][0]["executable"] == Path(sys.executable).resolve().name
+        assert not psutil.pid_exists(live.pid)
+    finally:
+        if live.poll() is None:
+            live.kill()
+            live.wait()
+
+
+@pytest.mark.linux_only
+def test_native_worker_refuses_live_and_keeps_exception_diagnostics(tmp_path, monkeypatch):
+    import ctypes
+
+    runner = load_module(RUNNER, "vault_ownership_runner_exception_receipt")
+    payload = tmp_path / "job.json"
+    receipt = tmp_path / "result.json"
+    payload.write_text("{}", encoding="utf-8")
+
+    class ProbeError(RuntimeError):
+        pass
+
+    scheduler = types.ModuleType("cron.scheduler")
+
+    def raise_probe(_job):
+        raise ProbeError("sensitive-detail-must-not-enter-receipt")
+
+    setattr(scheduler, "run_job", lambda _job: (True, "document", "response", None))
+    cron = types.ModuleType("cron")
+    cron.__path__ = []
+    monkeypatch.setitem(sys.modules, "cron", cron)
+    monkeypatch.setitem(sys.modules, "cron.scheduler", scheduler)
+    monkeypatch.setattr(ctypes, "CDLL", lambda *_args, **_kwargs: types.SimpleNamespace(prctl=lambda *_args: 0))
+    cleanup = {"observed": [{"pid": 42, "ppid": 1, "status": "sleeping",
+                             "executable": "sleep", "start_time": 1.0}],
+               "live_count": 1, "survivor_count": 0, "survivors": []}
+    monkeypatch.setattr(runner, "cleanup_native_descendants", lambda: cleanup)
+
+    assert runner._native_worker(payload, receipt) == 1
+    live_result = json.loads(receipt.read_text(encoding="utf-8"))
+    assert live_result["success"] is False
+    assert live_result["error"] == "Native job left background descendants; stopped before publication"
+
+    setattr(scheduler, "run_job", raise_probe)
+    cleanup = {"observed": [{"pid": 43, "ppid": 1, "status": "zombie",
+                             "executable": "python", "start_time": 2.0}],
+               "live_count": 0, "survivor_count": 0, "survivors": []}
+    monkeypatch.setattr(runner, "cleanup_native_descendants", lambda: cleanup)
+
+    with pytest.raises(ProbeError, match="sensitive-detail"):
+        runner._native_worker(payload, receipt)
+
+    result = json.loads(receipt.read_text(encoding="utf-8"))
+    assert result["success"] is False
+    assert result["error"] == "Native run raised ProbeError"
+    assert "sensitive-detail" not in receipt.read_text(encoding="utf-8")
+    assert result["descendant_cleanup"] == cleanup
