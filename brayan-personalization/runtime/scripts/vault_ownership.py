@@ -74,30 +74,95 @@ def publish(root, contract, base):
     return head
 
 
+def _descendant_record(process):
+    """Return bounded, non-secret identity evidence for one descendant."""
+    import psutil
+
+    record = {"pid": process.pid, "ppid": None, "status": "unknown",
+              "executable": "unknown", "start_time": None}
+    with contextlib.suppress(psutil.Error, OSError):
+        record["ppid"] = process.ppid()
+    with contextlib.suppress(psutil.Error, OSError):
+        record["status"] = process.status()
+    with contextlib.suppress(psutil.Error, OSError):
+        record["executable"] = Path(process.exe()).name or "unknown"
+    if record["executable"] == "unknown":
+        with contextlib.suppress(psutil.Error, OSError):
+            record["executable"] = Path(process.name()).name or "unknown"
+    with contextlib.suppress(psutil.Error, OSError):
+        record["start_time"] = process.create_time()
+    return record
+
+
+def cleanup_native_descendants(descendants=None):
+    """Reap inert zombies; kill and report every genuinely live descendant."""
+    import psutil
+
+    processes = list(descendants if descendants is not None
+                     else psutil.Process().children(recursive=True))
+    observed = [_descendant_record(process) for process in processes]
+    live = []
+    for process, record in zip(processes, observed):
+        if record["status"] in {psutil.STATUS_ZOMBIE, psutil.STATUS_DEAD}:
+            if record["ppid"] == os.getpid():
+                with contextlib.suppress(ChildProcessError, ProcessLookupError, OSError):
+                    os.waitpid(process.pid, os.WNOHANG)
+            continue
+        try:
+            if process.is_running():
+                live.append(process)
+        except psutil.NoSuchProcess:
+            continue
+        except psutil.Error:
+            # Unknown liveness is not permission to publish.
+            live.append(process)
+    for process in reversed(live):
+        with contextlib.suppress(psutil.NoSuchProcess):
+            process.kill()
+    _, alive = psutil.wait_procs(live, timeout=5)
+    survivors = [_descendant_record(process) for process in alive]
+    return {"observed": observed, "live_count": len(live),
+            "survivor_count": len(survivors), "survivors": survivors}
+
+
 def _native_worker(payload, receipt):
     """Run the ORIGINAL native job, including native wake gate and teardown."""
     import ctypes
-    import psutil
     # Linux subreaper adopts double-fork/setsid workers when their gate exits.
     # This is scoped to the dedicated native worker, never the gateway process.
     if sys.platform != 'linux' or ctypes.CDLL(None, use_errno=True).prctl(36, 1, 0, 0, 0):
         raise OwnershipError('Managed lifecycle requires Linux child subreaper support')
     from cron.scheduler import run_job
     job = json.loads(Path(payload).read_text(encoding='utf-8'))
+    success, document, response, error = False, "", "", None
+    run_exception = None
+    run_traceback = None
     try:
-        success, document, response, error = run_job(job)
+        try:
+            success, document, response, error = run_job(job)
+        except BaseException as exc:
+            run_exception = exc
+            run_traceback = exc.__traceback__
     finally:
-        descendants = psutil.Process().children(recursive=True)
-        for child in reversed(descendants):
-            with contextlib.suppress(psutil.NoSuchProcess):
-                child.kill()
-        _, alive = psutil.wait_procs(descendants, timeout=5)
-        if alive:
-            raise OwnershipError('Unable to stop all native job descendants')
-    if descendants:
+        try:
+            cleanup = cleanup_native_descendants()
+        except Exception as exc:
+            cleanup = {"observed": [], "live_count": None,
+                       "survivor_count": None, "survivors": [],
+                       "cleanup_error": type(exc).__name__}
+    if cleanup["observed"]:
+        print("Native descendant cleanup: " + json.dumps(cleanup, sort_keys=True), file=sys.stderr)
+    if run_exception is not None:
+        error = f"Native run raised {type(run_exception).__name__}"
+    elif cleanup.get("cleanup_error") or cleanup["survivor_count"]:
+        success, error = False, 'Unable to stop all native job descendants'
+    elif cleanup["live_count"]:
         success, error = False, 'Native job left background descendants; stopped before publication'
     Path(receipt).write_text(json.dumps(dict(success=success, document=document,
-                                           response=response, error=error)), encoding='utf-8')
+                                           response=response, error=error,
+                                           descendant_cleanup=cleanup)), encoding='utf-8')
+    if run_exception is not None:
+        raise run_exception.with_traceback(run_traceback)
     return 0 if success else 1
 
 
