@@ -70,6 +70,11 @@ _EXEMPT_DIRS = (
 # (path, command) -> why. Keep this list short and justified — the default
 # answer for a new call site is a managed-aware helper, not a new exemption.
 _ALLOWED: dict[tuple[str, str], str] = {
+    ("brayan-personalization/runtime/skills/productivity/google-workspace/scripts/setup.py", "uv"): (
+        "Bundled copy of the standalone skills/ installer, which is already "
+        "outside this guard's Hermes-owned subprocess scope. It targets "
+        "sys.executable explicitly and must also work without Hermes imports."
+    ),
     ("tools/env_probe.py", "uv"): (
         "Reports the environment the MODEL sees in the terminal tool. The model "
         "can only run what is on that subshell's PATH, which local.py populates "
