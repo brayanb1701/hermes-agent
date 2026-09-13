@@ -1076,6 +1076,10 @@ def _review_tool_whitelist(
 ) -> Tuple[set, set]:
     """``(whitelist, configured_extra_tools)`` for the review fork — DISPATCH-side only, so the
     advertised ``tools[]`` stays byte-identical to the parent's (prompt-cache parity)."""
+    # Local opt-in: background learning may write memory, never skills or files.
+    if _background_review_task_config(task_cfg).get("memory_only") is True:
+        memory_on = review_agent._memory_enabled or review_agent._user_profile_enabled
+        return ({"memory"} if memory_on else set()), set()
     from model_tools import get_tool_definitions
     # Gate the built-in memory tool on BOTH the profile's memory flags and the trigger that fired
     # (#105921): a skill-nudge review never gets the memory tool, so an unattended fork cannot
@@ -1153,13 +1157,16 @@ def _run_review_fork(
     # tell the model that memory is available, or it will burn iterations on denied calls.
     memory_phrase_deny = " and memory for notes (add only)" if "memory" in review_whitelist else ""
     memory_phrase_prompt = "memory and skill " if "memory" in review_whitelist else "skill "
+    if _background_review_task_config(task_cfg).get("memory_only") is True:
+        prompt = _MEMORY_REVIEW_PROMPT + "\n\nThis review is memory-only. Never create or modify skills."
+        memory_phrase_prompt = "memory " if "memory" in review_whitelist else "no "
     set_thread_tool_whitelist(
         review_whitelist,
         deny_msg_fmt=(
             "Background review denied non-whitelisted tool: "
-            "{tool_name}. Allowed here: skill_view/skills_list/read_file/search_files to read, "
-            "skill_manage(action='patch'|...) to change skills"
-            + memory_phrase_deny + "." + deny_extra + " Do not retry {tool_name}."
+            "{tool_name}. Allowed tools: "
+            + (", ".join(sorted(review_whitelist)) or "none")
+            + ". Do not retry {tool_name}."
         ),
     )
     with suppress(Exception):
