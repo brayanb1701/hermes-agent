@@ -63,7 +63,7 @@ def test_initial_blocked_task_is_not_auto_promoted_by_recompute_ready(
     creation path must preserve the operator's explicit parking decision across
     dispatcher promotion sweeps.
     """
-    with kb.connect() as conn:
+    with kbc.connect() as conn:
         tid = kb.create_task(
             conn,
             title="parked until capacity is available",
