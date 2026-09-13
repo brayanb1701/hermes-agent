@@ -21,6 +21,21 @@ from fastapi.testclient import TestClient
 def client(tmp_path, monkeypatch):
     monkeypatch.setenv("HERMES_HOME", str(tmp_path / ".hermes"))
     from hermes_cli import web_server
+    from hermes_cli.local_runtime.estimator import HardwareBudget
+
+    # Exercise orchestration independently of the CI runner's RAM/GPU.
+    # The refusal test still overrides selection and verifies the 409 path.
+    budget = HardwareBudget(usable_vram_bytes=64 << 30,
+                            total_device_bytes=64 << 30,
+                            ram_available_bytes=64 << 30)
+    monkeypatch.setattr("hermes_cli.local_runtime.hardware.probe_budget",
+                        lambda **kwargs: budget)
+
+    from hermes_cli.config import load_config, save_config
+
+    config = load_config()
+    config.setdefault("local_runtime", {})["backend"] = "cpu"
+    save_config(config)
 
     test_client = TestClient(web_server.app)
     test_client.headers[web_server._SESSION_HEADER_NAME] = web_server._SESSION_TOKEN
