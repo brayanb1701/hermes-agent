@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+from unittest.mock import patch
 
 
 SCRIPT = (
@@ -16,7 +17,11 @@ def load_ci_module():
     spec = importlib.util.spec_from_file_location("brayan_upstream_ci", SCRIPT)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    # These tests exercise planning, not the operator's log-directory setup.
+    # Importing the bundled script must never create live runtime directories.
+    with patch.object(Path, "mkdir", autospec=True) as mkdir:
+        spec.loader.exec_module(module)
+    mkdir.assert_called_once_with(module.LOG_DIR, parents=True, exist_ok=True)
     return module
 
 

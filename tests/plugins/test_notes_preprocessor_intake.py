@@ -3,7 +3,10 @@ from pathlib import Path
 
 
 def _load_module():
-    plugin_path = Path.home() / ".hermes" / "plugins" / "notes_preprocessor" / "__init__.py"
+    plugin_path = (
+        Path(__file__).resolve().parents[2]
+        / "brayan-personalization/runtime/plugins/notes_preprocessor/__init__.py"
+    )
     spec = importlib.util.spec_from_file_location("notes_preprocessor_plugin", plugin_path)
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader
