@@ -11,11 +11,11 @@ import time
 
 def snapshot():
     mem = {}
-    for line in Path('/proc/meminfo').read_text().splitlines():
+    for line in Path('/proc/meminfo').read_text(encoding="utf-8").splitlines():
         key, value = line.split(':', 1)
         mem[key] = int(value.split()[0]) * 1024
     vm = {}
-    for line in Path('/proc/vmstat').read_text().splitlines():
+    for line in Path('/proc/vmstat').read_text(encoding="utf-8").splitlines():
         key, value = line.split()
         if key in ('pswpin', 'pswpout', 'oom_kill'):
             vm[key] = int(value)
@@ -30,7 +30,7 @@ def snapshot():
     for kind in ('cpu', 'memory', 'io'):
         path = Path('/proc/pressure') / kind
         if path.exists():
-            result['pressure'][kind] = path.read_text().strip()
+            result['pressure'][kind] = path.read_text(encoding="utf-8").strip()
     if shutil.which('nvidia-smi'):
         p = subprocess.run(['nvidia-smi', '--query-gpu=name,memory.total,memory.used,utilization.gpu', '--format=csv,noheader,nounits'], capture_output=True, text=True, timeout=8)
         result['gpu'] = {'exit_code': p.returncode, 'rows': p.stdout.strip().splitlines()}
