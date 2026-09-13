@@ -1,13 +1,29 @@
 import importlib.util
 from pathlib import Path
 
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def isolate_plugin_home(monkeypatch, tmp_path):
+    # The standalone plugin resolves instructions, sessions and logs from HOME.
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path / ".hermes"))
+
 
 def _load_module():
-    plugin_path = Path.home() / ".hermes" / "plugins" / "notes_preprocessor" / "__init__.py"
+    plugin_path = (
+        Path(__file__).resolve().parents[2]
+        / "brayan-personalization/runtime/plugins/notes_preprocessor/__init__.py"
+    )
     spec = importlib.util.spec_from_file_location("notes_preprocessor_plugin", plugin_path)
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader
     spec.loader.exec_module(module)
+    module.PREPROCESSOR_INSTRUCTIONS = (
+        Path(__file__).resolve().parents[2]
+        / "brayan-personalization/runtime/agents/notes-intake/preprocessor-instructions.md"
+    )
     return module
 
 
