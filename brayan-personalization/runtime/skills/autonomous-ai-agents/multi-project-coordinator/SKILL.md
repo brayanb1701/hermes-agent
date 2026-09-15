@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [coordination, orchestration, independent-sessions]
-    related_skills: [hermes-agent, claude-code, personal-vault-ops]
+    related_skills: [hermes-agent, herdr, claude-code, personal-vault-ops]
 ---
 
 # Multi-project coordinator
@@ -36,15 +36,25 @@ Be Brayan's communicator and accountable coordinator across independent workstre
 - Independent projects get independent coordinators. Split complex work into dependency-aware deliverables; give Grok/Sol bounded contracts instead of the whole project. Avoid tiny splits with more coordination overhead than benefit.
 - Each writer owns disjoint paths or its own worktree. Inspect dirty state, HEAD and repo instructions before editing. Never restore/stage/commit unrelated work. Serialize shared registry/config writes.
 - Bound global concurrency including descendants. Start with one heavy build/implementation at a time and increase only with measured capacity and independent ready work. No recursive fanout by default.
-- Use independent Hermes CLI processes for long steerable missions: terminal background=true, notify=true; explicit model/provider/effort, --query-file, --oneshot and run/turn budgets when installed CLI supports them. Persist session/PID/log/exit/result. Verify startup once, then react to completion rather than LLM polling.
+- Default to native Herdr for independent sessions and harnesses; use its agent surface for interactive steering. Pin model/provider/effort through native harness arguments and verify startup, actual route, cwd and native session identity. For explicit batch/structured-output jobs, use native headless CLI with captured output and completion notification. Avoid repeated LLM polling.
 - Headless CLI runs are normal saved chats, not live attachable REPLs. Never resume the same active session in a competing writer. Use supported interactive control or STEERING.md read at phase boundaries; urgent steering needs explicit acknowledgment.
 - Coordinators must collect and verify their children before exit, not orphan background work.
 - Do not assume delegate_task inherits the active model. Its effective configured route can differ, and its exposed schema may offer no per-call pin. For required Astra sessions, use explicitly pinned independent Hermes CLI launches. Verify dispatch metadata and disclose any model mismatch; never describe a Luna helper as Astra.
 
 ## Minimal coordinator workspace
-Use a task-owned control directory alongside execution workspaces, not the vault as a build directory. Keep DECISIONS.md, WORKSTREAMS.json, per-lane MISSION/GOAL/STEERING/STATUS, session log, RESULT.json, external EXIT.json, and PARENT_REVIEW.md. CONTINUE.md contains confirmed decisions and verified state, with proposals/pending work labeled separately. This is an organization pattern, not a new daemon requirement.
+Use a task-owned control directory alongside execution workspaces, not the vault as a build directory. Keep DECISIONS.md, WORKSTREAMS.json, per-lane MISSION/GOAL/STEERING/STATUS, session log, RESULT.json and PARENT_REVIEW.md; headless jobs also record external EXIT.json. CONTINUE.md contains confirmed decisions and verified state, with proposals/pending work labeled separately. This is an organization pattern, not a new daemon requirement.
 
-Herdr is an optional candidate interactive backend. Read references/herdr-evaluation.md before installing/adopting it. Pane lifecycle is not task acceptance.
+## Herdr organization policy
+
+Use `herdr` for native commands; this section owns organization policy.
+- Reuse the current Herdr session on the execution host. Sessions are persistent fleet contexts, not per-task containers; create or attach another session only for an explicitly requested host/session boundary. A Herdr session is distinct from a harness conversation ID.
+- Workspace = project or independent mission; tab = workstream; pane = agent, reviewer, test or server. Use only the levels needed: a small helper needs no new workspace. Set cwd to the assigned project/worktree, not blindly to the caller's directory.
+- Before creating, list existing topology and reuse matching mission-owned spaces. Labels alone do not establish ownership: verify host/session/IDs/cwd against the mission record. Never adopt an unrelated pane because its label matches.
+- Label workspaces by project and tabs by workstream. Name agents with a short project-role slug (e.g. api-reviewer), unique within the session and conforming to the herdr skill's syntax. On collision, reuse only the verified owned agent or choose a free suffix.
+- Record host, Herdr session, workspace/tab/pane IDs, agent name, native harness session ID, cwd/worktree and write scope in the existing mission record. No separate registry is required.
+- Create scoped layout without additional questions, preserve focus with --no-focus, and prefer another tab over unreadably small panes. Worktree creation stays within authorized repository scope; layout does not expand task permissions.
+- Outside a genuine Herdr pane, follow the herdr environment guard: do not inspect/control a session or fabricate caller variables. Use native headless mode for a compatible batch task and disclose the fallback; if persistent interactive management is required, ask Brayan to open the mission inside Herdr.
+- Use bounded native waits and inspect blocked/stalled states; never treat idle/done as artifact acceptance. Preserve approvals. On completion retain useful labeled workspaces/tabs and resumable agent identity; close only owned disposable resources after saving results, without disturbing user panes.
 
 ## Resource safety
 Check live available RAM, swap activity, CPU/load, disk and GPU if relevant before dispatch and intensive tests. Include nested workers, browsers, test processes and dev servers in fleet capacity. Hardware memory is not a capacity check. scripts/resource_probe.py offers a read-only Linux snapshot and bounded sampling.
@@ -52,12 +62,12 @@ Check live available RAM, swap activity, CPU/load, disk and GPU if relevant befo
 Monitor long/intensive work with cheap deterministic sampling or an existing supervisor, not repeated agent turns. Record pressure and recheck at phase changes. Under sustained memory pressure, swapping, I/O load or poor responsiveness, pause NEW dispatch and reduce owned test/build concurrency. Stop only owned nonessential jobs when justified; never kill unrelated processes. Numerical thresholds are task configuration, not universal safety guarantees.
 
 ## Verify four separate facts
-1. Exited: an external wrapper waited for the exact child and recorded exit/signal/deadline. Popen success or PID disappearance is insufficient.
+1. Execution state: for headless jobs record the exact child's exit/signal/deadline; for persistent Herdr agents record the completed turn, native session ID and current lifecycle state, not a fictitious process exit. Popen success, PID disappearance or idle alone is insufficient.
 2. Validated: required artifacts exist, schema and acceptance checks pass, and independent tests exercise the delivered revision. Exit zero or self-written PASS is insufficient.
 3. Delivered: transport success plus exact target/message ID or supported read-back. Without a receipt delivery is unknown.
 4. Acknowledged: Brayan replied or explicitly acknowledged. Transport success does not prove reading.
 
-For Fable inspect raw JSON is_error=false and actual modelUsage, explicit session ID and requested effort. Disclose auxiliary usage without inventing extra board votes. Never implicit --continue across concurrent Claude sessions. Keep unmeasured cost unknown.
+For Fable headless output inspect raw error/result events and actual model usage; for interactive sessions verify the native transcript's model, session ID and requested effort. Disclose auxiliary usage without inventing extra board votes. Never implicit --continue across concurrent Claude sessions. Keep unmeasured cost unknown.
 
 On completion inspect original artifacts/diffs/errors and rerun checks into fresh outputs. Add unseen adversarial cases where correctness matters. Attribute parent repairs separately from child work. Preserve partial/blocked states. Mocks prove local behavior, not live integration. Frozen review approval does not apply to later code revisions.
 

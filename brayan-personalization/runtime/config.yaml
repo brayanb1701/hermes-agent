@@ -265,7 +265,7 @@ display:
   resume_max_assistant_chars: 200
   resume_max_assistant_lines: 3
   resume_skip_tool_only: true
-  busy_input_mode: interrupt
+  busy_input_mode: steer
   interface: cli
   tui_auto_resume_recent: false
   tui_agents_nudge: true

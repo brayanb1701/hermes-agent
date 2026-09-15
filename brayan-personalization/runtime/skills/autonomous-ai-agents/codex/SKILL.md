@@ -12,6 +12,10 @@ metadata:
 
 # Codex CLI
 
+Default to Herdr for managing independent sessions and harnesses. Load multi-project-coordinator for organization and herdr for commands; use native headless modes for explicit batch/structured-output tasks.
+
+Preserve existing subscription auth. After integration installation, inspect the screen for a SessionStart hook approval even when Herdr reports idle; obtain authorization before trusting it.
+
 Delegate coding tasks to [Codex](https://github.com/openai/codex) via the Hermes terminal. Codex is OpenAI's autonomous coding agent CLI.
 
 ## When to use
@@ -26,7 +30,7 @@ Requires the codex CLI and a git repository.
 ## Prerequisites
 
 - Codex installed: `npm install -g @openai/codex`
-- OpenAI API key configured
+- Existing Codex subscription or API authentication configured
 - **Must run inside a git repository** — Codex refuses to run outside one
 - Use `pty=true` for the interactive TUI (`codex` / `codex resume`). `codex exec` is non-interactive and can run without PTY, including in background/process/systemd supervisors.
 
@@ -41,23 +45,9 @@ For scratch work (Codex needs a git repo):
 terminal(command="cd $(mktemp -d) && git init && codex exec 'Build a snake game in Python'", pty=true)
 ```
 
-## Background Mode (Long Tasks)
+## Managed long tasks
 
-```
-# Start in background with PTY
-terminal(command="codex --approve-for-me exec 'Refactor the auth module'", workdir="~/project", background=true, pty=true)
-# Returns session_id
-
-# Monitor progress
-process(action="poll", session_id="<id>")
-process(action="log", session_id="<id>")
-
-# Send input if Codex asks a question
-process(action="submit", session_id="<id>", data="yes")
-
-# Kill if needed
-process(action="kill", session_id="<id>")
-```
+Use a named Codex agent in an owned Herdr pane, following multi-project-coordinator and herdr. For explicit headless batch jobs, capture output and use completion notifications.
 
 ## Key Flags
 
@@ -82,25 +72,7 @@ terminal(command="REVIEW=$(mktemp -d) && git clone https://github.com/user/repo.
 
 ## Parallel Issue Fixing with Worktrees
 
-```
-# Create worktrees
-terminal(command="git worktree add -b fix/issue-78 /tmp/issue-78 main", workdir="~/project")
-terminal(command="git worktree add -b fix/issue-99 /tmp/issue-99 main", workdir="~/project")
-
-# Launch Codex in each
-terminal(command="codex --yolo exec 'Fix issue #78: <description>. Commit when done.'", workdir="/tmp/issue-78", background=true, pty=true)
-terminal(command="codex --yolo exec 'Fix issue #99: <description>. Commit when done.'", workdir="/tmp/issue-99", background=true, pty=true)
-
-# Monitor
-process(action="list")
-
-# After completion, push and create PRs
-terminal(command="cd /tmp/issue-78 && git push -u origin fix/issue-78")
-terminal(command="gh pr create --repo user/repo --head fix/issue-78 --title 'fix: ...' --body '...'")
-
-# Cleanup
-terminal(command="git worktree remove /tmp/issue-78", workdir="~/project")
-```
+Assign one authorized worktree or disjoint write scope per worker; launch named Codex agents in the project workspace using the coordinator organization policy. Verify results before any separately authorized publish or cleanup.
 
 ## Batch PR Reviews
 
@@ -122,12 +94,8 @@ terminal(command="gh pr comment 86 --body '<review>'", workdir="~/project")
 2. **Git repo required** — Codex won't run outside a git directory. Use `mktemp -d && git init` for scratch
 3. **Use `exec` for one-shots** — `codex exec "prompt"` runs and exits cleanly
 4. **`--approve-for-me` for building** — auto-approves changes within the sandbox
-5. **Background for long tasks** — use `background=true` and monitor with `process` tool
-6. **Don't interfere without authorization** — monitor with `poll`/`log` and be patient. A status/analysis request is not permission to kill, restart, create STOP files, edit prompts, or change policy unless there is immediate safety/spend risk or Brayan explicitly asks.
+5. **Herdr for managed long tasks** — use named agents and native waits; headless batch jobs use completion notifications
+6. **Don't interfere without authorization** — inspect owned agents through Herdr; for headless jobs inspect captured output and completion notifications. A status/analysis request is not permission to kill, restart, create STOP files, edit prompts, or change policy unless there is immediate safety/spend risk or Brayan explicitly asks.
 7. **Keep project policy out of this generic skill** — if a Codex run needs cloud GPUs, paid APIs, challenge-specific budgets, watchdogs, STOP files, or experiment run cards, put that policy in the project workspace (`AGENTS.md`, `RUNBOOK.md`, status/control files) or a class-level paid-compute/autoresearch skill. Do not pollute the generic Codex skill with one-project details.
 8. **Remote paid jobs need separate verification** — stopping a local Codex process/supervisor does not prove external work stopped. Check provider-side app/task/billing state separately before saying spend is contained.
 9. **Parallel is fine** — run multiple Codex processes at once for batch work
-
-## Herdr fleet routing (local extension)
-
-Use native Herdr commands and its official skill inside Herdr panes for persistent local/remote agent sessions. Brayan removed custom agent-manager wrappers and their systemd/tmux backends; do not recreate them. Preserve host/session/pane ownership, worktree isolation, subscriptions and approvals. Inspect startup dialogs and verify actual results. Native headless CLI modes remain available without a custom supervisor. Claude subscription runs omit --max-turns and --max-budget-usd; headless output uses stream-json --verbose saved to JSONL.
