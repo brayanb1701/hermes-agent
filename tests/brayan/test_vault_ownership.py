@@ -206,7 +206,7 @@ def test_runner_holds_owner_lock_through_gate_child_commit_and_push(tmp_path):
     assert not (state / "worktrees" / job_id).exists()
 
 
-def test_runner_preserves_failed_work_and_blocks_next_acquire(tmp_path):
+def test_contained_failure_is_archived_and_next_job_publishes(tmp_path):
     repo, remote = init_repo(tmp_path)
     home = tmp_path / "hermes"
     value = contract(home, repo=repo)
@@ -232,11 +232,26 @@ def test_runner_preserves_failed_work_and_blocks_next_acquire(tmp_path):
     (scripts / 'failure.py').write_text("import os, pathlib; pathlib.Path(os.environ['HERMES_VAULT_ROOT'], 'failed.txt').write_text('failed'); raise SystemExit(7)")
     first = subprocess.run([sys.executable, str(RUNNER), job_id], cwd=job_dir, env=env, text=True, capture_output=True)
     assert first.returncode != 0
+    assert not (state / "pending-owner.json").exists(), first.stdout + first.stderr
+    archives = list((state / "failed").iterdir())
+    assert len(archives) == 1
+    manifest = json.loads((archives[0] / "manifest.json").read_text(encoding="utf-8"))
+    archived_marker = json.loads((archives[0] / "pending-owner.json").read_text(encoding="utf-8"))
+    assert manifest["complete"] is True
+    assert type(archived_marker["pid"]) is int and archived_marker["pid"] > 0
+    assert isinstance(archived_marker["pid_created"], float)
+    assert (archives[0] / "files" / "failed.txt").read_text(encoding="utf-8") == "failed"
     preserved = list((state / "worktrees" / job_id).iterdir())
     assert preserved and (preserved[0] / "failed.txt").exists()
+
+    (scripts / "failure.py").write_text(
+        "import os, pathlib; pathlib.Path(os.environ['HERMES_VAULT_ROOT'], 'failed.txt').write_text('recovered')",
+        encoding="utf-8",
+    )
     second = subprocess.run([sys.executable, str(RUNNER), job_id], cwd=job_dir, env=env, text=True, capture_output=True)
-    assert second.returncode != 0
-    assert "preserved" in (second.stderr + second.stdout).lower()
+    assert second.returncode == 0, second.stdout + second.stderr
+    assert (repo / "failed.txt").read_text(encoding="utf-8") == "recovered"
+    assert git(repo, "ls-remote", str(remote), "refs/heads/main").stdout.split()[0] == git(repo, "rev-parse", "HEAD").stdout.strip()
 
 
 def test_runner_audits_spawned_background_gate_before_worktree_creation(tmp_path):
@@ -289,6 +304,87 @@ def test_native_descendant_cleanup_reaps_zombie_but_refuses_live_process():
         if live.poll() is None:
             live.kill()
             live.wait()
+
+
+@pytest.mark.linux_only
+def test_native_worker_disposes_real_session_kernels_before_descendant_audit(tmp_path, monkeypatch, request):
+    from tools.code_kernel import _KERNELS, execute_in_session_kernel, shutdown_all_kernels
+
+    request.addfinalizer(shutdown_all_kernels)
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path / "parent-hermes"))
+    parent_result = execute_in_session_kernel(
+        "print('parent')", task_id="unrelated-parent", mode="stateful",
+        child_python=sys.executable, child_cwd=str(tmp_path), sandbox_tools=frozenset(),
+        timeout=10, max_tool_calls=1, reset=False, is_interrupted=lambda: False,
+    )
+    assert '"status": "success"' in parent_result
+    parent_kernel = next(kernel for key, kernel in _KERNELS.items() if key[0] == "unrelated-parent")
+    assert parent_kernel.proc is not None and parent_kernel.proc.poll() is None
+
+    stub = tmp_path / "stub"
+    (stub / "cron").mkdir(parents=True)
+    (stub / "cron" / "__init__.py").write_text("", encoding="utf-8")
+    (stub / "cron" / "scheduler.py").write_text(
+        "from agent.delegation_context import delegated_child_context\n"
+        "from tools.code_kernel import execute_in_session_kernel\n"
+        "def execute(job, task_id):\n"
+        "    result = execute_in_session_kernel(\n"
+        "        'print(42)', task_id=task_id, mode='stateful',\n"
+        "        child_python=job['python'], child_cwd=job['cwd'],\n"
+        "        sandbox_tools=frozenset(), timeout=10, max_tool_calls=1,\n"
+        "        reset=False, is_interrupted=lambda: False)\n"
+        "    if '\"status\": \"success\"' not in result:\n"
+        "        raise RuntimeError(result)\n"
+        "def run_job(job):\n"
+        "    execute(job, 'cron:job:run')\n"
+        "    with delegated_child_context('delegated-worker'):\n"
+        "        execute(job, 'subagent-1-child')\n"
+        "    if job.get('raise_after_kernel'):\n"
+        "        raise RuntimeError('sensitive worker failure')\n"
+        "    return True, 'document', 'response', None\n",
+        encoding="utf-8",
+    )
+    payload = tmp_path / "job.json"
+    receipt = tmp_path / "result.json"
+    home = tmp_path / "hermes"
+    write_contract(home, contract(home))
+    payload.write_text(json.dumps({"python": sys.executable, "cwd": str(tmp_path)}), encoding="utf-8")
+    env = {
+        **os.environ,
+        "HOME": str(tmp_path / "home"),
+        "HERMES_HOME": str(home),
+        "PYTHONPATH": os.pathsep.join((str(stub), str(ROOT))),
+    }
+
+    result = subprocess.run(
+        [sys.executable, str(RUNNER), "--native", str(payload), str(receipt)],
+        cwd=tmp_path,
+        env=env,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    recorded = json.loads(receipt.read_text(encoding="utf-8"))
+    assert recorded["success"] is True
+    assert recorded["kernel_cleanup"] == {"local": "ok", "remote": "ok"}
+    assert recorded["descendant_cleanup"]["live_count"] == 0
+    assert recorded["descendant_cleanup"]["survivor_count"] == 0
+
+    payload.write_text(json.dumps({
+        "python": sys.executable, "cwd": str(tmp_path), "raise_after_kernel": True
+    }), encoding="utf-8")
+    exceptional = subprocess.run(
+        [sys.executable, str(RUNNER), "--native", str(payload), str(receipt)],
+        cwd=tmp_path, env=env, text=True, capture_output=True,
+    )
+    exceptional_receipt = json.loads(receipt.read_text(encoding="utf-8"))
+    assert exceptional.returncode != 0
+    assert exceptional_receipt["error"] == "Native run raised RuntimeError"
+    assert exceptional_receipt["kernel_cleanup"] == {"local": "ok", "remote": "ok"}
+    assert exceptional_receipt["descendant_cleanup"]["live_count"] == 0
+    assert "sensitive worker failure" not in receipt.read_text(encoding="utf-8")
+    assert parent_kernel.proc is not None and parent_kernel.proc.poll() is None
 
 
 @pytest.mark.linux_only

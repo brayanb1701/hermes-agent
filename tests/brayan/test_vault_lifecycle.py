@@ -60,7 +60,14 @@ def test_native_worker_reaps_detached_descendant_before_publication(tmp_path, mo
             pass
         pid = int(pidfile.read_text())
         assert not psutil.pid_exists(pid), 'Detached writer escaped completion boundary'
-        assert (Path(cfg['state_dir']) / 'pending-owner.json').exists(), 'Escape must block publication'
+        state = Path(cfg['state_dir'])
+        assert not (state / 'pending-owner.json').exists()
+        archives = list((state / 'failed').iterdir())
+        assert len(archives) == 1, 'Contained escape must be archived, never published'
+        receipt = json.loads((archives[0] / 'records' / 'run' / 'result.json').read_text())
+        assert receipt['success'] is False
+        assert receipt['error'] == 'Native job left background descendants; stopped before publication'
+        assert runner.git(remote, 'rev-parse', 'main') == runner.git(repo, 'rev-parse', 'HEAD')
     finally:
         if pidfile.exists():
             try:
