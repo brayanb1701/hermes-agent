@@ -1,6 +1,6 @@
 ---
 name: herdr
-description: "Control Herdr, a terminal multiplexer for coding agents. Use only when the user explicitly mentions Herdr or asks to use Herdr to inspect or control panes, tabs, workspaces, commands, or another agent. Do not use merely because a task could benefit from a background terminal, delegation, or parallel work. Requires HERDR_ENV=1."
+description: "Use when managing agent sessions or harnesses with Herdr. Follow multi-project-coordinator for work organization and this skill for native commands. Requires HERDR_ENV=1."
 ---
 
 # Herdr
@@ -13,7 +13,7 @@ Before issuing any control command, verify that this agent is running inside a H
 test "${HERDR_ENV:-}" = 1
 ```
 
-If the check fails, say that you are not running inside Herdr and stop. Do not inspect or control the focused Herdr session from outside Herdr.
+If the check fails, report that Herdr control is unavailable and stop Herdr operations. Follow the coordinator policy for a compatible headless fallback or ask the user to open the mission inside Herdr. Do not inspect/control a session from outside Herdr or forge caller variables.
 
 When the check passes, the `herdr` binary in `PATH` talks to the current session. Use it to inspect neighboring work, create terminal layout, start agents and commands, read output, and wait for state changes.
 
@@ -41,7 +41,7 @@ herdr session
 
 Do not run bare `herdr` for discovery; it launches or attaches the TUI. Do not probe a mutating nested command by omitting arguments. Commands such as `herdr workspace create` are valid with defaults and will execute.
 
-Most control commands return JSON. Read identifiers and state from those responses instead of predicting them.
+Most control commands return JSON, but session list uses its own envelope and some pane commands return plain text or no stdout. Inspect the actual response shape and exit status. Read identifiers and state from those responses instead of predicting them.
 
 ## Understand layout, panes, and agents
 
@@ -89,7 +89,7 @@ Creation responses expose the IDs to use next. `workspace create` returns `.resu
 
 ## Start and coordinate an agent
 
-Default to a sibling pane in the current tab and the current working directory. Do not create a workspace, tab, worktree, or different cwd unless the user explicitly requests that topology or location.
+Use multi-project-coordinator's organization policy to choose or reuse a workspace, tab, pane and project cwd within the assigned mission, without requiring separate layout approval. For a simple helper, prefer a sibling pane. Preserve user focus with --no-focus; topology permission does not grant new filesystem, credential or spending authority.
 
 Honor a direction requested by the user. Otherwise inspect the caller pane:
 
@@ -136,6 +136,8 @@ herdr agent wait reviewer --until blocked --timeout 120000
 ```
 
 Without `--until`, standalone `agent wait` uses the same settled-state defaults as `agent prompt --wait`.
+
+For busy-agent messages, prefer native steering without Esc/Ctrl+C. Hermes needs `display.busy_input_mode: steer` (or `/busy steer` in an existing CLI). Codex and Pi submit Enter as steering; Claude consumes Enter messages at an action boundary. OMP uses Enter steering with `interruptMode: wait` to preserve running tools. Antigravity's busy Enter message passed a correction test, but its tool auto-backgrounding prevents assuming identical turn timing. Check actual acknowledgment, not just a queued/idle label. See references/busy-input.md for evidence and limits.
 
 Use logical keys for interactive agent UI controls:
 
