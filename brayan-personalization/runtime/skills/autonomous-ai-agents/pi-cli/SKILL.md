@@ -7,7 +7,7 @@ description: Use when spawning or coordinating Pi coding agents.
 
 Check pi --version and pi --help on the execution host. Wrapper/version-manager shims may install/update on invocation; inspect command -v and the launcher before diagnosing drift. Preserve the user's existing subscription provider/model; don't print credentials or silently select a billed API.
 
-For SSH-safe interactive Pi workers and multi-harness coordination, load herdr. Kind and integration installer name are both pi. The official extension lives at ~/.pi/agent/extensions/herdr-agent-state.ts (or PI_CODING_AGENT_DIR/extensions). It reports lifecycle and native session path; it is a no-op outside Herdr. Official in-pane Herdr skill lives at ~/.pi/agent/skills/herdr/SKILL.md.
+Default to Herdr for managed Pi sessions; load multi-project-coordinator for organization and herdr for commands. Use headless mode for explicit batch/structured-output tasks. Kind and integration installer name are both pi. The official extension lives at ~/.pi/agent/extensions/herdr-agent-state.ts (or PI_CODING_AGENT_DIR/extensions). It reports lifecycle and native session path; it is a no-op outside Herdr. Official in-pane Herdr skill lives at ~/.pi/agent/skills/herdr/SKILL.md.
 
 Execution shapes verified against pi --help:
 - Interactive: pi, under an explicitly owned Herdr session/pane.

@@ -13,6 +13,10 @@ metadata:
 
 # Claude Code — Hermes Orchestration Guide
 
+Default to Herdr for managing independent sessions and harnesses. Load multi-project-coordinator for organization and herdr for commands; use native headless modes for explicit batch/structured-output tasks.
+
+For subscription-backed headless runs, preserve existing auth and the user's chosen model, omit --max-turns and --max-budget-usd, and save stream-json --verbose output as JSONL. Do not use --bare with OAuth. These subscription rules override generic flag examples below.
+
 Delegate coding tasks to [Claude Code](https://code.claude.com/docs/en/cli-reference) (Anthropic's autonomous coding agent CLI) via the Hermes terminal. Claude Code v2.x can read files, write code, run shell commands, spawn subagents, and manage git workflows autonomously.
 
 ## Prerequisites
@@ -30,9 +34,9 @@ Delegate coding tasks to [Claude Code](https://code.claude.com/docs/en/cli-refer
 
 Hermes interacts with Claude Code in two fundamentally different ways. Choose based on the task.
 
-### Mode 1: Print Mode (`-p`) — Non-Interactive (PREFERRED for most tasks)
+### Mode 1: Print Mode (`-p`) — Non-Interactive (batch/structured-output tasks)
 
-Print mode runs a one-shot task, returns the result, and exits. No PTY needed. No interactive prompts. This is the cleanest integration path.
+Print mode runs a one-shot task, returns the result, and exits. No PTY needed. No interactive prompts. Use this for explicit batch/structured-output tasks; managed workers default to Herdr.
 
 ```
 terminal(command="claude -p 'Add error handling to all API calls in src/' --allowedTools 'Read,Edit' --max-turns 10", workdir="/path/to/project", timeout=120)
@@ -643,7 +647,7 @@ Use `/context` in interactive mode to see a colored grid of context usage. Key t
 
 ## Rules for Hermes Agents
 
-1. **Prefer print mode (`-p`) for single tasks** — cleaner, no dialog handling, structured output
+1. **Default to Herdr for managed workers** — print mode is for explicit batch/structured-output tasks
 2. **Use native Herdr for persistent multi-turn work** — follow the official herdr skill.
 3. **Always set `workdir`** — keep Claude focused on the right project directory
 4. **Set `--max-turns` in print mode** — prevents infinite loops and runaway costs
@@ -653,8 +657,3 @@ Use `/context` in interactive mode to see a colored grid of context usage. Key t
 8. **Report results to user** — after completion, summarize what Claude did and what changed
 9. **Don't kill slow sessions** — Claude may be doing multi-step work; check progress instead
 10. **Use `--allowedTools`** — restrict capabilities to what the task actually needs
-
-
-## Herdr fleet routing (local extension)
-
-Use native Herdr commands and its official skill inside Herdr panes for persistent local/remote agent sessions. Brayan removed custom agent-manager wrappers and their systemd/tmux backends; do not recreate them. Preserve host/session/pane ownership, worktree isolation, subscriptions and approvals. Inspect startup dialogs and verify actual results. Native headless CLI modes remain available without a custom supervisor. Claude subscription runs omit --max-turns and --max-budget-usd; headless output uses stream-json --verbose saved to JSONL.
