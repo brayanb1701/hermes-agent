@@ -13,7 +13,11 @@ metadata:
 
 # Antigravity CLI (`agy`)
 
-Use Google Antigravity as a coding worker, reviewer, research agent, or custom agent through Hermes' `terminal` and `process` tools. Prefer headless JSON mode for automation. Use the TUI only when the user needs a live conversation, approvals, artifact review, or subagent monitoring.
+Default to Herdr for managing independent sessions and harnesses. Load multi-project-coordinator for organization and herdr for commands; use native headless modes for explicit batch/structured-output tasks.
+
+Herdr agent kind is agy; integration name is antigravity-cli. The native conversation identity may appear only after the first prompt.
+
+Use Google Antigravity as a coding worker, reviewer, research agent, or custom agent through Hermes' `terminal` and `process` tools. Use Herdr for managed agent sessions; reserve headless JSON mode for explicit batch/structured-output tasks.
 
 ## Default model
 
@@ -65,7 +69,7 @@ Inspect files with `read_file`, not shell output.
 
 ### One-shot headless run
 
-This is the default for Hermes automation. Run inside the target project directory and request JSON:
+For explicit batch/structured-output tasks, use this mode. Run inside the target project directory and request JSON:
 
 ```text
 terminal(
@@ -102,7 +106,7 @@ Read the parsed value from `structured_output`. Keep the schema small and requir
 
 ### Long coding run
 
-Use a tracked background process for work that may exceed the foreground limit:
+Managed coding workers default to Herdr. For an explicitly selected headless batch job that exceeds the foreground limit:
 
 ```text
 terminal(
@@ -145,13 +149,7 @@ The output sequence is one `init`, any number of `step_update` events, and one `
 
 ### Interactive TUI
 
-Start a live session only when interactivity matters:
-
-```text
-terminal(command="agy --model <latest-flash-slug>", workdir="/path/to/repo", background=true, pty=true, notify_on_complete=true)
-```
-
-Use `process(action="write", data="<prompt>\r", session_id=...)` to submit TUI input. A carriage return may work where a newline does not. Useful in-session commands include `/agents`, `/tasks`, `/diff`, `/permissions`, `/model`, `/skills`, `/resume`, and `/exit`.
+Launch a named agy agent through Herdr in its project/worktree pane; use native agent prompt/read/wait and preserve the exact conversation ID. Useful commands include /agents, /tasks, /diff, /permissions, /model, /skills, /resume and /exit.
 
 The `/agents` panel switches custom agents and monitors Antigravity-spawned subagents. It is not the same as the shell command `agy agents`, which only lists available custom agents.
 
@@ -262,8 +260,3 @@ Antigravity's final message is a self-report. Verify independently before tellin
 - [ ] The target workspace or worktree is correct.
 - [ ] File changes and tests were independently verified.
 - [ ] The final report includes the exact executed result, not a plausible summary.
-
-
-## Herdr fleet routing (local extension)
-
-Use native Herdr commands and its official skill inside Herdr panes for persistent local/remote agent sessions. Brayan removed custom agent-manager wrappers and their systemd/tmux backends; do not recreate them. Preserve host/session/pane ownership, worktree isolation, subscriptions and approvals. Inspect startup dialogs and verify actual results. Native headless CLI modes remain available without a custom supervisor. Claude subscription runs omit --max-turns and --max-budget-usd; headless output uses stream-json --verbose saved to JSONL.

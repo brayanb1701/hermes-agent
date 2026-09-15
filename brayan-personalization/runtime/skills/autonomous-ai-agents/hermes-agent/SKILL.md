@@ -575,7 +575,7 @@ terminal(command="hermes chat -q 'Set up CI/CD for ~/myapp'", background=true)
 
 ### Persistent interactive sessions
 
-Use native Herdr and its official skill for persistent interactive sessions, parallel workers, and exact native-session resume. Run agents on the machine where the work lives; attach to Calcifer with `herdr --remote calcifer --session calcifer`. Do not build another launch/monitor wrapper or restore the retired systemd/tmux workflow.
+Default to Herdr for managing independent sessions and harnesses. Load multi-project-coordinator for organization and herdr for commands; use native headless modes for explicit batch/structured-output tasks. Run agents on the execution host; DarkArmy can open Calcifer with `herdr --remote calcifer --session calcifer`.
 
 ### Tips
 
@@ -998,8 +998,3 @@ Types: `fix:`, `feat:`, `refactor:`, `docs:`, `chore:`
 - Use `get_hermes_home()` from `hermes_constants` for all paths (profile-safe)
 - Config values go in `config.yaml`, secrets go in `.env`
 - New tools need a `check_fn` so they only appear when requirements are met
-
-
-## Herdr fleet routing (local extension)
-
-Use native Herdr commands and its official skill inside Herdr panes for persistent local/remote agent sessions. Brayan removed custom agent-manager wrappers and their systemd/tmux backends; do not recreate them. Preserve host/session/pane ownership, worktree isolation, subscriptions and approvals. Inspect startup dialogs and verify actual results. Native headless CLI modes remain available without a custom supervisor. Claude subscription runs omit --max-turns and --max-budget-usd; headless output uses stream-json --verbose saved to JSONL.
