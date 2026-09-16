@@ -68,7 +68,7 @@ async def test_real_inbound_dispatch_runs_scope_before_native_preprocess(monkeyp
 @pytest.mark.asyncio
 @pytest.mark.parametrize('raises', [False, True])
 async def test_native_caught_failure_exposes_structured_scope_outcome(monkeypatch,tmp_path,raises):
-    from tests.gateway.test_42039_duplicate_user_message import _bootstrap,_event,_source
+    from tests.gateway.test_duplicate_user_message import _bootstrap,_event,_source
     runner=_bootstrap(monkeypatch,tmp_path)
     event=_event()
     result={'completed':False,'failed':True,'final_response':None,'error':'test failure','messages':[],'history_offset':0,'last_prompt_tokens':0}
