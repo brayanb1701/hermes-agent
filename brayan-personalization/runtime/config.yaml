@@ -1,7 +1,7 @@
 model:
   default: gpt-6-astra
   provider: openai-codex
-  base_url: https://inference-api.nousresearch.com/v1
+  base_url: https://chatgpt.com/backend-api/codex
   context_length: 256000
 fallback_providers: []
 toolsets:
@@ -235,6 +235,8 @@ auxiliary:
     base_url: ''
     api_key: ''
     timeout: 60
+  background_review:
+    memory_only: true
   web_extract:
     provider: auto
     model: ''
@@ -419,8 +421,8 @@ curator:
   enabled: false
   interval_hours: 168
   min_idle_hours: 2
-  stale_after_days: 30
-  archive_after_days: 90
+  stale_after_days: 14
+  archive_after_days: 30
   consolidate: false
   prune_builtins: true
   backup:
@@ -481,7 +483,7 @@ matrix:
   free_response_rooms: ''
   allowed_rooms: ''
 approvals:
-  mode: smart
+  mode: 'off'
   timeout: 60
   cron_mode: deny
   mcp_reload_confirm: true
@@ -491,6 +493,7 @@ plugins:
   enabled:
     - herdr-agent-state
     - notes_preprocessor
+    - vault-ownership
   disabled: []
 hooks_auto_accept: false
 security:
@@ -593,7 +596,7 @@ secrets:
 paste_collapse_threshold: 5
 paste_collapse_threshold_fallback: 0
 paste_collapse_char_threshold: 2000
-_config_version: 42
+_config_version: 45
 notes_intake:
   enabled: true
   vision_provider: main
@@ -624,6 +627,7 @@ platform_toolsets:
     - clarify
     - code_execution
     - computer_use
+    - connections
     - cronjob
     - delegation
     - file
@@ -641,6 +645,7 @@ platform_toolsets:
     - browser
     - clarify
     - code_execution
+    - connections
     - cronjob
     - delegation
     - file
@@ -659,6 +664,7 @@ platform_toolsets:
     - browser
     - clarify
     - code_execution
+    - connections
     - cronjob
     - delegation
     - file
@@ -693,6 +699,7 @@ known_builtin_toolsets:
     - clarify
     - code_execution
     - computer_use
+    - connections
     - context_engine
     - cronjob
     - delegation
