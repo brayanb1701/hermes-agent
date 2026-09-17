@@ -1,495 +1,376 @@
 {
-  "_portable_note": "Portable Brayan/Darwin cron job definitions. Volatile run state was reset by scripts/sync-brayan-personalization.py. Secrets are not included.",
+  "_portable_note": "Original job definitions only; machine-local role authorizes activation.",
   "jobs": [
     {
+      "allowed_paths": [
+        "daily/",
+        "_meta/audits/"
+      ],
+      "base_url": null,
+      "created_at": "2026-04-22T00:53:31.428257-05:00",
+      "deliver": "telegram:875925495",
+      "enabled": false,
       "id": "1e387ba82595",
+      "model": null,
       "name": "darwin-daily-review",
+      "ownership_timeout": 900,
       "prompt": "You are Darwin running Brayan's daily review cron agent. Read and follow `~/.hermes/agents/daily-review/prompt-template.md`; stable behavior lives in `~/.hermes/skills/automation-agents/daily-review-agent/SKILL.md`. Keep this cron prompt intentionally tiny so prompt changes are tracked in files.",
+      "provider": null,
+      "repeat": {
+        "completed": 0,
+        "times": null
+      },
+      "schedule": {
+        "display": "0 9 * * *",
+        "expr": "0 9 * * *",
+        "kind": "cron"
+      },
+      "schedule_display": "0 9 * * *",
+      "script": "vault_generated_retention.py",
+      "skill": "personal-vault-ops",
       "skills": [
         "personal-vault-ops",
         "daily-review-agent"
       ],
-      "skill": "personal-vault-ops",
-      "model": null,
-      "provider": null,
-      "base_url": null,
-      "script": "vault_generated_retention.py",
-      "schedule": {
-        "kind": "cron",
-        "expr": "0 9 * * *",
-        "display": "0 9 * * *"
-      },
-      "schedule_display": "0 9 * * *",
-      "repeat": {
-        "times": null,
-        "completed": 0
-      },
-      "enabled": true,
-      "state": "scheduled",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-04-22T00:53:31.428257-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
-      "deliver": "telegram:875925495",
-      "origin": null,
-      "failure_streak": 0,
-      "last_dispatch": {
-        "scheduled_at": "2026-09-09T09:00:00-05:00",
-        "dispatched_at": "2026-09-09T09:00:47.937861-05:00",
-        "lateness_seconds": 47.9,
-        "kind": "on_time"
-      }
+      "state": "paused"
     },
     {
+      "allowed_paths": [
+        "queries/topic-recommendations.md"
+      ],
+      "base_url": null,
+      "created_at": "2026-04-22T00:53:32.430783-05:00",
+      "deliver": "telegram:875925495",
+      "enabled": false,
       "id": "50f9df74cb16",
+      "model": null,
       "name": "darwin-topic-recommendations",
+      "ownership_timeout": 900,
       "prompt": "You are Darwin running Brayan's topic recommendations cron agent. Read and follow `~/.hermes/agents/topic-recommendations/prompt-template.md`; stable behavior lives in `~/.hermes/skills/automation-agents/topic-recommendations-agent/SKILL.md`. Keep this cron prompt intentionally tiny so prompt changes are tracked in files.",
+      "provider": null,
+      "repeat": {
+        "completed": 0,
+        "times": null
+      },
+      "schedule": {
+        "display": "0 19 * * *",
+        "expr": "0 19 * * *",
+        "kind": "cron"
+      },
+      "schedule_display": "0 19 * * *",
+      "script": null,
+      "skill": "personal-vault-ops",
       "skills": [
         "personal-vault-ops",
         "topic-recommendations-agent"
       ],
-      "skill": "personal-vault-ops",
-      "model": null,
-      "provider": null,
-      "base_url": null,
-      "script": null,
-      "schedule": {
-        "kind": "cron",
-        "expr": "0 19 * * *",
-        "display": "0 19 * * *"
-      },
-      "schedule_display": "0 19 * * *",
-      "repeat": {
-        "times": null,
-        "completed": 0
-      },
-      "enabled": true,
-      "state": "scheduled",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-04-22T00:53:32.430783-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
-      "deliver": "telegram:875925495",
-      "origin": null,
-      "failure_streak": 1,
-      "last_dispatch": {
-        "scheduled_at": "2026-09-08T19:00:00-05:00",
-        "dispatched_at": "2026-09-08T19:00:15.755049-05:00",
-        "lateness_seconds": 15.8,
-        "kind": "on_time"
-      }
+      "state": "paused"
     },
     {
-      "id": "b5b791cd972b",
-      "name": "darwin-inbox-triage",
-      "prompt": "You are Darwin running Brayan's wake-gated inbox triage cron agent. The pre-run script `inbox_triage_wake_gate.py` is the wake gate: if `~/personal_vault/inbox/` has no actionable items, it returns `wakeAgent: false` and this agent is skipped. If this prompt is running, actionable inbox items were found in Script Output. Read and follow `~/.hermes/agents/inbox-triage/prompt-template.md`; stable behavior lives in `~/.hermes/skills/automation-agents/inbox-triage-agent/SKILL.md`. Keep the inbox transient: preserve raw source material, route items into the correct durable vault locations, and remove only verified duplicates.",
-      "skills": [
-        "personal-vault-ops",
-        "inbox-triage-agent"
+      "allowed_paths": [
+        "inbox/",
+        "raw/",
+        "domains/",
+        "concepts/",
+        "queries/",
+        "references/",
+        "projects/",
+        "opportunities/",
+        "profile/",
+        "decisions/",
+        "comparisons/",
+        "_meta/index.md",
+        "_meta/log.md"
       ],
-      "skill": "personal-vault-ops",
-      "model": null,
-      "provider": null,
       "base_url": null,
-      "script": "inbox_triage_wake_gate.py",
-      "schedule": {
-        "kind": "cron",
-        "expr": "0 10,18 * * *",
-        "display": "0 10,18 * * *"
-      },
-      "schedule_display": "0 10,18 * * *",
-      "repeat": {
-        "times": null,
-        "completed": 0
-      },
-      "enabled": true,
-      "state": "scheduled",
-      "paused_at": null,
-      "paused_reason": null,
       "created_at": "2026-04-22T00:53:33.433978-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
       "deliver": "telegram:875925495",
-      "origin": null,
+      "enabled": false,
       "enabled_toolsets": [
         "file",
         "terminal"
       ],
+      "id": "b5b791cd972b",
+      "model": null,
+      "name": "darwin-inbox-triage",
       "no_agent": false,
-      "failure_streak": 0,
-      "last_dispatch": {
-        "scheduled_at": "2026-09-08T18:00:00-05:00",
-        "dispatched_at": "2026-09-08T18:00:13.847871-05:00",
-        "lateness_seconds": 13.8,
-        "kind": "on_time"
-      }
+      "ownership_timeout": 1200,
+      "prompt": "You are Darwin running Brayan's wake-gated inbox triage cron agent. The pre-run script `inbox_triage_wake_gate.py` is the wake gate: if `~/personal_vault/inbox/` has no actionable items, it returns `wakeAgent: false` and this agent is skipped. If this prompt is running, actionable inbox items were found in Script Output. Read and follow `~/.hermes/agents/inbox-triage/prompt-template.md`; stable behavior lives in `~/.hermes/skills/automation-agents/inbox-triage-agent/SKILL.md`. Keep the inbox transient: preserve raw source material, route items into the correct durable vault locations, and remove only verified duplicates.",
+      "provider": null,
+      "repeat": {
+        "completed": 0,
+        "times": null
+      },
+      "schedule": {
+        "display": "0 10,18 * * *",
+        "expr": "0 10,18 * * *",
+        "kind": "cron"
+      },
+      "schedule_display": "0 10,18 * * *",
+      "script": "inbox_triage_wake_gate.py",
+      "skill": "personal-vault-ops",
+      "skills": [
+        "personal-vault-ops",
+        "inbox-triage-agent"
+      ],
+      "state": "paused"
     },
     {
+      "allowed_paths": [
+        "decisions/pending.md"
+      ],
+      "base_url": null,
+      "created_at": "2026-04-22T00:53:42.578179-05:00",
+      "deliver": "telegram:875925495",
+      "enabled": false,
       "id": "65b0c66d08ee",
+      "model": null,
       "name": "darwin-decision-reminders",
+      "ownership_timeout": 600,
       "prompt": "You are Darwin running Brayan's decision reminders cron agent. Read and follow `~/.hermes/agents/decision-reminders/prompt-template.md`; stable behavior lives in `~/.hermes/skills/automation-agents/decision-reminders-agent/SKILL.md`. Keep this cron prompt intentionally tiny so prompt changes are tracked in files.",
+      "provider": null,
+      "repeat": {
+        "completed": 0,
+        "times": null
+      },
+      "schedule": {
+        "display": "0 12,17 * * *",
+        "expr": "0 12,17 * * *",
+        "kind": "cron"
+      },
+      "schedule_display": "0 12,17 * * *",
+      "script": null,
+      "skill": "personal-vault-ops",
       "skills": [
         "personal-vault-ops",
         "decision-reminders-agent"
       ],
-      "skill": "personal-vault-ops",
-      "model": null,
-      "provider": null,
-      "base_url": null,
-      "script": null,
-      "schedule": {
-        "kind": "cron",
-        "expr": "0 12,17 * * *",
-        "display": "0 12,17 * * *"
-      },
-      "schedule_display": "0 12,17 * * *",
-      "repeat": {
-        "times": null,
-        "completed": 0
-      },
-      "enabled": true,
-      "state": "scheduled",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-04-22T00:53:42.578179-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
-      "deliver": "telegram:875925495",
-      "origin": null,
-      "failure_streak": 0,
-      "last_dispatch": {
-        "scheduled_at": "2026-09-08T17:00:00-05:00",
-        "dispatched_at": "2026-09-08T17:00:12.047153-05:00",
-        "lateness_seconds": 12.0,
-        "kind": "on_time"
-      }
+      "state": "paused"
     },
     {
+      "allowed_paths": [
+        "opportunities/",
+        "_meta/log.md"
+      ],
+      "base_url": null,
+      "created_at": "2026-04-23T17:09:24.387845-05:00",
+      "deliver": "telegram:875925495",
+      "enabled": false,
       "id": "edfaeb3aed5d",
+      "model": null,
       "name": "darwin-opportunity-preparation-agent",
+      "ownership_timeout": 1800,
       "prompt": "You are Darwin, Brayan's opportunity-preparation cron dispatcher reporter/fallback. The attached pre-run script `opportunity_preparation_ready_scan.py` is the primary dispatcher: it scans `~/personal_vault/opportunities/*/opportunity.md` for `status: preparation-ready` plus `automation_route: opportunity-preparation`, skips records with an existing `application/preparation-packet.md`, and launches up to three independent Hermes sessions using `personal-vault-ops` and `opportunity-preparation-agent`.\n\nYour job is fallback-only:\n- Read the script output injected into this cron run.\n- If `wakeAgent` is false and there are no errors, stay concise: report no action needed only if a response is required by the scheduler.\n- If errors occurred, diagnose the dispatcher/runtime issue and tell Brayan exactly what needs repair.\n- Do not process opportunities yourself in this parent cron session.\n- Do not submit applications, forms, public PRs/posts, grants, bounty reports, payments, or paid compute actions.\n\nRelevant files:\n- Workflow: `~/personal_vault/_meta/workflows/opportunities/opportunity-preparation-agent-automation.md`\n- Prompt template: `~/.hermes/agents/opportunity-preparation/prompt-template.md`\n- Skill: `~/.hermes/skills/automation-agents/opportunities/opportunity-preparation-agent/SKILL.md`\n- Script: `~/.hermes/scripts/opportunity_preparation_ready_scan.py`",
+      "provider": null,
+      "repeat": {
+        "completed": 0,
+        "times": null
+      },
+      "schedule": {
+        "display": "0 11 * * *",
+        "expr": "0 11 * * *",
+        "kind": "cron"
+      },
+      "schedule_display": "0 11 * * *",
+      "script": "opportunity_preparation_ready_scan.py",
+      "skill": "personal-vault-ops",
       "skills": [
         "personal-vault-ops",
         "opportunity-preparation-agent"
       ],
-      "skill": "personal-vault-ops",
-      "model": null,
-      "provider": null,
-      "base_url": null,
-      "script": "opportunity_preparation_ready_scan.py",
-      "schedule": {
-        "kind": "cron",
-        "expr": "0 11 * * *",
-        "display": "0 11 * * *"
-      },
-      "schedule_display": "0 11 * * *",
-      "repeat": {
-        "times": null,
-        "completed": 0
-      },
-      "enabled": false,
-      "state": "paused",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-04-23T17:09:24.387845-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
-      "deliver": "telegram:875925495",
-      "origin": null,
-      "failure_streak": 0,
-      "last_dispatch": {
-        "scheduled_at": "2026-09-08T11:00:00-05:00",
-        "dispatched_at": "2026-09-08T11:00:01.286819-05:00",
-        "lateness_seconds": 1.3,
-        "kind": "on_time"
-      }
+      "state": "paused"
     },
     {
-      "id": "92663af3d092",
-      "name": "hermes-upstream-rebase-ci",
-      "prompt": "You are Darwin running Brayan's Hermes upstream rebase CI exception handler. Read and follow `~/.hermes/agents/hermes-upstream-rebase-ci/prompt-template.md`; stable behavior lives in `~/.hermes/skills/automation-agents/hermes-upstream-rebase-ci-agent/SKILL.md`. The pre-run script is primary and should wake this prompt only on failure/action-needed. Do not schedule or modify cron jobs from this run.",
-      "skills": [
-        "hermes-agent",
-        "systematic-debugging",
-        "personal-vault-ops",
-        "hermes-upstream-rebase-ci-agent"
-      ],
-      "skill": "hermes-agent",
-      "model": null,
-      "provider": null,
       "base_url": null,
-      "script": "hermes_upstream_rebase_ci.py",
-      "schedule": {
-        "kind": "cron",
-        "expr": "30 9 * * *",
-        "display": "30 9 * * *"
-      },
-      "schedule_display": "30 9 * * *",
-      "repeat": {
-        "times": null,
-        "completed": 0
-      },
-      "enabled": true,
-      "state": "scheduled",
-      "paused_at": null,
-      "paused_reason": null,
       "created_at": "2026-04-23T19:47:02.706648-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
       "deliver": "local",
-      "origin": null,
+      "enabled": true,
       "enabled_toolsets": [
         "terminal",
         "file",
         "skills",
         "code_execution"
       ],
-      "failure_streak": 0,
-      "last_dispatch": {
-        "scheduled_at": "2026-09-09T09:30:00-05:00",
-        "dispatched_at": "2026-09-09T09:30:48.686427-05:00",
-        "lateness_seconds": 48.7,
-        "kind": "on_time"
-      }
-    },
-    {
-      "id": "84999fa7645a",
-      "name": "max-planck-cs-internship-2027-final-application-reminder",
-      "prompt": "Remind Brayan that the Max Planck CS Research Internships summer-cycle deadline is November 1 of the previous year. Context: vault note [[opportunities/2026-04-28-max-planck-cs-research-internships-2027/opportunity]]. Final checklist: CV, transcripts, at least one reference contact with prior permission, optional motivation letter, target faculty/research groups, intended internship period, and post-registration form inspection.",
-      "skills": [],
-      "skill": null,
+      "id": "92663af3d092",
       "model": null,
+      "name": "hermes-upstream-rebase-ci",
+      "prompt": "You are Darwin running Brayan's Hermes upstream rebase CI exception handler. Read and follow `~/.hermes/agents/hermes-upstream-rebase-ci/prompt-template.md`; stable behavior lives in `~/.hermes/skills/automation-agents/hermes-upstream-rebase-ci-agent/SKILL.md`. The pre-run script is primary and should wake this prompt only on failure/action-needed. Do not schedule or modify cron jobs from this run.",
       "provider": null,
-      "base_url": null,
-      "script": null,
-      "schedule": {
-        "kind": "once",
-        "run_at": "2026-10-15T09:00:00-05:00",
-        "display": "once at 2026-10-15 09:00"
-      },
-      "schedule_display": "once at 2026-10-15 09:00",
       "repeat": {
-        "times": 1,
-        "completed": 0
+        "completed": 0,
+        "times": null
       },
-      "enabled": true,
-      "state": "scheduled",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-04-28T18:25:02.228115-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
-      "deliver": "origin",
-      "origin": null,
-      "enabled_toolsets": [
-        "file"
-      ]
+      "schedule": {
+        "display": "30 9 * * *",
+        "expr": "30 9 * * *",
+        "kind": "cron"
+      },
+      "schedule_display": "30 9 * * *",
+      "script": "hermes_upstream_rebase_ci.py",
+      "skill": "hermes-agent",
+      "skills": [
+        "hermes-agent",
+        "systematic-debugging",
+        "personal-vault-ops",
+        "hermes-upstream-rebase-ci-agent"
+      ],
+      "state": "scheduled"
     },
     {
-      "id": "f5fc18167064",
-      "name": "fermi-summer-school-2027-cycle-check",
-      "prompt": "Remind Brayan to check whether the NASA/Fermi Summer School 2027 page/application is live. Context: vault note [[opportunities/2026-04-28-fermi-summer-school-2027-watch/opportunity]]. The 2026 deadline was February 6 and early applications were favored, especially for applicants needing a US visa. Check the new deadline, eligibility, fee/support, and whether Brayan has a credible physics/data-analysis statement or project before applying.",
-      "skills": [],
-      "skill": null,
-      "model": null,
-      "provider": null,
+      "allowed_paths": [
+        "_meta/audits/"
+      ],
       "base_url": null,
-      "script": null,
-      "schedule": {
-        "kind": "once",
-        "run_at": "2026-12-15T09:00:00-05:00",
-        "display": "once at 2026-12-15 09:00"
-      },
-      "schedule_display": "once at 2026-12-15 09:00",
-      "repeat": {
-        "times": 1,
-        "completed": 0
-      },
-      "enabled": true,
-      "state": "scheduled",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-04-28T18:25:19.559901-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
-      "deliver": "origin",
-      "origin": null,
+      "created_at": "2026-04-30T01:11:15.920109-05:00",
+      "deliver": "telegram:875925495",
+      "enabled": false,
       "enabled_toolsets": [
-        "file"
-      ]
-    },
-    {
+        "file",
+        "terminal"
+      ],
       "id": "ea904b1d1a01",
+      "model": null,
       "name": "vault-structure-auditor",
+      "ownership_timeout": 1200,
       "prompt": "You are Darwin running Brayan's weekly Vault v2 structure auditor. Read and follow `~/.hermes/agents/vault-structure-auditor/prompt-template.md` and the loaded `personal-vault-ops` + `vault-structure-auditor-agent` skills.\n\nA deterministic pre-run script (`vault_structure_audit.py`) has already executed and injected JSON context plus a report path. Treat that script output as the first-pass inventory, not the whole audit.\n\nYour task:\n1. Read the generated audit report under `~/personal_vault/_meta/audits/`.\n2. Use the script findings for counts, broken links, frontmatter errors, retired-path references, semantic location issues, and git status.\n3. Independently perform a systematic semantic organization pass: inspect suspicious filenames/titles and representative notes from every top-level folder; verify passive tool/resource catalogs live under `references/`; verify `inbox/` has no durable `_captures` store; verify true projects use `projects/<slug>/README.md`; verify opportunities use `opportunities/<slug>/opportunity.md` plus optional `application/` materials; verify workflows/guides/architecture remain under `_meta/`.\n4. If there are issues, send a concise Telegram report with exact patch proposal groups, affected paths, risk level, and recommended next action.\n5. Do not move/delete/archive notes or apply patches in this cron run. This weekly job is report-only unless Brayan later approves fixes interactively.\n6. Return `[SILENT]` if both the deterministic script and your semantic pass find no meaningful issue.",
+      "provider": null,
+      "repeat": {
+        "completed": 0,
+        "times": null
+      },
+      "schedule": {
+        "display": "0 10 * * 0",
+        "expr": "0 10 * * 0",
+        "kind": "cron"
+      },
+      "schedule_display": "0 10 * * 0",
+      "script": "vault_structure_audit.py",
+      "skill": "personal-vault-ops",
       "skills": [
         "personal-vault-ops",
         "vault-structure-auditor-agent"
       ],
-      "skill": "personal-vault-ops",
-      "model": null,
-      "provider": null,
+      "state": "paused"
+    },
+    {
+      "allowed_paths": [
+        "opportunities/",
+        "projects/",
+        "decisions/",
+        "_meta/log.md"
+      ],
       "base_url": null,
-      "script": "vault_structure_audit.py",
-      "schedule": {
-        "kind": "cron",
-        "expr": "0 10 * * 0",
-        "display": "0 10 * * 0"
-      },
-      "schedule_display": "0 10 * * 0",
-      "repeat": {
-        "times": null,
-        "completed": 0
-      },
-      "enabled": true,
-      "state": "scheduled",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-04-30T01:11:15.920109-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
+      "context_from": null,
+      "created_at": "2026-05-18T17:25:32.142018-05:00",
       "deliver": "telegram:875925495",
-      "origin": null,
+      "enabled": false,
       "enabled_toolsets": [
         "file",
         "terminal"
       ],
-      "failure_streak": 0,
-      "last_dispatch": {
-        "scheduled_at": "2026-09-06T10:00:00-05:00",
-        "dispatched_at": "2026-09-06T10:07:37.303934-05:00",
-        "lateness_seconds": 457.3,
-        "kind": "late"
-      }
-    },
-    {
       "id": "c77f4c0f5cd9",
+      "model": null,
       "name": "darwin-opportunity-closing-agent",
+      "no_agent": false,
+      "ownership_timeout": 1800,
       "prompt": "You are Darwin, Brayan's opportunity-closing cron dispatcher reporter/fallback.\n\nThe attached pre-run script `opportunity_closeout_scan.py` scans for live `opportunities/*/closeout-input.md` files and launches independent Hermes sessions for each selected closeout.\n\nIf the script output says `wakeAgent: false` or `ready_count: 0`, stay silent / provide no extra work.\n\nIf the script output reports launched sessions, errors, or non-launchable closeout inputs that need attention, summarize concisely for Brayan and diagnose only inside the opportunity closeout workflow boundary.\n\nDo not close opportunities directly in this parent cron session unless the dispatcher failed before launching and the fix is a trivial mechanical retry. The real closeout behavior belongs to independent sessions using `opportunity-closing-agent`.",
+      "provider": null,
+      "repeat": {
+        "completed": 0,
+        "times": null
+      },
+      "schedule": {
+        "display": "30 11 * * *",
+        "expr": "30 11 * * *",
+        "kind": "cron"
+      },
+      "schedule_display": "30 11 * * *",
+      "script": "opportunity_closeout_scan.py",
+      "skill": "personal-vault-ops",
       "skills": [
         "personal-vault-ops",
         "opportunity-closing-agent"
       ],
-      "skill": "personal-vault-ops",
-      "model": null,
-      "provider": null,
+      "state": "paused",
+      "workdir": null
+    },
+    {
+      "allowed_paths": [
+        "projects/",
+        "decisions/",
+        "_meta/log.md",
+        "_meta/audits/"
+      ],
       "base_url": null,
-      "script": "opportunity_closeout_scan.py",
-      "no_agent": false,
       "context_from": null,
-      "schedule": {
-        "kind": "cron",
-        "expr": "30 11 * * *",
-        "display": "30 11 * * *"
-      },
-      "schedule_display": "30 11 * * *",
-      "repeat": {
-        "times": null,
-        "completed": 0
-      },
-      "enabled": true,
-      "state": "scheduled",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-05-18T17:25:32.142018-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
+      "created_at": "2026-05-19T00:33:38.134150-05:00",
       "deliver": "telegram:875925495",
-      "origin": null,
+      "enabled": false,
       "enabled_toolsets": [
         "file",
         "terminal"
       ],
-      "workdir": null,
-      "failure_streak": 0,
-      "last_dispatch": {
-        "scheduled_at": "2026-09-08T11:30:00-05:00",
-        "dispatched_at": "2026-09-08T11:30:02.282573-05:00",
-        "lateness_seconds": 2.3,
-        "kind": "on_time"
-      }
-    },
-    {
       "id": "d93ad4e6be8b",
+      "model": null,
       "name": "darwin-project-management-agent",
+      "no_agent": false,
+      "ownership_timeout": 1800,
       "prompt": "You are Darwin, Brayan's project-management cron dispatcher reporter/fallback.\n\nThe attached pre-run script `project_review_scan.py` scans active/paused projects and external workspaces for due reviews, drift, pause/closeout/reopen signals, and launches independent project-management sessions when needed.\n\nIf the script output says `wakeAgent: false` or `ready_count: 0`, stay silent / provide no extra work.\n\nIf the script output reports launched sessions, errors, or non-launchable project signals that need attention, summarize concisely for Brayan and diagnose only inside the project-management workflow boundary.\n\nDo not manage projects directly in this parent cron session unless the dispatcher failed before launching and the fix is a trivial mechanical retry. The real behavior belongs to independent sessions using `personal-project-management`.",
+      "provider": null,
+      "repeat": {
+        "completed": 0,
+        "times": null
+      },
+      "schedule": {
+        "display": "45 11 * * *",
+        "expr": "45 11 * * *",
+        "kind": "cron"
+      },
+      "schedule_display": "45 11 * * *",
+      "script": "project_review_scan.py",
+      "skill": "personal-vault-ops",
       "skills": [
         "personal-vault-ops",
         "personal-project-management"
       ],
-      "skill": "personal-vault-ops",
+      "state": "paused",
+      "workdir": null
+    },
+    {
+      "id": "23993d912402",
+      "name": "darwin-vault-ownership-sync",
+      "prompt": "",
+      "skills": [],
+      "skill": null,
       "model": null,
       "provider": null,
+      "provider_snapshot": null,
+      "model_snapshot": null,
       "base_url": null,
-      "script": "project_review_scan.py",
-      "no_agent": false,
+      "script": "vault_contributions.py",
+      "no_agent": true,
+      "monitor_script": null,
+      "monitor_url": null,
+      "monitor_state": null,
       "context_from": null,
       "schedule": {
-        "kind": "cron",
-        "expr": "45 11 * * *",
-        "display": "45 11 * * *"
+        "kind": "interval",
+        "minutes": 60,
+        "display": "every 60m"
       },
-      "schedule_display": "45 11 * * *",
+      "schedule_display": "every 60m",
       "repeat": {
         "times": null,
         "completed": 0
       },
       "enabled": true,
       "state": "scheduled",
-      "paused_at": null,
-      "paused_reason": null,
-      "created_at": "2026-05-19T00:33:38.134150-05:00",
-      "next_run_at": null,
-      "last_run_at": null,
-      "last_status": null,
-      "last_error": null,
-      "last_delivery_error": null,
-      "deliver": "telegram:875925495",
-      "origin": null,
-      "enabled_toolsets": [
-        "file",
-        "terminal"
-      ],
+      "created_at": "2026-09-12T13:06:06.417077-05:00",
+      "last_delivery_unverified": null,
+      "deliver": "local",
+      "enabled_toolsets": null,
       "workdir": null,
-      "failure_streak": 0,
-      "last_dispatch": {
-        "scheduled_at": "2026-09-08T11:45:00-05:00",
-        "dispatched_at": "2026-09-08T11:45:02.840889-05:00",
-        "lateness_seconds": 2.8,
-        "kind": "on_time"
-      }
+      "failure_deliver": "telegram"
     }
   ]
 }

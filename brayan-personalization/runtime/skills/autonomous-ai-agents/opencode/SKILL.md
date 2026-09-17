@@ -24,7 +24,7 @@ Use [OpenCode](https://opencode.ai) as an autonomous coding worker orchestrated 
 
 ## Prerequisites
 
-- OpenCode installed: `npm i -g opencode-ai@latest` or `brew install anomalyco/tap/opencode`
+- Choose the major version explicitly: `opencode-ai@latest` installs v1; official v2 docs prescribe `npm install -g @opencode/cli` (https://opencode.ai/v2/docs/). Both expose `opencode`; inspect existing installation and Herdr plugin compatibility before replacing one with the other. Do not describe v1's `latest` tag as the latest major release.
 - Auth configured: `opencode auth login` or set provider env vars (OPENROUTER_API_KEY, etc.)
 - Verify: `opencode auth list` should show at least one provider
 - Git repository for code tasks (recommended)
