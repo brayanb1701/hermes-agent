@@ -186,6 +186,8 @@ Use `--format ansi` when colors and terminal styling are evidence. Otherwise use
 
 After that failed read, ask the agent to write its complete response as Markdown in a temporary directory and reply only with the file path, then read the file directly. Use this only as a fallback; do not request file output in the initial prompt.
 
+For OpenCode v2 installation/compatibility, read references/opencode-v2.md before reinstalling the bundled integration.
+
 ## Safety and coordination rules
 
 - Use `--no-focus` for background work unless the user asked to switch context.
