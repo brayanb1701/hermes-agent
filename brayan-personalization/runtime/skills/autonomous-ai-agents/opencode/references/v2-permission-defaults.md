@@ -1,0 +1,7 @@
+# Verify v2 permissions instead of inferring from actions
+
+Use `opencode debug config` to identify configuration sources and `opencode debug agents` to inspect the effective build agent permissions in the actual task directory. Filter JSON to the build entry before reporting. Uninitialized locations may return an empty list; retry an active location rather than concluding there are no agents.
+
+OpenCode v2.0.3 upstream packages/schema/src/agent.ts lines 46-51 defines wildcard allow, external_directory ask, read *.env / *.env.* ask, and *.env.example allow. packages/core/src/agent.ts adds external-directory allowances for shell outputs, tool outputs, OpenCode temp and config directories. Verified effective build permissions on Calcifer and DarkArmy match this base. It is not a dangerous-shell-command classifier; rm -rf inside the workspace can resolve allow. Default rule-engine fallback ask does not negate an existing wildcard allow.
+
+The local approval-review.js plugin now returns immediately unless event.effect is ask. Thus it reviews existing permission requests, not all shell commands. Config-forced printf ask tests establish routing only, not native risk detection. A real fresh interactive session without workspace config ran both printf and rm -rf on an authorized disposable fixture with no review entries. Preserve the distinction when explaining results. Do not add restrictions without user authorization.
