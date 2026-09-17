@@ -218,6 +218,14 @@ done
 
 When CI fails, diagnose and fix. This loop works with either auth method.
 
+### Fork CI diagnosis
+
+- Inspect hard-coded `runs-on` labels when fork jobs remain queued: upstream large-runner labels are not automatically available to a fork. Read job annotations to distinguish queue timeout from executed-test failure.
+- After a CI repair supersedes older PR branches, enumerate queued/in-progress runs across those exact branches and cancel obsolete runs, then read back their state. Per-ref concurrency does not cancel runs on a different branch; unserved runners can wait 24 hours and send delayed failure notifications after the replacement PR merged green. Compare notification run/head IDs and completion times before diagnosing a new regression; preserve completed failure history rather than deleting it to hide warnings.
+- For contributor attribution failures on non-main PRs, inspect the comparison baseline before bulk-mapping historical authors. Use the actual PR target (`github.base_ref`, passed through an environment variable) rather than a stale fork `origin/main`; verify newly introduced unmapped authors still fail using a real temporary git history and the exact workflow shell.
+- Resolve contributor identities through GitHub commit-author associations or original/salvage PR evidence, not display names or assumed email local parts. Case-only email filenames may collide across platforms and can even represent different identities; never force a duplicate or overwrite another contributor's mapping.
+- Keep local audit-helper behavior separate from the workflow: a helper hard-coded to `origin/main` can continue reporting historical failures after a correctly scoped PR check passes. Report that limitation rather than claiming a full history audit is clean.
+
 ### Step 1: Get Failure Details
 
 **With gh:**
@@ -280,6 +288,8 @@ When asked to auto-fix CI, follow this loop:
 6. Repeat if still failing (up to 3 attempts, then ask the user)
 
 ## 6. Merging
+
+When Brayan authorizes fixing, reviewing, and merging a PR, carry it through that lifecycle rather than stopping at an open PR. If CI outlasts the interactive work, use a real bounded background closeout operator with completion notification, exact PR/head/base scope, and merge authorization; verify it started and disclose pending status. Never imply an existing automatic job owns the PR unless that ownership was actually checked. Require current-head CI evidence and review before merging; absent branch protection is not permission to bypass failed checks.
 
 **With gh:**
 
