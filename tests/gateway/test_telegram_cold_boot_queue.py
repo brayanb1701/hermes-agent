@@ -1,7 +1,7 @@
 """Cold-boot pending-queue knob for the Telegram adapter.
 
-Contract: a cold boot drops Telegram's server-side pending updates unless
-``extra.drop_pending_on_cold_boot`` is false; a watcher reconnect always
+Contract: a cold boot preserves Telegram's server-side pending updates unless
+``extra.drop_pending_on_cold_boot`` is explicitly true; a watcher reconnect always
 preserves them. Conflict recovery is a separate path and is not covered here.
 """
 
@@ -35,13 +35,13 @@ async def _capture_drop_pending(adapter: TelegramAdapter, *, is_reconnect: bool)
 
 
 @pytest.mark.asyncio
-async def test_cold_boot_drops_queue_by_default():
-    """Default config: cold boot drops, reconnect preserves."""
+async def test_cold_boot_preserves_queue_by_default():
+    """Personalization default: both cold boot and reconnect preserve messages."""
     adapter = _make_adapter()
-    assert adapter._drop_pending_on_cold_boot is True
+    assert adapter._drop_pending_on_cold_boot is False
 
     cold = await _capture_drop_pending(adapter, is_reconnect=False)
-    assert cold["drop_pending_updates"] is True
+    assert cold["drop_pending_updates"] is False
 
     warm = await _capture_drop_pending(adapter, is_reconnect=True)
     assert warm["drop_pending_updates"] is False
@@ -56,6 +56,15 @@ async def test_cold_boot_preserves_queue_when_opted_out():
     cold = await _capture_drop_pending(adapter, is_reconnect=False)
     assert cold["drop_pending_updates"] is False
 
+    warm = await _capture_drop_pending(adapter, is_reconnect=True)
+    assert warm["drop_pending_updates"] is False
+
+
+@pytest.mark.asyncio
+async def test_cold_boot_drops_queue_only_when_explicitly_requested():
+    adapter = _make_adapter(extra={"drop_pending_on_cold_boot": True})
+    cold = await _capture_drop_pending(adapter, is_reconnect=False)
+    assert cold["drop_pending_updates"] is True
     warm = await _capture_drop_pending(adapter, is_reconnect=True)
     assert warm["drop_pending_updates"] is False
 
