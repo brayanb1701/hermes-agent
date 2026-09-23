@@ -95,6 +95,10 @@ Do not bypass finalizer refusals. The finalizer intentionally hard-codes repo, b
 
 ## Known conflict patterns
 
+- When upstream adds `_cold_boot_drop_pending` / `extra.drop_pending_on_cold_boot`, retain its shared polling/webhook policy and logging, but use a false default on the personalization branch so offline messages remain preserved. Test default preservation, explicit discard opt-in, and reconnect preservation; do not hard-code polling false while leaving the new setting ineffective. Run `test_telegram_cold_boot_queue.py` alongside connect/reconnect tests.
+- When gateway fallback imports change, preserve the current referenced upstream helper (for example `pre_agent_fallback_notice`) plus the Anything Inbox facade exports; do not restore an unused `get_fallback_chain` import just because an old personalization hunk contains it.
+- Treat a failed patch result as a hard stop before staging or continuing a rebase. Require a conflict-marker/diff check before `git add`; if markers were accidentally committed during replay, abort the isolated rebase and replay with the recorded good rerere resolutions rather than publishing broken intermediate history.
+
 - For banner update-branch conflicts, preserve both `_check_via_local_git(..., branch="main")` and upstream's config-isolated origin URL probe (`network=True`). Restrict the official-main SSH fast path to `branch == "main"`; keep both the real-git `insteadOf` regression and configured-branch tests.
 - When delegation description conflicts involve upstream dynamic delivery text, retain `{delivery}` in `_DESCRIPTION_HEAD` rather than hard-coding task/group wording. The existing builder hides group guidance when `independent_completions` is disabled. Preserve foreground-default semantics and the background `wait or poll` prohibition; run `test_delegate_group_schema.py` alongside the delegation suites after all rebase commits replay, since later description-shortening commits can silently replace the placeholder.
 
