@@ -79,6 +79,9 @@ def _validate_contract(
     if role not in {"owner", "contributor"}:
         _fail("ownership contract role must be 'owner' or 'contributor'")
 
+    wait = contract.get('owner_lock_wait_seconds', 300)
+    if type(wait) not in {int, float} or not 0 < wait <= 1200:
+        _fail('owner lock wait must be positive and at most 1200 seconds')
     normalized = dict(contract)
     for key in _PATH_FIELDS:
         value = contract.get(key)
@@ -160,7 +163,7 @@ def require_owner(contract):
 
 
 @contextlib.contextmanager
-def owner_lock(contract) -> Iterator[Path]:
+def owner_lock(contract, *, wait_seconds=None) -> Iterator[Path]:
     """Hold the non-blocking bounded owner lock for the complete write lifecycle.
 
     Contract validation happens before ``state_dir`` is created.  The lock is a
@@ -169,6 +172,9 @@ def owner_lock(contract) -> Iterator[Path]:
     acquisition.
     """
     normalized = require_owner(contract)
+    wait = LOCK_TIMEOUT_SECONDS if wait_seconds is None else wait_seconds
+    if type(wait) not in {int, float} or not 0 < wait <= 1200:
+        raise OwnershipError('owner lock wait must be positive and at most 1200 seconds')
     state_dir = Path(normalized["state_dir"])
     state_dir.mkdir(parents=True, exist_ok=True)
     lock_path = state_dir / LOCK_FILENAME
@@ -180,7 +186,7 @@ def owner_lock(contract) -> Iterator[Path]:
     handle = lock_path.open("a+", encoding="utf-8")
     acquired = False
     try:
-        deadline = time.monotonic() + LOCK_TIMEOUT_SECONDS
+        deadline = time.monotonic() + wait
         while True:
             try:
                 fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -189,7 +195,7 @@ def owner_lock(contract) -> Iterator[Path]:
             except BlockingIOError:
                 if time.monotonic() >= deadline:
                     raise OwnershipBusy(f"owner lock is busy: {lock_path}")
-                time.sleep(LOCK_POLL_SECONDS)
+                time.sleep(LOCK_POLL_SECONDS if wait_seconds is None else min(1.0, max(LOCK_POLL_SECONDS, wait / 100)))
         handle.seek(0)
         handle.truncate()
         handle.write(f"pid={os.getpid()} hostname={normalized['hostname']}\n")
