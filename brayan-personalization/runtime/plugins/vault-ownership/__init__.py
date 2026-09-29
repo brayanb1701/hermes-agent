@@ -317,13 +317,21 @@ def guard_tool(tool_name, args, session_id=None, **kwargs):
                 if tool_name == 'terminal':
                     return _terminal_directive(holder, args)
                 return {'action':'block', 'message':'Shared-kernel execute_code bypasses native process containment. Use a foreground terminal Python command instead.'}
-            command = args.get('command', args.get('code', ''))
+            command = args.get('command') or args.get('code') or ''
+            if not isinstance(command, str):
+                return {'action':'block', 'message':'Command content must be text.'}
+            workdir = args.get('workdir')
+            if workdir and any(Path(workdir).expanduser().resolve().is_relative_to(root) for root in roots):
+                return {'action':'block', 'message':'Use pinned file tools for canonical reads or an isolated contribution workspace for writes.'}
             if any(contract[key] in command for key in ('vault_path', 'repo_path', 'snapshot_root')):
                 return {'action':'block', 'message':'Use pinned file tools for canonical reads or an isolated contribution workspace for writes.'}
         paths = []
         if tool_name in {'write_file', 'patch'}:
             paths = [args.get('path', '')]
-            paths += re.findall(r'^\*\*\* (?:Update|Add|Delete) File: (.+)$', args.get('patch', ''), re.M)
+            patch_text = args.get('patch')
+            if patch_text is not None and not isinstance(patch_text, str):
+                return {'action':'block', 'message':'Patch content must be text.'}
+            paths += re.findall(r'^\*\*\* (?:Update|Add|Delete) File: (.+)$', patch_text or '', re.M)
         for value in paths:
             if not value:
                 continue
@@ -345,9 +353,9 @@ def guard_tool(tool_name, args, session_id=None, **kwargs):
                 if contract['role'] == 'contributor':
                     return {'action':'modify', 'args':{'path':str(_pin(contract, session_id) / path.relative_to(vault))}}
         return None
-    except Exception:
+    except Exception as exc:
         log.exception('Ownership file-tool validation failed')
-        return {'action':'block', 'message':'Ownership contract or pinned read validation failed. Repair the local contract before using this tool.'}
+        return {'action':'block', 'message':f'Ownership guard error ({type(exc).__name__}); see agent.log. No tool action was allowed.'}
 
 
 def end_session(session_id=None, **kwargs):

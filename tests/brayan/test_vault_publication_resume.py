@@ -84,7 +84,7 @@ def test_configured_lock_wait_survives_contention(tmp_path, runner):
     try:
         assert child.stdout.readline().strip() == 'locked'
         with owner_lock(cfg, wait_seconds=4):
-            assert child.poll() == 0
+            assert child.wait(timeout=2) == 0
     finally:
         if child.poll() is None:
             child.kill()
@@ -183,6 +183,29 @@ def test_publish_failure_preserves_report_in_failure_output(tmp_path, runner, mo
         runner.execute_job(cfg, {'id': marker['job'], 'allowed_paths': ['changed.txt']}, executor=execute)
     assert 'REPORT STILL AVAILABLE' in capsys.readouterr().out
     assert json.loads((state / 'pending-owner.json').read_text())['phase'] == 'publishing'
+
+
+@pytest.mark.parametrize('text', [None, '', '[CRON_FAILURE]', '[CRON_FAILURE]\nfailed', '[CRON_FAILURE]  \nfailed', '\n[CRON_FAILURE]\nfailed', 'quoted [CRON_FAILURE]', '[CRON_FAILURE] not standalone'])
+def test_declared_failure_matches_scheduler(tmp_path, runner, text):
+    from cron.scheduler import _cron_failure_marker_error
+    assert runner._declared_failure(text) == _cron_failure_marker_error(text)
+
+
+@pytest.mark.parametrize('changed', [False, True])
+def test_declared_failure_reports_failure_after_valid_publication(tmp_path, runner, capsys, changed):
+    cfg, repo, remote, state, root, run_dir, run, marker = publication(tmp_path, runner)
+    runner.reconcile_pending(cfg, run)
+    def execute(job, root, run_dir):
+        if changed:
+            (root / 'changed.txt').write_text('valid partial work')
+        return '[CRON_FAILURE]\nSome reviews failed\nUseful report'
+    with pytest.raises(runner.AgentDeclaredFailure, match='Agent declared failure after'):
+        runner.execute_job(cfg, {'id': marker['job'], 'allowed_paths': ['changed.txt']}, executor=execute)
+    assert '[CRON_FAILURE]' in capsys.readouterr().out
+    assert not (state / 'pending-owner.json').exists()
+    assert git(repo, 'rev-parse', 'HEAD').stdout.strip() == git(repo, 'ls-remote', str(remote), 'refs/heads/main').stdout.split()[0]
+    if changed:
+        assert (repo / 'changed.txt').read_text() == 'valid partial work'
 
 
 @pytest.mark.parametrize('value', ['300', True, -1, 1201])

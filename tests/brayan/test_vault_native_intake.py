@@ -72,6 +72,34 @@ async def test_failed_native_turn_preserved_and_does_not_publish(tmp_path,monkey
             pytest.fail('Pending work was swept')
 
 
+@pytest.mark.parametrize('canonical', [False, True])
+def test_replace_patch_with_null_patch_payload(tmp_path, monkeypatch, canonical):
+    plugin, cfg, repo, remote, event, gateway = setup(tmp_path, monkeypatch)
+    path = repo / 'README.md' if canonical else Path(cfg['state_dir']) / 'worktrees' / 'job' / 'run' / 'README.md'
+    result = plugin.guard_tool('patch', {'mode': 'replace', 'path': str(path),
+        'old_string': 'old', 'new_string': 'new', 'patch': None, 'replace_all': False})
+    if canonical:
+        assert result['action'] == 'block'
+        assert 'read-only' in result['message']
+    else:
+        assert result is None
+
+
+@pytest.mark.parametrize('args', [
+    {'command': None, 'code': None},
+    {'command': 'true'},
+])
+def test_nullable_terminal_content_allowed_outside_vault(tmp_path, monkeypatch, args):
+    plugin, cfg, repo, remote, event, gateway = setup(tmp_path, monkeypatch)
+    assert plugin.guard_tool('terminal', args) is None
+    assert plugin.guard_tool('terminal', dict(args, workdir=str(repo)))['action'] == 'block'
+
+
+def test_nontext_patch_payload_fails_closed(tmp_path, monkeypatch):
+    plugin, cfg, repo, remote, event, gateway = setup(tmp_path, monkeypatch)
+    assert plugin.guard_tool('patch', {'path':str(tmp_path/'safe.md'), 'patch':42})['action'] == 'block'
+
+
 def test_contributor_file_reads_pin_real_snapshot_once(tmp_path,monkeypatch):
     plugin,cfg,repo,remote,event,gateway=setup(tmp_path,monkeypatch)
     import vault_contributions as vc
