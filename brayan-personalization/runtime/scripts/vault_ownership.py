@@ -26,11 +26,35 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from vault_ownership_common import OwnershipError, load_contract, owner_lock, require_owner
 
 
-def git(root, *args):
-    result = subprocess.run(['git', *args], cwd=root, text=True, capture_output=True)
-    if result.returncode:
-        raise OwnershipError(f'Git operation failed: {args[0]}: {result.stderr.strip()}')
-    return result.stdout.strip()
+def git(root, *args, network_timeout=120):
+    network = args and args[0] in {'fetch', 'push', 'ls-remote'}
+    env = dict(os.environ, GIT_TERMINAL_PROMPT='0')
+    if network and 'GIT_SSH_COMMAND' not in env:
+        try:
+            configured = subprocess.run(['git', 'config', '--get', 'core.sshCommand'],
+                                        cwd=root, text=True, capture_output=True, timeout=10)
+        except subprocess.TimeoutExpired as exc:
+            raise OwnershipError('Git configuration probe timed out') from exc
+        if not configured.stdout.strip():
+            env['GIT_SSH_COMMAND'] = 'ssh -o BatchMode=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=2'
+    proc = subprocess.Popen(['git', *args], cwd=root, text=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            start_new_session=True, env=env)
+    try:
+        output, error = proc.communicate(timeout=network_timeout if network else 120)
+    except subprocess.TimeoutExpired as exc:
+        with contextlib.suppress(ProcessLookupError):
+            os.killpg(proc.pid, signal.SIGKILL)
+        try:
+            proc.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.stdout.close()
+            proc.stderr.close()
+            proc.wait(timeout=5)
+        raise OwnershipError(f'Git operation timed out: {args[0]}') from exc
+    if proc.returncode:
+        raise OwnershipError(f'Git operation failed: {args[0]}: {error.strip()}')
+    return output.strip()
 
 
 def _fsync_directory(path):
@@ -111,13 +135,22 @@ def _worktree_heads(repo):
     return worktrees
 
 
-def _root_aware_processes(root, worker_identity=None, *, not_before):
+def _root_aware_processes(root, worker_identity=None, *, not_before, publication=False, inspect_environment=False):
     import psutil
 
     root = Path(root)
     uid = os.getuid()
     if not isinstance(not_before, (int, float)) or isinstance(not_before, bool) or not_before <= 0:
         raise OwnershipError('Process scan boundary is malformed')
+    rebooted = False
+    if publication:
+        # Only immutable, successful publication recovery may use this lineage
+        # proof. A prior-kernel worker cannot have surviving descendants. Still
+        # reject positive root evidence, and keep mutable failed archives strict.
+        try:
+            rebooted = psutil.boot_time() > not_before + 60.0
+        except (psutil.Error, OSError):
+            pass
     worker_pid = worker_identity and worker_identity.get('pid')
     worker_created = worker_identity and worker_identity.get('created')
     if (type(worker_pid) is int and worker_pid > 0
@@ -184,9 +217,17 @@ def _root_aware_processes(root, worker_identity=None, *, not_before):
                 if candidate.startswith('/') and under(Path(candidate)):
                     rooted = True
                     break
+        if inspect_environment:
+            try:
+                inherited = process.environ().get('HERMES_VAULT_ROOT')
+                rooted = rooted or bool(inherited and under(Path(inherited)))
+            except psutil.NoSuchProcess:
+                continue
+            except (psutil.Error, OSError) as exc:
+                access_errors.append(exc)
         if rooted:
             matches.append(process.pid)
-        elif access_errors and not preexisting:
+        elif access_errors and not preexisting and not rebooted:
             # A process created during this owner run is a possible escaped
             # descendant; missing either identity surface is a hard refusal.
             raise OwnershipError('Unable to fully inspect a candidate same-user process')
@@ -315,8 +356,8 @@ def _validate_pending(contract, marker, expected_run=None, *, legacy=False):
 
 
 def _changed_entries(root):
-    staged = set(filter(None, git(root, 'diff', '--cached', '--name-only', '-z', 'HEAD').split('\0')))
-    unstaged = set(filter(None, git(root, 'diff', '--name-only', '-z').split('\0')))
+    staged = set(filter(None, git(root, 'diff', '--cached', '--name-only', '--no-renames', '-z', 'HEAD').split('\0')))
+    unstaged = set(filter(None, git(root, 'diff', '--name-only', '--no-renames', '-z').split('\0')))
     untracked = set(filter(None, git(root, 'ls-files', '--others', '--exclude-standard', '-z').split('\0')))
     entries = []
     for name in sorted(staged | unstaged | untracked):
@@ -378,7 +419,7 @@ def _safe_archive_artifact(archive, name):
     return path
 
 
-def _archive_snapshot(state, marker_path, marker, run_id, root, run_dir, base):
+def _archive_snapshot(state, marker_path, marker, run_id, root, run_dir, base, *, extra_artifacts=None, kind='failed-owner-job'):
     failed = state / 'failed'
     _assert_no_symlink_components(failed, state)
     failed.mkdir(parents=True, exist_ok=True)
@@ -386,12 +427,13 @@ def _archive_snapshot(state, marker_path, marker, run_id, root, run_dir, base):
     archive = failed / run_id
     _assert_no_symlink_components(archive, state)
     entries, material = _archive_material(root, run_dir, marker_path)
+    material.update(extra_artifacts or {})
     expected_hashes = {name: _sha256(data) for name, data in material.items()}
 
     if archive.exists():
         _assert_no_symlink_components(archive, state)
         manifest = _read_json(archive / 'manifest.json', 'failed-run manifest')
-        if (manifest.get('complete') is not True or manifest.get('run') != run_id
+        if (manifest.get('complete') is not True or manifest.get('kind') != kind or manifest.get('run') != run_id
                 or manifest.get('base') != base or manifest.get('root') != str(root)
                 or manifest.get('entries') != entries
                 or manifest.get('artifacts') != expected_hashes):
@@ -425,12 +467,13 @@ def _archive_snapshot(state, marker_path, marker, run_id, root, run_dir, base):
                 raise OwnershipError(f'Archive source mutated while copying: {name}')
         # Re-read every source after copying so changes between enumeration and completion fail closed.
         current_entries, current_material = _archive_material(root, run_dir, marker_path)
+        current_material.update(extra_artifacts or {})
         if current_entries != entries or {
             name: _sha256(data) for name, data in current_material.items()
         } != expected_hashes:
             raise OwnershipError('Failed-run evidence mutated while archiving')
         manifest = {
-            'version': 1, 'kind': 'failed-owner-job', 'complete': True,
+            'version': 1, 'kind': kind, 'complete': True,
             'run': run_id, 'root': str(root), 'base': base,
             'entries': entries, 'artifacts': expected_hashes,
         }
@@ -441,6 +484,119 @@ def _archive_snapshot(state, marker_path, marker, run_id, root, run_dir, base):
         shutil.rmtree(temporary, ignore_errors=True)
         raise
     return archive
+
+
+def _remote_head(repo, contract):
+    ref = f"refs/heads/{contract['branch']}"
+    lines = git(repo, 'ls-remote', contract['remote'], ref).splitlines()
+    heads = [fields[0] for line in lines if len(fields := line.split()) == 2 and fields[1] == ref]
+    if len(heads) != 1 or not re.fullmatch(r'[0-9a-f]{40}|[0-9a-f]{64}', heads[0]):
+        raise OwnershipError('Published branch missing or ambiguous')
+    return heads[0]
+
+
+def _owner_commit_message(job, contract, run, base):
+    return (f"Managed vault job {job}\n\nVault-Ownership-Job: {job}\n"
+            f"Source-Host: {contract['hostname']}\nSession: {run}\nBase-SHA: {base}")
+
+
+def _check_scope(names, allowed_paths):
+    validate_allowed_paths(allowed_paths)
+    for name in names:
+        if not any(name == p.rstrip('/') or (p.endswith('/') and name.startswith(p)) for p in allowed_paths):
+            raise OwnershipError(f'Out-of-scope change: {name}')
+
+
+def _recover_publication(contract, marker, identity):
+    run, job, root, run_dir, base, worker, phase, started = identity
+    state, repo = Path(contract['state_dir']), Path(contract['repo_path'])
+    head = marker.get('head')
+    if not isinstance(head, str) or not re.fullmatch(r'[0-9a-f]{40}|[0-9a-f]{64}', head):
+        raise OwnershipError('Publication head is malformed')
+    receipt = _validate_receipt(run_dir, legacy=False)
+    if receipt['success'] is not True or receipt.get('error') is not None:
+        raise OwnershipError('Publication receipt does not prove successful execution')
+    if _read_json(run_dir / 'job.json', 'native job')['id'] != job:
+        raise OwnershipError('Native job identity differs from publication intent')
+    policy = contract.get('managed_jobs', {}).get(job, {}).get('allowed_paths')
+    if policy != marker['intent']['allowed_paths']:
+        raise OwnershipError('Current job scope differs from publication intent')
+    _root_aware_processes(root, worker, not_before=started, publication=True)
+    if git(repo, 'symbolic-ref', 'HEAD') != f"refs/heads/{contract['branch']}":
+        raise OwnershipError('Canonical checkout is on the wrong branch')
+    if git(repo, 'status', '--porcelain=v1', '-uall') or git(root, 'status', '--porcelain=v1', '-uall'):
+        raise OwnershipError('Publication recovery requires clean checkouts')
+    canonical = git(repo, 'rev-parse', 'HEAD')
+    if canonical not in {base, head}:
+        raise OwnershipError('Canonical checkout changed since publication intent')
+    if git(root, 'rev-parse', 'HEAD') != head or _worktree_heads(repo).get(str(root)) != head:
+        raise OwnershipError('Publication worktree identity differs from intent')
+    if git(root, 'rev-list', '--parents', '-n1', head).split() != [head, base]:
+        raise OwnershipError('Publication must be exactly one non-merge commit from base')
+    if git(root, 'log', '-1', '--format=%B', head) != _owner_commit_message(job, contract, run, base):
+        raise OwnershipError('Publication commit message differs from recorded run')
+    names = list(filter(None, git(root, 'diff', '--name-only', '--no-renames', '-z', base, head).split('\0')))
+    _check_scope(names, policy)
+    for record in filter(None, git(root, 'ls-tree', '-r', '-z', head).split('\0')):
+        metadata, name = record.split('\t', 1)
+        if name in names and metadata.split()[0] not in {'100644', '100755'}:
+            raise OwnershipError(f'Unsafe committed output mode: {name}')
+    remote = _remote_head(repo, contract)
+    if remote not in {base, head} or (phase == 'integrating' and remote != head):
+        raise OwnershipError(f'Publication recovery refused: recorded_head={head} remote_head={remote}')
+    if canonical == head and remote == base:
+        raise OwnershipError('Canonical integration precedes verified publication')
+    pin = f'refs/vault-ownership/runs/{run}'
+    existing = git(repo, 'for-each-ref', '--format=%(objectname)', pin)
+    if existing and existing != head:
+        raise OwnershipError('Recovery pin differs from recorded publication')
+    if not existing:
+        git(repo, 'update-ref', pin, head, '0' * len(head))
+    archive = state / 'recovered' / run
+    _assert_no_symlink_components(archive, state)
+    archive.mkdir(parents=True, exist_ok=True)
+    original = archive / 'publication-intent.json'
+    if original.exists():
+        saved = _read_json(original, 'archived publication intent')
+        if any(saved.get(key) != marker.get(key) for key in ('run', 'job', 'base', 'head', 'intent', 'root')):
+            raise OwnershipError('Archived publication identity differs')
+    else:
+        _atomic_write_json(original, marker)
+    bundle = archive / 'commit.bundle'
+    if bundle.exists():
+        advertised = git(repo, 'bundle', 'list-heads', str(bundle)).split()
+        if not advertised or advertised[0] != head:
+            raise OwnershipError('Recovery bundle differs from recorded head')
+        git(repo, 'bundle', 'verify', str(bundle))
+    else:
+        temporary = archive / f'commit.{uuid.uuid4().hex}.bundle.tmp'
+        git(repo, 'bundle', 'create', str(temporary), f'{base}..{pin}')
+        git(repo, 'bundle', 'verify', str(temporary))
+        _write_bytes(bundle, temporary.read_bytes())
+        temporary.unlink()
+    for source in sorted(run_dir.rglob('*')):
+        _assert_no_symlink_components(source, run_dir)
+        if source.is_file():
+            destination = archive / 'run' / source.relative_to(run_dir)
+            _assert_no_symlink_components(destination, archive)
+            if destination.exists() and destination.read_bytes() != source.read_bytes():
+                raise OwnershipError('Archived run evidence differs')
+            _write_bytes(destination, source.read_bytes())
+    if remote == base:
+        if publish(root, contract, base) != head:
+            raise OwnershipError('Recovered publication differs from intent')
+    marker = _marker_phase(state / 'pending-owner.json', marker, 'integrating', remote_head=head)
+    if _remote_head(repo, contract) != head:
+        raise OwnershipError('Remote changed before recovery integration')
+    if canonical == base:
+        git(repo, 'merge', '--ff-only', head)
+    if git(repo, 'rev-parse', 'HEAD') != head or _remote_head(repo, contract) != head:
+        raise OwnershipError('Recovery integration could not be verified')
+    _atomic_write_json(archive / 'result.json', {'status': 'recovered', 'run': run, 'head': head})
+    os.replace(state / 'pending-owner.json', archive / 'pending-owner.json')
+    _fsync_directory(archive)
+    _fsync_directory(state)
+    return {'status': 'recovered', 'run': run, 'head': head, 'archive': str(archive)}
 
 
 def _reconcile_locked(contract, *, expected_run=None, legacy=False):
@@ -454,6 +610,9 @@ def _reconcile_locked(contract, *, expected_run=None, legacy=False):
     run_id, _job, root, run_dir, base, worker_identity, phase, not_before = _validate_pending(
         contract, marker, expected_run, legacy=legacy
     )
+    if not legacy and phase in {'publishing', 'integrating'}:
+        return _recover_publication(contract, marker, (
+            run_id, _job, root, run_dir, base, worker_identity, phase, not_before))
     if not legacy and phase not in {'prepared', 'executing', 'validating'}:
         recorded_head = marker.get('head')
         if phase in {'publishing', 'integrating'} and (
@@ -489,6 +648,45 @@ def _reconcile_locked(contract, *, expected_run=None, legacy=False):
     return {'status': 'archived', 'run': run_id, 'phase': phase, 'archive': str(archive)}
 
 
+def abandon_incomplete(contract, run):
+    """Explicit operator recovery only; preserve unknown completion, never publish."""
+    require_owner(contract)
+    if not isinstance(run, str) or not re.fullmatch(r'[0-9a-f]{32}', run):
+        raise OwnershipError('Requested abandonment run is malformed')
+    with owner_lock(contract):
+        state, repo = Path(contract['state_dir']), Path(contract['repo_path'])
+        pending = state / 'pending-owner.json'
+        if pending.is_symlink():
+            raise OwnershipError('Pending marker symlink refused')
+        marker = _read_json(pending, 'pending owner marker')
+        identity = _validate_pending(contract, marker, run)
+        _, job, root, run_dir, base, worker, phase, started = identity
+        if phase not in {'prepared', 'executing'}:
+            raise OwnershipError('Only incomplete pre-validation runs can be abandoned')
+        if (run_dir / 'result.json').exists() or (run_dir / 'result.json').is_symlink():
+            raise OwnershipError('Completion receipt exists; use normal reconciliation')
+        _root_aware_processes(root, worker, not_before=started, inspect_environment=True)
+        if git(repo, 'symbolic-ref', 'HEAD') != f"refs/heads/{contract['branch']}":
+            raise OwnershipError('Canonical checkout is on wrong branch')
+        if git(repo, 'status', '--porcelain=v1', '-uall') or git(repo, 'rev-parse', 'HEAD') != base:
+            raise OwnershipError('Canonical checkout differs from clean recorded base')
+        if _remote_head(repo, contract) != base:
+            raise OwnershipError('Remote differs from recorded base')
+        if git(root, 'rev-parse', 'HEAD') != base or _worktree_heads(repo).get(str(root)) != base:
+            raise OwnershipError('Incomplete worktree differs from recorded base')
+        record = {'status': 'incomplete-abandoned', 'receipt': 'missing',
+                  'kernel_cleanup': 'unknown', 'descendant_cleanup': 'unknown',
+                  'worker': dict(worker, observed='absent'), 'phase': phase,
+                  'run': run, 'job': job, 'base': base}
+        archive = _archive_snapshot(state, pending, marker, run, root, run_dir, base,
+            extra_artifacts={'abandonment.json': (json.dumps(record, sort_keys=True, indent=2) + '\n').encode()},
+            kind='abandoned-owner-job')
+        os.replace(pending, archive / 'pending-owner.json')
+        _fsync_directory(archive)
+        _fsync_directory(state)
+        return {'status': 'abandoned', 'run': run, 'archive': str(archive)}
+
+
 def reconcile_pending(contract, run_id=None, *, legacy=False):
     require_owner(contract)
     if run_id is not None and not re.fullmatch(r'[0-9a-f]{32}', run_id):
@@ -517,10 +715,9 @@ def validate_allowed_paths(allowed_paths):
 def validate_diff(root, allowed_paths):
     validate_allowed_paths(allowed_paths)
     git(root, 'add', '--all')
-    names = git(root, 'diff', '--cached', '--name-only', '-z').split('\0')
+    names = git(root, 'diff', '--cached', '--name-only', '--no-renames', '-z').split('\0')
+    _check_scope(list(filter(None, names)), allowed_paths)
     for name in filter(None, names):
-        if not any(name == p.rstrip('/') or (p.endswith('/') and name.startswith(p)) for p in allowed_paths):
-            raise OwnershipError(f'Out-of-scope change: {name}')
         path = Path(root) / name
         if path.is_symlink():
             raise OwnershipError(f'Symlink output refused: {name}')
@@ -536,7 +733,7 @@ def publish(root, contract, base):
     git(root, 'merge-base', '--is-ancestor', base, head)
     ref = f"refs/heads/{contract['branch']}"
     git(root, 'push', f'--force-with-lease={ref}:{base}', contract['remote'], f'{head}:{ref}')
-    actual = git(root, 'ls-remote', contract['remote'], ref).split()[0]
+    actual = _remote_head(root, contract)
     if actual != head:
         raise OwnershipError('Published head could not be verified')
     return head
@@ -707,7 +904,7 @@ def execute_job(contract, job, *, executor=native_execute):
         raise OwnershipError('Invalid job identifier')
     state, repo = Path(contract['state_dir']), Path(contract['repo_path'])
     require_writable_canonical(repo)
-    with owner_lock(contract):
+    with owner_lock(contract, wait_seconds=contract.get('owner_lock_wait_seconds', 300)):
         pending = state / 'pending-owner.json'
         if pending.is_symlink():
             raise OwnershipError(f'Active pending-owner marker symlink refused: {pending}')
@@ -764,18 +961,24 @@ def execute_job(contract, job, *, executor=native_execute):
             except Exception as recovery_error:
                 print(f'Failed run retained for explicit reconciliation: {recovery_error}', file=sys.stderr)
             raise
-        if names:
-            marker = _marker_phase(pending, marker, 'committing')
-            git(root, 'commit', '-m', f"Managed vault job {job_id}\n\nVault-Ownership-Job: {job_id}\n"
-                f"Source-Host: {contract['hostname']}\nSession: {run_id}\nBase-SHA: {base}")
-            head = git(root, 'rev-parse', 'HEAD')
-            marker = _marker_phase(pending, marker, 'publishing', head=head)
-            published = publish(root, contract, base)
-            marker = _marker_phase(pending, marker, 'integrating', head=published,
-                                   remote_head=published)
-            git(repo, 'merge', '--ff-only', published)
-        pending.unlink()  # Verified publication/no-change success precedes housekeeping.
-        _fsync_directory(state)
+        try:
+            if names:
+                marker = _marker_phase(pending, marker, 'committing')
+                git(root, 'commit', '-m', _owner_commit_message(job_id, contract, run_id, base))
+                head = git(root, 'rev-parse', 'HEAD')
+                marker = _marker_phase(pending, marker, 'publishing', head=head)
+                published = publish(root, contract, base)
+                marker = _marker_phase(pending, marker, 'integrating', head=published,
+                                       remote_head=published)
+                git(repo, 'merge', '--ff-only', published)
+            pending.unlink()  # Verified publication/no-change success precedes housekeeping.
+            _fsync_directory(state)
+        except BaseException:
+            # The scheduler includes stdout in script-failure reports. Preserve
+            # useful agent output while clearly retaining the publication error.
+            if response:
+                print(response, flush=True)
+            raise
         try:
             git(repo, 'worktree', 'remove', str(root))
         except OwnershipError as exc:
@@ -790,6 +993,7 @@ def main():
     parser.add_argument('job_id', nargs='?')
     parser.add_argument('--native', nargs=2, metavar=('JOB', 'RECEIPT'))
     recovery = parser.add_mutually_exclusive_group()
+    recovery.add_argument('--abandon-incomplete', metavar='RUN_ID')
     recovery.add_argument('--reconcile', metavar='RUN_ID')
     recovery.add_argument('--reconcile-legacy', metavar='RUN_ID')
     args = parser.parse_args()
@@ -797,6 +1001,9 @@ def main():
     require_owner(contract)
     if args.native:
         return _native_worker(*args.native)
+    if args.abandon_incomplete:
+        print(json.dumps(abandon_incomplete(contract, args.abandon_incomplete), sort_keys=True))
+        return 0
     if args.reconcile or args.reconcile_legacy:
         result = reconcile_pending(contract, args.reconcile or args.reconcile_legacy,
                                    legacy=bool(args.reconcile_legacy))
