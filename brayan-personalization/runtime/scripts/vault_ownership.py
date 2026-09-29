@@ -896,6 +896,18 @@ def require_writable_canonical(root):
         raise OwnershipError('Canonical owner checkout must remain writable; only contributor snapshots are read-only')
 
 
+def _declared_failure(response):
+    """Match the scheduler's standalone first-line marker without heavy imports."""
+    lines = (response or '').splitlines()
+    if not lines or lines[0].rstrip() != '[CRON_FAILURE]':
+        return None
+    return '\n'.join(lines[1:]).strip() or 'Cron agent reported failure.'
+
+
+class AgentDeclaredFailure(Exception):
+    """Semantic job failure after validated work has been preserved/published."""
+
+
 def execute_job(contract, job, *, executor=native_execute):
     require_owner(contract)
     validate_allowed_paths(job.get('allowed_paths'))
@@ -985,6 +997,11 @@ def execute_job(contract, job, *, executor=native_execute):
             print(f'Published run retained for cleanup: {root}: {exc}', file=sys.stderr)
         with contextlib.suppress(OSError):
             root.parent.rmdir()
+        declared_failure = _declared_failure(response)
+        if declared_failure:
+            print(response, flush=True)
+            disposition = f'publishing {published}' if names else 'a verified no-change run'
+            raise AgentDeclaredFailure(f'Agent declared failure after {disposition}')
         return response
 
 
@@ -1021,6 +1038,9 @@ def main():
 if __name__ == '__main__':
     try:
         raise SystemExit(main())
+    except AgentDeclaredFailure as exc:
+        print(str(exc), file=sys.stderr)
+        raise SystemExit(1)
     except Exception as exc:
         print(f'Ownership operation refused: {exc}', file=sys.stderr)
         raise SystemExit(1)
