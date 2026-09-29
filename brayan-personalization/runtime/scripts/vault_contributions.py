@@ -1269,8 +1269,21 @@ def list_pending_reviews(contract: Mapping[str, Any], *, runner: Runner = _run) 
 def process_pending_reviews(contract, *, runner=_run, limit=2):
     """Wake-free poller: review/integrate routine contributions; cache exact-artifact rejections."""
     require_owner(contract)
-    if (_path(contract, "state_dir") / "pending-owner.json").exists():
-        raise ReviewError("unfinished owner writer requires recorded-intent recovery")
+    marker_path = _path(contract, "state_dir") / "pending-owner.json"
+    if marker_path.exists() or marker_path.is_symlink():
+        # Resolve under the same writer lock; never reacquire it from inside a writer.
+        from vault_ownership import _reconcile_locked
+        try:
+            with owner_lock(contract):
+                if marker_path.is_symlink():
+                    raise ReviewError("pending owner marker symlink refused")
+                if marker_path.exists():
+                    marker = _read_json(marker_path, label="pending owner marker")
+                    if marker.get("kind") != "owner-job" or marker.get("phase") not in {"publishing", "integrating"}:
+                        raise ReviewError("unfinished owner writer requires recorded-intent recovery")
+                    _reconcile_locked(contract)
+        except _common_module().OwnershipBusy:
+            return {"processed": [], "wakeAgent": False, "status": "writer-busy"}
     pending = list_pending_reviews(contract, runner=runner)
     if len(pending) >= 1000:
         raise ReviewError("PR listing reached its explicit limit; refusing incomplete enumeration")

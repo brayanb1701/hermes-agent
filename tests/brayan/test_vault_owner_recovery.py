@@ -81,8 +81,8 @@ def failed_state(tmp_path, runner, *, phase="executing", legacy=False):
         ("unknown-survivors", "zero-survivor"),
         ("positive-survivors", "zero-survivor"),
         ("kernel-error", "kernel cleanup"),
-        ("publishing", "not safe"),
-        ("integrating", "not safe"),
+        ("publishing", "successful execution"),
+        ("integrating", "successful execution"),
         ("committing", "not safe"),
     ],
 )
@@ -113,7 +113,7 @@ def test_reconcile_refuses_unproven_completion_and_ambiguous_phases(tmp_path, ru
 
     with pytest.raises(runner.OwnershipError, match=expected) as caught:
         runner.reconcile_pending(cfg, run_id)
-    if mutation in {"publishing", "integrating", "committing"}:
+    if mutation == "committing":
         assert "remote_head=" in str(caught.value)
     assert (state / "pending-owner.json").exists()
     assert not (state / "failed" / run_id).exists()
