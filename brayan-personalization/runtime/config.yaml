@@ -1,5 +1,5 @@
 model:
-  default: gpt-6-astra
+  default: gpt-6.1-sol
   provider: openai-codex
   base_url: https://chatgpt.com/backend-api/codex
   context_length: 256000
