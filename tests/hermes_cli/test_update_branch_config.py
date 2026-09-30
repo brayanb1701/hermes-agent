@@ -3,6 +3,9 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 
+# Process boot must finish at collection, before test-time home I/O guards.
+import hermes_cli.main  # noqa: F401
+
 
 def test_update_branch_uses_config_when_cli_flag_is_absent():
     from hermes_cli.main import _resolve_update_branch

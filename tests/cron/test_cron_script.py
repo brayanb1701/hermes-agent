@@ -23,6 +23,9 @@ import pytest
 # Ensure project root is importable
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+# Process boot must finish at collection, before test-time home I/O guards.
+import run_agent  # noqa: F401
+
 
 @pytest.fixture
 def cron_env(tmp_path, monkeypatch):
