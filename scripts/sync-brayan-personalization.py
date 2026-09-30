@@ -53,6 +53,7 @@ IGNORE_DIR_NAMES = {
     ".ruff_cache",
     ".git",
     ".hub",  # skills hub cache/state, not Brayan-authored behavior
+    ".locks",  # skill mutation locks are process-local runtime state
     "output",  # cron outputs
 }
 IGNORE_FILE_SUFFIXES = {".pyc", ".pyo", ".log", ".tmp", ".swp"}
