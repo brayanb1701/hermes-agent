@@ -45,7 +45,7 @@ For any project-management session:
 2. Read the assigned project README before touching any other project file.
 3. Load the relevant internal reference below with `skill_view(name="personal-project-management", file_path="references/<file>.md")`.
 4. If the project is active or workspace-related, inspect `PROJECT_STATUS.md` and `PROJECT_CHANGELOG.md` after the vault README.
-5. Keep every state transition synchronized across README, dashboard/backlog/finished, workspace control files, and final closeout/decision surfaces.
+5. Keep every authorized state transition synchronized across README, dashboard/backlog/finished, workspace control files, and final closeout/decision surfaces. Managed review sessions may write only within their ownership root: external workspace controls are read-only inputs, not permission to perform a cross-workspace repair or lifecycle transition.
 
 ## Internal references
 
@@ -132,6 +132,8 @@ Before finishing a project-management change:
 - Dashboard/backlog/finished membership matches status exactly.
 - Active projects have workspace, `PROJECT_STATUS.md`, and `PROJECT_CHANGELOG.md`.
 - `PROJECT_CLOSEOUT.md`/`PROJECT_REOPEN.md` was preserved and marked complete/paused when processed.
-- `python3 ~/.hermes/scripts/project_review_history_retention.py --project /home/brayan/personal_vault/projects/<slug>/README.md --keep 5` leaves no more than five dated review-history entries in the project hub.
+- Project hubs retain no more than five dated review-history entries. The managed scanner checks child persistence before pruning; manual authorized reviews run `project_review_history_retention.py --project <README-path> --keep 5` themselves.
+- Managed reviews save a dated-today hub entry without relabeling review activity as execution progress. Workspace due dates already covered by that entry are acknowledged; newer signals remain active.
+- Trigger managed review execution through its cron/ownership wrapper. Direct `project_review_scan.py` inspection uses `--dry-run`; there is no completed-child PID/TTL lock or parent reporter LLM.
 - `python3 ~/.hermes/scripts/project_state_audit.py --dry-run` does not show newly introduced drift for the touched project.
 - `git diff --check` passes in `~/personal_vault` when vault files changed.
