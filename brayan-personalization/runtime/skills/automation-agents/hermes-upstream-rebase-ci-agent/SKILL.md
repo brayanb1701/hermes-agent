@@ -95,6 +95,10 @@ Do not bypass finalizer refusals. The finalizer intentionally hard-codes repo, b
 
 ## Known conflict patterns
 
+- When upstream retires legacy updater/banner tests in favor of `hermes_cli/source_check.py`, preserve deletions of tests targeting removed seams; retain configured-branch behavior in the current banner and validate `test_source_check.py` plus `test_update_branch_config.py`.
+- Run process bootstrap imports at test collection, after conftest isolates HERMES_HOME but before per-test filesystem guards. Do not preload entry-point modules through PYTEST_PLUGINS in production-home environments: logging can bind live files. If PM's versionless Python alias trips the guard, permit only metadata for the running interpreter's discovered lexical alias, retaining state read/write protection, and add a reproducing test.
+- Exclude the skills `.locks/` directory from personalization snapshots; locks are process state, not behavior assets. Verify with a copy-tree regression rather than publishing transient lock files.
+
 - When upstream adds `_cold_boot_drop_pending` / `extra.drop_pending_on_cold_boot`, retain its shared polling/webhook policy and logging, but use a false default on the personalization branch so offline messages remain preserved. Test default preservation, explicit discard opt-in, and reconnect preservation; do not hard-code polling false while leaving the new setting ineffective. Run `test_telegram_cold_boot_queue.py` alongside connect/reconnect tests.
 - When gateway fallback imports change, preserve the current referenced upstream helper (for example `pre_agent_fallback_notice`) plus the Anything Inbox facade exports; do not restore an unused `get_fallback_chain` import just because an old personalization hunk contains it.
 - Treat a failed patch result as a hard stop before staging or continuing a rebase. Require a conflict-marker/diff check before `git add`; if markers were accidentally committed during replay, abort the isolated rebase and replay with the recorded good rerere resolutions rather than publishing broken intermediate history.
