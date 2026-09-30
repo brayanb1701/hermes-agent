@@ -185,6 +185,23 @@ def test_publish_failure_preserves_report_in_failure_output(tmp_path, runner, mo
     assert json.loads((state / 'pending-owner.json').read_text())['phase'] == 'publishing'
 
 
+@pytest.mark.parametrize('mutation', ['dirty', 'head'])
+def test_canonical_changes_during_worker_prevent_publication(tmp_path, runner, mutation):
+    cfg, repo, remote, state, root, run_dir, run, marker = publication(tmp_path, runner)
+    runner.reconcile_pending(cfg, run)
+    before = git(repo, 'ls-remote', str(remote), 'refs/heads/main').stdout.split()[0]
+    def execute(job, root, run_dir):
+        (root / 'changed.txt').write_text('valid worktree change')
+        (repo / 'README.md').write_text('unauthorized canonical edit')
+        if mutation == 'head':
+            git(repo, 'add', 'README.md')
+            git(repo, 'commit', '-m', 'unexpected canonical writer')
+        return 'done'
+    with pytest.raises(runner.OwnershipError, match='Canonical checkout changed'):
+        runner.execute_job(cfg, {'id': marker['job'], 'allowed_paths': ['changed.txt']}, executor=execute)
+    assert git(repo, 'ls-remote', str(remote), 'refs/heads/main').stdout.split()[0] == before
+
+
 @pytest.mark.parametrize('text', [None, '', '[CRON_FAILURE]', '[CRON_FAILURE]\nfailed', '[CRON_FAILURE]  \nfailed', '\n[CRON_FAILURE]\nfailed', 'quoted [CRON_FAILURE]', '[CRON_FAILURE] not standalone'])
 def test_declared_failure_matches_scheduler(tmp_path, runner, text):
     from cron.scheduler import _cron_failure_marker_error
