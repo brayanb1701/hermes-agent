@@ -41,5 +41,10 @@ def test_opportunity_dispatch_waits_for_child_before_return(tmp_path,monkeypatch
     executable.chmod(0o755)
     monkeypatch.setattr(mod.shutil,'which',lambda _:str(executable))
     item={k:'test' for k in ['slug','stem','opportunity_path','title','opportunity_kind','workflow_mode','priority','closeout_input_path','proposed_status','proposed_result_status']}
+    if name == 'project_review_scan':
+        hub = root / 'projects/test/README.md'
+        hub.parent.mkdir(parents=True)
+        hub.write_text('---\nstatus: paused\n---\n')
+        item.update(vault_project_path=str(hub), mode='review', trigger_reason='test')
     getattr(mod,entry)(item)
     assert (root/'child.done').read_text()=='completed'
