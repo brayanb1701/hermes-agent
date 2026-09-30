@@ -30,6 +30,14 @@ _INTERPRETER_PREFIXES = tuple({
 # resolve once at import, as before: they are fixed for the process lifetime.
 _normcase = os.path.normcase
 _INTERPRETER_PREFIX_STRS = tuple(_normcase(os.fspath(p)) for p in _INTERPRETER_PREFIXES)
+# A legacy venv can point through a versionless PM installation symlink.
+# Preserve its lexical spelling for metadata probes, not state reads/writes.
+_INTERPRETER_ALIAS_STRS = ()
+if os.path.islink(sys.executable):
+    _target = os.readlink(sys.executable)
+    _target = os.path.abspath(os.path.join(os.path.dirname(sys.executable), _target))
+    _INTERPRETER_ALIAS_STRS = (_normcase(os.path.dirname(os.path.dirname(_target))),)
+
 
 
 def _within(path: str, prefix: str) -> bool:
@@ -100,6 +108,9 @@ class HomeIOGuard:
             for prefix in _INTERPRETER_PREFIX_STRS:
                 if _within(absolute, prefix) or (metadata and _contains(absolute, prefix)):
                     return
+            if metadata and any(_within(absolute, prefix) or _contains(absolute, prefix)
+                                for prefix in _INTERPRETER_ALIAS_STRS):
+                return
             # Check the lexical path first: resolving must not probe a protected
             # tree merely to decide that the original path was forbidden.
             for root in roots:
