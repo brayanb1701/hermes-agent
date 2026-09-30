@@ -23,10 +23,10 @@ Required execution:
 1. Process only this project.
 2. Read the vault project README first.
 3. Read the relevant internal `personal-project-management/references/*.md` file for the mode.
-4. If active or workspace-related, inspect `PROJECT_STATUS.md`, `PROJECT_CHANGELOG.md`, and the signal file when it exists.
+4. If active or workspace-related, inspect `PROJECT_STATUS.md`, `PROJECT_CHANGELOG.md`, and the signal file when it exists. In managed review mode these are read-only execution-side inputs: save the dated review in the vault hub; the scanner treats workspace due dates on or before that review as acknowledged. Do not rewrite external workspace dates merely to clear a review trigger.
 5. Apply only well-supported state changes.
 6. Keep dashboard/backlog/finished in sync.
-7. After adding a dated project-hub review entry, run `python3 ~/.hermes/scripts/project_review_history_retention.py --project {{vault_project_path}} --keep 5` and verify at most five dated review entries remain.
+7. Save a new or revised dated-today entry under `## Review notes`, `## Cadence review notes`, or `## Review log` for review mode. The dispatcher checks persisted evidence and runs history retention after you finish; do not run retention yourself.
 8. Append `_meta/log.md` only for meaningful structural or finalization changes.
 9. If facts are insufficient, mark the signal file paused when appropriate or add missing-info notes, then notify Brayan.
 

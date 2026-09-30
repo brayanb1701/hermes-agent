@@ -23,7 +23,7 @@ PROMPT_TEMPLATE_PATH = AGENT_DIR / "prompt-template.md"
 STATE_DIR = HERMES_HOME / "state" / "project_management_sessions"
 LOG_DIR = HERMES_HOME / "logs" / "project_management_sessions"
 MAX_SESSIONS = 3
-LOCK_TTL_HOURS = 12
+
 SKILLS = "personal-vault-ops,personal-project-management"
 SOURCE_TAG = "project-management-session"
 DEFAULT_STALE_DAYS = 5
@@ -149,6 +149,10 @@ def record(path: Path, mode: str, reason: str, signal_file: str = "") -> dict[st
     }
 
 
+def latest_review_date(text: str) -> date | None:
+    return max((day for day, _ in review_entries(text) if day <= date.today()), default=None)
+
+
 def collect_inventory(vault: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     ready: list[dict[str, Any]] = []
     inventory: list[dict[str, Any]] = []
@@ -172,6 +176,8 @@ def collect_inventory(vault: Path) -> tuple[list[dict[str, Any]], list[dict[str,
             }
             selected: dict[str, Any] | None = None
             if status == "active":
+                reviewed = latest_review_date(text)
+                hub_next = parse_date(fm.get('next_review'))
                 missing = []
                 if not workspace.exists():
                     missing.append("workspace")
@@ -202,9 +208,13 @@ def collect_inventory(vault: Path) -> tuple[list[dict[str, Any]], list[dict[str,
                         selected = record(path, "reopen", "changelog indicates resume/reopen request", str(changelog_path))
                     elif ltype in {"blocker", "blocked"}:
                         selected = record(path, "review", "changelog indicates blocker", str(changelog_path))
-                    elif nrd and nrd <= date.today():
+                    elif nrd and nrd <= date.today() and (reviewed is None or nrd > reviewed):
                         selected = record(path, "review", "workspace next_review is due", str(changelog_path))
-                if selected is None and due_by_cadence(fm.get("last_meaningful_update"), fm.get("review_cadence")):
+                if selected is None and hub_next and hub_next <= date.today() and (reviewed is None or hub_next > reviewed):
+                    selected = record(path, 'review', 'project next_review is due', str(path))
+                cadence_base = max(filter(None, (parse_date(fm.get('last_meaningful_update')), reviewed)), default=None)
+                if (selected is None and not (hub_next and hub_next > date.today())
+                        and due_by_cadence(cadence_base.isoformat() if cadence_base else None, fm.get('review_cadence'))):
                     selected = record(path, "review", "active project review cadence due", str(path))
             elif status == "paused":
                 nrd = parse_date(fm.get("next_review"))
@@ -234,43 +244,6 @@ def collect_inventory(vault: Path) -> tuple[list[dict[str, Any]], list[dict[str,
     return ready, inventory
 
 
-def pid_is_running(pid: int) -> bool:
-    if pid <= 0:
-        return False
-    try:
-        os.kill(pid, 0)
-        return True
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-
-
-def active_lock(item: dict[str, Any]) -> dict[str, Any] | None:
-    lock_path = STATE_DIR / f"{item['slug']}.json"
-    if not lock_path.exists():
-        return None
-    try:
-        data = json.loads(lock_path.read_text(encoding="utf-8"))
-    except Exception:
-        return None
-    pid = int(data.get("pid") or 0)
-    still_running = pid_is_running(pid)
-    fresh = False
-    age_hours = None
-    try:
-        launched_at = str(data.get("launched_at") or "")
-        dt = datetime.fromisoformat(launched_at.replace("Z", "+00:00"))
-        age_hours = (datetime.now(timezone.utc) - dt.astimezone(timezone.utc)).total_seconds() / 3600
-        fresh = age_hours < LOCK_TTL_HOURS
-    except Exception:
-        pass
-    if still_running or fresh:
-        data.update({"lock_path": str(lock_path), "still_running": still_running, "fresh_lock": fresh, "age_hours": age_hours})
-        return data
-    return None
-
-
 def render_template(template: str, item: dict[str, Any]) -> str:
     rendered = template
     for key, value in item.items():
@@ -285,47 +258,81 @@ def build_prompt(item: dict[str, Any]) -> str:
     return render_template(PROMPT_TEMPLATE_PATH.read_text(encoding="utf-8"), item)
 
 
+def review_entries(text: str) -> list[tuple[date, str]]:
+    """One parser for scheduling and persistence, matching retention's format."""
+    from project_review_history_retention import SECTION_RE, NEXT_H2_RE, HEADING_ENTRY_RE, BULLET_ENTRY_RE
+    entries = []
+    for section in SECTION_RE.finditer(text):
+        end = NEXT_H2_RE.search(text, section.end())
+        body = text[section.end():end.start() if end else len(text)]
+        headings = list(HEADING_ENTRY_RE.finditer(body))
+        if headings:
+            for index, match in enumerate(headings):
+                day = parse_date(match.group(1))
+                if day:
+                    stop = headings[index + 1].start() if index + 1 < len(headings) else len(body)
+                    entries.append((day, body[match.start():stop].strip()))
+        else:
+            for line in body.splitlines():
+                match = BULLET_ENTRY_RE.match(line)
+                if match and (day := parse_date(match.group(1))):
+                    entries.append((day, line.strip()))
+    return entries
+
+
+def review_entries_today(text: str) -> set[str]:
+    return {entry for day, entry in review_entries(text) if day == date.today()}
+
+
 def launch_project(item: dict[str, Any]) -> dict[str, Any]:
     hermes = shutil.which("hermes") or str(HOME / ".local" / "bin" / "hermes")
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     prompt = build_prompt(item) + f"\nOnly writable vault root: {VAULT}. Honor HERMES_VAULT_ROOT in every helper and descendant. Never publish, modify the canonical checkout, or leave background writers."
     prompt_path = STATE_DIR / f"{item['slug']}.{timestamp}.prompt.txt"
     stdout_path = LOG_DIR / f"{item['slug']}.{timestamp}.log"
-    lock_path = STATE_DIR / f"{item['slug']}.json"
+    hub = Path(item['vault_project_path'])
+    surfaces = [hub, *(PROJECTS_DIR / name for name in ('dashboard.md', 'backlog.md', 'finished.md'))]
+    before = {path: read(path) if path.exists() else None for path in surfaces}
+    before_entries = review_entries_today(before[hub] or '')
+    before_key = (item['mode'], item['trigger_reason'])
     prompt_path.write_text(prompt, encoding="utf-8")
     cmd = [hermes, "--skills", SKILLS, "chat", "-Q", "--source", SOURCE_TAG, "-q", prompt]
     with stdout_path.open("ab") as stdout_fh:
         proc = subprocess.Popen(cmd, cwd=str(VAULT), stdin=subprocess.DEVNULL, stdout=stdout_fh, stderr=subprocess.STDOUT, start_new_session=False, close_fds=True)
     # Foreground completion is part of the parent ownership transaction.
-    if proc.wait() != 0:
-        raise RuntimeError(f"Managed child failed with exit {proc.returncode}")
-    lock_path.write_text(json.dumps({
-        "project": item,
-        "pid": proc.pid,
-        "launched_at": datetime.now(timezone.utc).isoformat(),
-        "prompt_template_path": str(PROMPT_TEMPLATE_PATH),
-        "prompt_path": str(prompt_path),
-        "log_path": str(stdout_path),
-        "skills": SKILLS,
-        "command": [cmd[0], "--skills", SKILLS, "chat", "-Q", "--source", SOURCE_TAG, "-q", "<rendered prompt>"],
-    }, indent=2, ensure_ascii=False), encoding="utf-8")
-    return {**item, "pid": proc.pid, "prompt_path": str(prompt_path), "log_path": str(stdout_path), "lock_path": str(lock_path)}
+    returncode = proc.wait()
+    after = {path: read(path) if path.exists() else None for path in surfaces}
+    ready, inventory = collect_inventory(VAULT)
+    current = next((entry for entry in ready if entry['slug'] == item['slug']), None)
+    after_key = (current['mode'], current['trigger_reason']) if current else None
+    new_entry = bool(review_entries_today(after[hub] or '') - before_entries)
+    persisted = new_entry or (item['mode'] != 'review' and after != before and after_key != before_key)
+    scan_error = any(entry.get('status') == 'error' and entry['slug'] == item['slug'] for entry in inventory)
+    if returncode:
+        outcome = f'child-exit-{returncode}'
+    elif scan_error or not after[hub] or not persisted:
+        outcome = 'no-review-evidence'
+    else:
+        outcome = 'ok' if after_key != before_key else 'ok-still-due'
+    # Evaluate child evidence before pruning: scanner housekeeping is not proof
+    # that the child successfully saved its review.
+    if after[hub]:
+        from project_review_history_retention import prune_project
+        prune_project(hub)
+    metadata = parse_frontmatter(after[hub] or '')
+    return {**item, 'pid': proc.pid, 'prompt_path': str(prompt_path),
+            'log_path': str(stdout_path), 'outcome': outcome,
+            'next_review': metadata.get('next_review'),
+            'last_meaningful_update': metadata.get('last_meaningful_update'),
+            'retry_warning': 'selection advanced without saved review; will not auto-retry' if not persisted and after_key != before_key else None,
+            'summary': read(stdout_path)[-1500:]}
 
 
-def select_projects(ready: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    selected: list[dict[str, Any]] = []
-    skipped_active: list[dict[str, Any]] = []
-    for item in ready:
-        lock = active_lock(item)
-        if lock:
-            skipped_active.append({"slug": item["slug"], "title": item["title"], "mode": item["mode"], "lock": lock})
-            continue
-        selected.append(item)
-        if len(selected) >= MAX_SESSIONS:
-            break
-    return selected, skipped_active
+def select_projects(ready: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    # Children finish synchronously under the owner's global writer lock.
+    return ready[:MAX_SESSIONS]
 
 
 def main() -> None:
@@ -335,9 +342,18 @@ def main() -> None:
     parser.add_argument("--workspace-root", default=str(WORKSPACE_ROOT), help="Workspace root path for testability")
     args = parser.parse_args()
     configure(Path(args.vault).expanduser().resolve(), Path(args.workspace_root).expanduser().resolve())
+    if not args.dry_run:
+        from vault_ownership_common import load_contract
+        contract = load_contract()
+        root = os.environ.get('HERMES_VAULT_ROOT')
+        worktrees = Path(contract['state_dir']).resolve() / 'worktrees'
+        if (not root or Path(root).expanduser().resolve() != VAULT
+                or not VAULT.is_relative_to(worktrees)
+                or VAULT in {Path(contract['repo_path']).resolve(), Path(contract['vault_path']).resolve()}):
+            raise SystemExit('Live project scan requires an ownership worktree; use --dry-run or the managed cron job.')
 
     ready, inventory = collect_inventory(VAULT)
-    selected, skipped_active = select_projects(ready)
+    selected = select_projects(ready)
     launched: list[dict[str, Any]] = []
     errors: list[dict[str, str]] = []
     if selected and not PROMPT_TEMPLATE_PATH.exists():
@@ -348,6 +364,22 @@ def main() -> None:
                 launched.append(launch_project(item))
             except Exception as exc:
                 errors.append({"path": item["vault_project_path"], "slug": item["slug"], "error": repr(exc)})
+
+    if not args.dry_run and selected:
+        failures = [item for item in launched if item['outcome'] not in {'ok', 'ok-still-due'}]
+        if failures or errors:
+            print('[CRON_FAILURE]')
+        print('Project management: persisted results checked by the scanner.')
+        for item in launched:
+            print(f"- {item['slug']} ({item['mode']}): {item['outcome']}; next_review={item['next_review'] or 'unset'}; trigger={item['trigger_reason']}")
+            if item['retry_warning']:
+                print('  WARNING: ' + item['retry_warning'])
+            if item['summary'].strip():
+                print(item['summary'].strip())
+        for error in errors:
+            print(f"- {error['slug']}: {error['error']}")
+        print(f'Result: {len(launched) - len(failures)} verified, {len(failures) + len(errors)} failed.')
+        return
 
     status_counts = Counter(item.get("status", "unknown") for item in inventory)
     mode_counts = Counter(item.get("selected_mode", "not-selected") for item in inventory)
@@ -369,12 +401,12 @@ def main() -> None:
         "ready_count": len(ready),
         "selected_count": len(selected),
         "launched_count": len(launched),
-        "skipped_active_count": len(skipped_active),
+
         "error_count": len(errors),
         "ready_projects": ready,
         "selected_projects": selected,
         "launched_projects": launched,
-        "skipped_active_projects": skipped_active,
+
         "inventory": inventory,
         "errors": errors,
     }, ensure_ascii=False))

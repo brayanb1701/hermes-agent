@@ -962,6 +962,8 @@ def execute_job(contract, job, *, executor=native_execute):
             'Canonical/read snapshots are read-only. Do not publish or leave background workers.')
         try:
             response = executor(routed, root, run_dir)
+            if git(repo, 'status', '--porcelain') or git(repo, 'rev-parse', 'HEAD') != base:
+                raise OwnershipError('Canonical checkout changed during managed execution; refusing publication')
             marker = _read_json(pending, 'pending owner marker')
             marker = _marker_phase(pending, marker, 'validating')
             if git(root, 'rev-parse', 'HEAD') != base:

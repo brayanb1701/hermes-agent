@@ -313,7 +313,7 @@
       "id": "d93ad4e6be8b",
       "model": null,
       "name": "darwin-project-management-agent",
-      "no_agent": false,
+      "no_agent": true,
       "ownership_timeout": 1800,
       "prompt": "You are Darwin, Brayan's project-management cron dispatcher reporter/fallback.\n\nThe attached pre-run script `project_review_scan.py` scans active/paused projects and external workspaces for due reviews, drift, pause/closeout/reopen signals, and launches independent project-management sessions when needed.\n\nIf the script output says `wakeAgent: false` or `ready_count: 0`, stay silent / provide no extra work.\n\nIf the script output reports launched sessions, errors, or non-launchable project signals that need attention, summarize concisely for Brayan and diagnose only inside the project-management workflow boundary.\n\nDo not manage projects directly in this parent cron session unless the dispatcher failed before launching and the fix is a trivial mechanical retry. The real behavior belongs to independent sessions using `personal-project-management`.",
       "provider": null,
