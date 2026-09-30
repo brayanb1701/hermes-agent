@@ -5,6 +5,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+# Process boot must finish at collection, before test-time home I/O guards.
+import run_agent  # noqa: F401
+
 from gateway.config import GatewayConfig, Platform
 from gateway.platforms.base import MessageEvent, MessageType
 from gateway.session import SessionSource
