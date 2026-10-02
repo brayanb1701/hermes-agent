@@ -46,6 +46,16 @@ _OWN_TAB_PREAMBLE = """\
 def _hermes_ensure_own_tab():
     import os as _os, tempfile as _tf
     _name = _os.environ.get("BU_NAME", "default")
+    # Check in the executing harness, not the caller's Python environment.
+    # 0.1.13 is verified to create AND close a named dedicated target. Unknown
+    # versions retain the legacy isolation fallback; default owns no target.
+    if _name != "default":
+        try:
+            from importlib.metadata import version as _version
+            if _version("browser-harness") == "0.1.13":
+                return
+        except Exception:
+            pass
     try:
         # Key the marker by the daemon's pid so a daemon restart (which
         # re-attaches to the first shared page) re-pins automatically,
