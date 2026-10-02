@@ -166,7 +166,9 @@ def test_sync_tick_is_silent_when_writer_holds_lock(tmp_path, runner, monkeypatc
         raise OwnershipBusy('busy')
         yield
     monkeypatch.setattr(contributions, 'owner_lock', busy)
-    assert contributions.process_pending_reviews(cfg) == {'processed': [], 'wakeAgent': False, 'status': 'writer-busy'}
+    assert contributions.process_pending_reviews(cfg) == {'processed': [], 'wakeAgent': False, 'status': 'writer-busy', 'executed':False, 'outcome':'deferred'}
+    records=list((state/'dispatch-outcomes').glob('contributions-sync-*.json'))
+    assert len(records)==1 and json.loads(records[0].read_text())['executed'] is False
     assert (state / 'pending-owner.json').exists()
 
 

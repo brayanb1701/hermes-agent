@@ -1281,10 +1281,18 @@ def process_pending_reviews(contract, *, runner=_run, limit=2):
                     marker = _read_json(marker_path, label="pending owner marker")
                     reconcile_for_writer(contract)
         except RepeatedIncident as exc:
-            return {'processed':[],'wakeAgent':False,'status':'blocked','run':exc.run,
-                    'alert':'duplicate-suppressed','reason':exc.reason}
+            from vault_ownership import _blocked_dispatch
+            outcome=_blocked_dispatch(contract,'contributions-sync',exc)
+            if outcome is None: raise
+            return dict(outcome,processed=[])
         except _common_module().OwnershipBusy:
-            return {"processed": [], "wakeAgent": False, "status": "writer-busy"}
+            from vault_ownership import _dispatch_outcome
+            _dispatch_outcome(contract,"contributions-sync","deferred",reason="owner-busy")
+            return {"processed": [], "wakeAgent": False, "status": "writer-busy", "executed":False,"outcome":"deferred"}
+        except OwnershipError as exc:
+            from vault_ownership import _blocked_dispatch
+            _blocked_dispatch(contract,"contributions-sync",exc)
+            raise
     pending = list_pending_reviews(contract, runner=runner)
     if len(pending) >= 1000:
         raise ReviewError("PR listing reached its explicit limit; refusing incomplete enumeration")
