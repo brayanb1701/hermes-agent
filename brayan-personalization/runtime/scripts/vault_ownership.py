@@ -746,6 +746,8 @@ def abandon_incomplete(contract, run):
             raise OwnershipError('Pending marker symlink refused')
         marker = _read_json(pending, 'pending owner marker')
         if marker.get('version')==2:
+            if marker.get('phase') in {'committing','publishing','integrating'}:
+                raise OwnershipError('Publication-phase runs cannot be abandoned')
             return _reconcile_locked(contract,expected_run=run)
         identity = _validate_pending(contract, marker, run)
         _, job, root, run_dir, base, worker, phase, started = identity
@@ -1020,12 +1022,30 @@ class AgentDeclaredFailure(Exception):
 
 
 def _dispatch_outcome(contract,job_id,status,**fields):
+    if not isinstance(job_id,str) or not re.fullmatch(r'[A-Za-z0-9_-]+',job_id):
+        raise OwnershipError('Invalid dispatch outcome job identifier')
     directory=Path(contract['state_dir'])/'dispatch-outcomes'
     directory.mkdir(parents=True,exist_ok=True)
-    _atomic_write_json(directory/(job_id+'.json'),dict(version=1,job=job_id,status=status,
+    event=uuid.uuid4().hex
+    _atomic_write_json(directory/(job_id+'-'+event+'.json'),dict(version=1,event=event,job=job_id,status=status,
         executed=status=='executed',at=datetime.now(timezone.utc).isoformat(),**fields))
     paths=sorted(directory.glob('*.json'),key=lambda p:p.stat().st_mtime)
     for path in paths[:-256]: path.unlink()
+
+
+def _blocked_dispatch(contract,job_id,error):
+    pending=Path(contract['state_dir'])/'pending-owner.json'
+    if getattr(error,'run',None):
+        run=error.run
+    else:
+        if not pending.exists() or pending.is_symlink(): return None
+        marker=_read_json(pending,'blocked dispatch marker')
+        run=marker.get('run') or marker.get('id')
+    reason=getattr(error,'reason',str(error))
+    digest=hashlib.sha256(reason.encode()).hexdigest()
+    _dispatch_outcome(contract,job_id,'blocked',run=run,reason_digest=digest)
+    return {'status':'blocked','executed':False,'run':run,'reason_digest':digest,
+            'reason':reason,'wakeAgent':False,'alert':'duplicate-suppressed'}
 
 
 def execute_job(contract, job, *, executor=native_execute):
@@ -1036,6 +1056,7 @@ def execute_job(contract, job, *, executor=native_execute):
     if source not in sys.path: sys.path.insert(0,source)
     from cron.scheduler_script import _get_script_timeout
     from vault_ownership_common import OwnershipBusy
+    from vault_incident_alerts import RepeatedIncident
     timeout=float(job.get('ownership_timeout',600))
     wait=float(contract.get('owner_lock_wait_seconds',300))
     outer=_get_script_timeout()
@@ -1044,6 +1065,8 @@ def execute_job(contract, job, *, executor=native_execute):
     routed=dict(job,_script_deadline=time.monotonic()+outer-60)
     try:
         result=_execute_job_budgeted(contract,routed,executor=executor)
+    except RepeatedIncident as exc:
+        return _blocked_dispatch(contract,job['id'],exc)
     except OwnershipBusy:
         if not re.fullmatch(r'[A-Za-z0-9_-]+',job['id']): raise
         _dispatch_outcome(contract,job['id'],'deferred',reason='owner-busy')
@@ -1067,8 +1090,16 @@ def _execute_job_budgeted(contract, job, *, executor=native_execute):
         if pending.is_symlink():
             raise OwnershipError(f'Active pending-owner marker symlink refused: {pending}')
         if pending.exists():
-            from vault_incident_alerts import reconcile_for_writer
-            reconcile_for_writer(contract)
+            from vault_incident_alerts import reconcile_for_writer, RepeatedIncident
+            try:
+                reconcile_for_writer(contract)
+            except RepeatedIncident:
+                raise  # execute_job records one suppressed event, never twice.
+            except OwnershipError as exc:
+                # This job has NOT started. Later execution/publication errors
+                # must never be described as an unexecuted dispatch.
+                _blocked_dispatch(contract,job_id,exc)
+                raise
         if git(repo, 'status', '--porcelain'):
             raise OwnershipError('Canonical checkout is dirty; refusing to sweep unrelated work')
         branch, remote = contract['branch'], contract['remote']

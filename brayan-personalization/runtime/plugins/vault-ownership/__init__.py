@@ -64,7 +64,12 @@ def _begin(contract, event, session_key):
     pending = state / 'pending-owner.json'
     if pending.exists():
         from vault_incident_alerts import reconcile_for_writer
-        reconcile_for_writer(contract)
+        from vault_ownership import OwnershipError, _blocked_dispatch
+        try:
+            reconcile_for_writer(contract)
+        except OwnershipError as exc:
+            _blocked_dispatch(contract,'native-intake',exc)
+            raise
     if git(root, 'status', '--porcelain'):
         raise ValueError('Canonical checkout is dirty; preserved without sweeping')
     git(root, 'fetch', '--no-tags', contract['remote'], contract['branch'])

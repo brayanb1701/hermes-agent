@@ -5,7 +5,7 @@ from vault_ownership_common import OwnershipError
 
 
 def terminal_units_empty(marker):
-    from vault_run_scope import scope_state
+    from vault_run_scope import scope_state, CGROUP_ROOT, _retired_empty
     units=marker.get('terminal_units')
     if (not isinstance(units,list) or len(units)>128 or len(set(units))!=len(units)
             or any(not isinstance(u,str) or not re.fullmatch(
@@ -13,12 +13,12 @@ def terminal_units_empty(marker):
         raise OwnershipError('Invalid recorded intake terminal unit identities')
     for unit in units:
         fields=scope_state(unit)
-        if fields.get('LoadState')=='not-found': continue
+        if fields.get('LoadState')=='not-found' or _retired_empty(fields): continue
         expected=f'/user.slice/user-{__import__("os").getuid()}.slice/user@{__import__("os").getuid()}.service/app.slice/{unit}'
         if fields.get('ControlGroup')!=expected:
             raise OwnershipError('Intake terminal cgroup identity mismatch')
         try:
-            events=(Path('/sys/fs/cgroup')/expected.lstrip('/')/'cgroup.events').read_text()
+            events=(CGROUP_ROOT/expected.lstrip('/')/'cgroup.events').read_text()
         except OSError as exc: raise OwnershipError('Intake terminal emptiness unverified') from exc
         if dict(line.split() for line in events.splitlines()).get('populated')!='0':
             raise OwnershipError('Intake terminal scope is populated; operator required')

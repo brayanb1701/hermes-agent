@@ -19,10 +19,10 @@ def test_wait_expiry_defers_then_next_dispatch_executes(tmp_path,monkeypatch):
         result=runner.execute_job(cfg,job,executor=execute)
     assert result['status']=='deferred' and result['executed'] is False
     assert called==[] and not (Path(cfg['state_dir'])/'pending-owner.json').exists()
-    ledger=json.loads((Path(cfg['state_dir'])/'dispatch-outcomes/deferred-test.json').read_text())
+    ledger=json.loads(max((Path(cfg['state_dir'])/'dispatch-outcomes').glob('deferred-test-*.json'),key=lambda p:p.stat().st_mtime).read_text())
     assert ledger['status']=='deferred' and ledger['executed'] is False
     assert runner.execute_job(cfg,job,executor=execute)=='ran'
-    ledger=json.loads((Path(cfg['state_dir'])/'dispatch-outcomes/deferred-test.json').read_text())
+    ledger=json.loads(max((Path(cfg['state_dir'])/'dispatch-outcomes').glob('deferred-test-*.json'),key=lambda p:p.stat().st_mtime).read_text())
     assert ledger['status']=='executed' and ledger['executed'] is True
 
 
