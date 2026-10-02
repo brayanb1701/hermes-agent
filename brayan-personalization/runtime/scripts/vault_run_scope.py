@@ -13,6 +13,13 @@ import subprocess
 import time
 from vault_ownership_common import OwnershipError
 
+CGROUP_ROOT = Path("/sys/fs/cgroup")
+
+def _retired_empty(fields):
+    return (fields.get("LoadState")=="loaded"
+            and fields.get("ActiveState") in {"inactive","failed"}
+            and fields.get("ControlGroup")=="")
+
 
 def boot_id():
     return Path('/proc/sys/kernel/random/boot_id').read_text().strip()
@@ -61,7 +68,8 @@ def scope_state(unit):
         capture_output=True,text=True,timeout=10)
     fields=dict(line.split('=',1) for line in r.stdout.splitlines() if '=' in line)
     if fields.get('LoadState')=='not-found': return fields
-    if r.returncode or fields.get('LoadState')!='loaded' or not fields.get('ControlGroup'):
+    if (r.returncode or fields.get('LoadState')!='loaded'
+            or (not fields.get('ControlGroup') and not _retired_empty(fields))):
         raise OwnershipError('Cannot verify owned run scope')
     return fields
 
@@ -78,6 +86,11 @@ def own_booking(intent):
 
 def _identity(fields,intent):
     if fields.get('LoadState')=='not-found': return
+    if _retired_empty(fields):
+        booking=intent.get('booking')
+        if booking and fields.get('InvocationID') and fields['InvocationID']!=booking['invocation_id']:
+            raise OwnershipError('Retired scope invocation differs from booking')
+        return
     if fields.get('ControlGroup')!=intent['expected_cgroup']:
         raise OwnershipError('Loaded scope identity differs from durable intent')
     booking=intent.get('booking')
@@ -87,8 +100,8 @@ def _identity(fields,intent):
 
 def _empty(fields,intent):
     _identity(fields,intent)
-    if fields.get('LoadState')=='not-found': return True
-    events=Path('/sys/fs/cgroup')/intent['expected_cgroup'].lstrip('/')/'cgroup.events'
+    if fields.get('LoadState')=='not-found' or _retired_empty(fields): return True
+    events=CGROUP_ROOT/intent['expected_cgroup'].lstrip('/')/'cgroup.events'
     try: values=dict(line.split() for line in events.read_text().splitlines())
     except OSError as exc: raise OwnershipError('Cannot prove run cgroup emptiness') from exc
     return values.get('populated')=='0'
@@ -96,20 +109,22 @@ def _empty(fields,intent):
 
 def _stop_snapshot(intent):
     fields=scope_state(intent['unit']); _identity(fields,intent)
-    if fields.get('LoadState')=='not-found': return []
+    if fields.get('LoadState')=='not-found' or _retired_empty(fields): return []
     freeze=subprocess.run(['systemctl','--user','freeze',intent['unit']],capture_output=True,timeout=10)
     fields=scope_state(intent['unit']); _identity(fields,intent)
-    if fields.get('LoadState')=='not-found': return []
+    if fields.get('LoadState')=='not-found' or _retired_empty(fields): return []
     if freeze.returncode: raise OwnershipError('Cannot freeze run scope before snapshot')
-    base=Path('/sys/fs/cgroup')/intent['expected_cgroup'].lstrip('/')
+    base=CGROUP_ROOT/intent['expected_cgroup'].lstrip('/')
     import psutil
     observed=[]
     # Every nested cgroup, not just the root. No argv/environment scan.
     try:
         files=[base/'cgroup.procs',*base.glob('**/cgroup.procs')]
         pids={int(p) for file in files for p in file.read_text().split()}
-        if len(pids)>4096: raise OwnershipError('Run scope snapshot exceeds bound')
-        for pid in sorted(pids):
+        if len(pids)>4096:
+            observed.append({'pid':None,'comm':'snapshot-truncated','start_time':None,
+                             'total_count':len(pids),'evidence_limit':4096})
+        for pid in sorted(pids)[:4096]:
             try:
                 process=psutil.Process(pid)
                 observed.append({'pid':pid,'comm':process.name()[:64],'start_time':process.create_time()})

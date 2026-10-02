@@ -1,6 +1,6 @@
 """Dispose only positively identified run-local harness daemons.
 
-IPC PID, durable birth fingerprint and cgroup must all agree before signaling.
+IPC PID, live start-time fingerprint and cgroup must all agree before signaling.
 Extra agent-created tabs are unknown hygiene, never closed by global target diff.
 """
 import contextlib

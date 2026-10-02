@@ -5,11 +5,11 @@ import pytest
 from test_vault_ownership import RUNNER,load_module
 
 
+@pytest.mark.platforms("linux")
 def test_v2_worker_records_unknown_child_without_killing_before_freeze(tmp_path,monkeypatch):
     runner=load_module(RUNNER,'scope_audit_order_runner')
     import cron.scheduler
     from types import SimpleNamespace
-    monkeypatch.setattr(runner.sys,'platform','linux')
     monkeypatch.setattr(__import__('ctypes'),'CDLL',lambda *a,**k:SimpleNamespace(prctl=lambda *a:0))
     state=tmp_path/'state';directory=state/'runs'/('c'*32);directory.mkdir(parents=True)
     payload=directory/'job.json';payload.write_text('{}')
