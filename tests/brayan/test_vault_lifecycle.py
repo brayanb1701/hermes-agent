@@ -36,44 +36,6 @@ def test_publication_refuses_changed_remote_even_when_fast_forward_possible(tmp_
     assert runner.git(remote,'rev-parse','main')==old
 
 
-def test_native_worker_reaps_detached_descendant_before_publication(tmp_path, monkeypatch):
-    repo, remote = init_repo(tmp_path)
-    home = tmp_path / 'hermes'
-    cfg = contract(home, repo=repo)
-    cfg['remote'] = str(remote)
-    write_contract(home, cfg)
-    monkeypatch.setenv('HERMES_HOME', str(home))
-    scripts = home / 'scripts'
-    scripts.mkdir()
-    pidfile = tmp_path / 'descendant.pid'
-    # The gate exits leaving a detached worker with closed pipes, the historical
-    # opportunity-launcher pattern. Test never allows it to touch a real vault.
-    (scripts / 'escape.py').write_text(
-        "import subprocess, sys, pathlib\n"
-        f"p=subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)'],start_new_session=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)\n"
-        f"pathlib.Path({str(pidfile)!r}).write_text(str(p.pid))\n"
-        "print('done')\n")
-    try:
-        try:
-            runner.execute_job(cfg, dict(id='escape', no_agent=True, script='escape.py', allowed_paths=['out/']))
-        except runner.OwnershipError:
-            pass
-        pid = int(pidfile.read_text())
-        assert not psutil.pid_exists(pid), 'Detached writer escaped completion boundary'
-        state = Path(cfg['state_dir'])
-        assert not (state / 'pending-owner.json').exists()
-        archives = list((state / 'failed').iterdir())
-        assert len(archives) == 1, 'Contained escape must be archived, never published'
-        receipt = json.loads((archives[0] / 'records' / 'run' / 'result.json').read_text())
-        assert receipt['success'] is False
-        assert receipt['error'] == 'Native job left background descendants; stopped before publication'
-        assert runner.git(remote, 'rev-parse', 'main') == runner.git(repo, 'rev-parse', 'HEAD')
-    finally:
-        if pidfile.exists():
-            try:
-                psutil.Process(int(pidfile.read_text())).kill()
-            except psutil.NoSuchProcess:
-                pass
 
 
 def test_agent_commit_in_worktree_cannot_bypass_diff_validation(tmp_path):

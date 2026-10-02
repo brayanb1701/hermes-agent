@@ -21,9 +21,11 @@ import subprocess
 import sys
 import tempfile
 import uuid
+import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from vault_ownership_common import OwnershipError, load_contract, owner_lock, require_owner
+from vault_run_scope import close_scope as _close_run_scope, validate_intent, scope_intent, manager_ready, own_booking, launch_argv
 
 
 def git(root, *args, network_timeout=120):
@@ -135,7 +137,7 @@ def _worktree_heads(repo):
     return worktrees
 
 
-def _root_aware_processes(root, worker_identity=None, *, not_before, publication=False, inspect_environment=False):
+def _root_aware_processes(root, worker_identity=None, *, not_before, publication=False, inspect_environment=False, prior_boot=False):
     import psutil
 
     root = Path(root)
@@ -143,10 +145,9 @@ def _root_aware_processes(root, worker_identity=None, *, not_before, publication
     if not isinstance(not_before, (int, float)) or isinstance(not_before, bool) or not_before <= 0:
         raise OwnershipError('Process scan boundary is malformed')
     rebooted = False
-    if publication:
-        # Only immutable, successful publication recovery may use this lineage
-        # proof. A prior-kernel worker cannot have surviving descendants. Still
-        # reject positive root evidence, and keep mutable failed archives strict.
+    if publication or prior_boot:
+        # A prior-kernel worker cannot survive. Positive rooted evidence still
+        # refuses archival, and same-boot uncertainty stays fail closed.
         try:
             rebooted = psutil.boot_time() > not_before + 60.0
         except (psutil.Error, OSError):
@@ -257,6 +258,15 @@ def _validate_receipt(run_dir, *, legacy):
             or set(kernel_cleanup) != {'local', 'remote'}
             or any(value != 'ok' for value in kernel_cleanup.values())):
         raise OwnershipError('Completion receipt does not prove successful kernel cleanup')
+    if receipt.get('version') == 2:
+        browser = receipt.get('resource_cleanup', {}).get('browser', {})
+        if (cleanup['live_count'] != 0 or browser.get('ok') is not True
+                or browser.get('extra_tabs') != 'unverified'
+                or not isinstance(browser.get('daemons'),list)
+                or any(d.get('identity') != 'verified' or d.get('daemon_exit') != 'verified'
+                       or d.get('status') not in {'shutdown-confirmed','forced'}
+                       or d.get('tab_cleanup') != 'unverified' for d in browser['daemons'])):
+            raise OwnershipError('Completion receipt lacks successful owned resource cleanup')
     return receipt
 
 
@@ -291,8 +301,10 @@ def _validate_pending(contract, marker, expected_run=None, *, legacy=False):
         required = {'version', 'kind', 'job', 'run', 'run_dir', 'root', 'base', 'intent',
                     'phase', 'pid', 'pid_created', 'started'}
         allowed = required | {'head', 'remote_head'}
+        if marker.get('version') == 2:
+            allowed |= {'containment', 'containment_proof'}
         if (not required <= set(marker) or not set(marker) <= allowed
-                or marker.get('version') != 1 or marker.get('kind') != 'owner-job'):
+                or marker.get('version') not in {1, 2} or marker.get('kind') != 'owner-job'):
             raise OwnershipError('Pending marker is not a recognized owner-job record')
         if not isinstance(marker.get('run_dir'), str) or not isinstance(marker.get('root'), str):
             raise OwnershipError('Owner-job marker paths are malformed')
@@ -331,7 +343,13 @@ def _validate_pending(contract, marker, expected_run=None, *, legacy=False):
         raise OwnershipError('Pending marker paths do not match the recorded run identity')
     _assert_no_symlink_components(root, state)
     _assert_no_symlink_components(run_dir, state)
-    birth_time = _path_birth_time(root)
+    if not legacy and marker.get('version') == 2 and 'containment' in marker:
+        validate_intent(marker['containment'], run_id, run_dir)
+    if not legacy and marker.get('version') == 2 and phase != 'prepared' and 'containment' not in marker:
+        raise OwnershipError('V2 launched phase lacks durable containment intent')
+    birth_time = _path_birth_time(root) if root.exists() else not_before
+    if not root.exists() and (legacy or marker.get('version') != 2 or phase != 'prepared'):
+        raise OwnershipError('Recorded worktree is missing')
     if legacy:
         not_before = birth_time
     elif (not isinstance(not_before, (int, float)) or isinstance(not_before, bool)
@@ -382,13 +400,13 @@ def _changed_entries(root):
 
 
 def _archive_material(root, run_dir, marker_path):
-    entries = _changed_entries(root)
+    entries = _changed_entries(root) if root.exists() else []
     cached_diff = subprocess.run(
         ['git', 'diff', '--cached', '--binary', 'HEAD'], cwd=root, check=True, capture_output=True
-    ).stdout
+    ).stdout if root.exists() else b''
     working_diff = subprocess.run(
         ['git', 'diff', '--binary'], cwd=root, check=True, capture_output=True
-    ).stdout
+    ).stdout if root.exists() else b''
     artifacts = {
         'tracked.cached.diff': cached_diff,
         'tracked.working.diff': working_diff,
@@ -521,7 +539,10 @@ def _recover_publication(contract, marker, identity):
     policy = contract.get('managed_jobs', {}).get(job, {}).get('allowed_paths')
     if policy != marker['intent']['allowed_paths']:
         raise OwnershipError('Current job scope differs from publication intent')
-    _root_aware_processes(root, worker, not_before=started, publication=True)
+    if marker.get('version') == 2:
+        _v2_publication_gate(marker, run_dir, _close_run_scope(marker['containment'],run,run_dir))
+    else:
+        _root_aware_processes(root, worker, not_before=started, publication=True)
     if git(repo, 'symbolic-ref', 'HEAD') != f"refs/heads/{contract['branch']}":
         raise OwnershipError('Canonical checkout is on the wrong branch')
     if git(repo, 'status', '--porcelain=v1', '-uall') or git(root, 'status', '--porcelain=v1', '-uall'):
@@ -599,6 +620,66 @@ def _recover_publication(contract, marker, identity):
     return {'status': 'recovered', 'run': run, 'head': head, 'archive': str(archive)}
 
 
+def _v2_publication_gate(marker, run_dir, proof):
+    receipt = _validate_receipt(run_dir, legacy=False)
+    booking = marker.get('containment', {}).get('booking')
+    original = marker.get('containment_proof')
+    if (receipt.get('version') != 2 or receipt.get('success') is not True
+            or receipt.get('error') is not None or not booking
+            or receipt.get('launch') != booking
+            or not original or original.get('contained') is not True
+            or original.get('unknown') != [] or proof.get('unknown') != []
+            or proof.get('contained') is not True):
+        raise OwnershipError('V2 publication lacks successful receipt and actual launch/containment evidence')
+    return receipt
+
+
+def _reconcile_v2(contract, marker, identity):
+    run, job, root, run_dir, base, worker, phase, started = identity
+    state, repo = Path(contract['state_dir']), Path(contract['repo_path'])
+    proof = (_close_run_scope(marker['containment'], run, run_dir) if 'containment' in marker
+             else {'contained':True, 'status':'never-launched', 'observed':[], 'unknown':[]})
+    if proof.get('contained') is not True:
+        raise OwnershipError('V2 run containment unproved')
+    evidence = run_dir / 'containment-recovery.json'
+    if not evidence.exists(): _atomic_write_json(evidence, proof)
+    if git(repo, 'symbolic-ref', 'HEAD') != f"refs/heads/{contract['branch']}":
+        raise OwnershipError('Canonical checkout is on wrong branch')
+    if git(repo, 'status', '--porcelain=v1', '-uall'):
+        raise OwnershipError('Canonical checkout is dirty during reconciliation')
+    if phase in {'publishing','integrating','committing'}:
+        _v2_publication_gate(marker, run_dir, proof)
+        head = git(root, 'rev-parse', 'HEAD')
+        if phase == 'committing' and head != base:
+            marker = _marker_phase(state/'pending-owner.json',marker,'publishing',head=head)
+            phase = 'publishing'
+        if phase in {'publishing','integrating'}:
+            return _recover_publication(contract, marker,
+                (run,job,root,run_dir,base,worker,phase,started))
+    if git(repo, 'rev-parse', 'HEAD') != base:
+        raise OwnershipError('Canonical checkout changed since failed run')
+    remote = _remote_head(repo, contract)
+    if root.exists() and (git(root, 'rev-parse', 'HEAD') != base
+            or _worktree_heads(repo).get(str(root)) != base):
+        raise OwnershipError('Failed worktree differs from recorded base')
+    receipt_path=run_dir/'result.json'
+    if receipt_path.exists():
+        receipt=_read_json(receipt_path,'native completion evidence')
+        if any(receipt.get(k) for k in ('head','commit','remote_head')):
+            raise OwnershipError('Prepublication receipt claims a commit')
+    else: receipt=None
+    if phase not in {'prepared','executing'} and remote != base:
+        raise OwnershipError('Published branch changed beyond prepublication archive boundary')
+    incomplete={'version':1,'status':'incomplete-failure','run':run,'job':job,'phase':phase,
+                'receipt':'present-evidence-only' if receipt is not None else 'missing',
+                'containment':proof,'remote_head':remote,'publication':'never-authorized'}
+    archive=_archive_snapshot(state,state/'pending-owner.json',marker,run,root,run_dir,base,
+        extra_artifacts={'incomplete-failure.json':(json.dumps(incomplete,sort_keys=True,indent=2)+'\n').encode()})
+    os.replace(state/'pending-owner.json',archive/'pending-owner.json')
+    _fsync_directory(archive); _fsync_directory(state)
+    return {'status':'archived','run':run,'phase':phase,'archive':str(archive)}
+
+
 def _reconcile_locked(contract, *, expected_run=None, legacy=False):
     state, repo = Path(contract['state_dir']), Path(contract['repo_path'])
     marker_path = state / 'pending-owner.json'
@@ -607,9 +688,14 @@ def _reconcile_locked(contract, *, expected_run=None, legacy=False):
     if not marker_path.exists():
         return {'status': 'no-pending-owner'}
     marker = _read_json(marker_path, 'pending owner marker')
+    if marker.get('kind')=='native-intake':
+        from vault_intake_recovery import reconcile_intake
+        return reconcile_intake(contract,marker,expected_run)
     run_id, _job, root, run_dir, base, worker_identity, phase, not_before = _validate_pending(
         contract, marker, expected_run, legacy=legacy
     )
+    if marker.get('version') == 2:
+        return _reconcile_v2(contract, marker, (run_id, _job, root, run_dir, base, worker_identity, phase, not_before))
     if not legacy and phase in {'publishing', 'integrating'}:
         return _recover_publication(contract, marker, (
             run_id, _job, root, run_dir, base, worker_identity, phase, not_before))
@@ -628,7 +714,7 @@ def _reconcile_locked(contract, *, expected_run=None, legacy=False):
             f'recorded_head={recorded_head or "none"} remote_head={remote_head}'
         )
     _validate_receipt(run_dir, legacy=legacy)
-    _root_aware_processes(root, worker_identity, not_before=not_before)
+    _root_aware_processes(root, worker_identity, not_before=not_before, prior_boot=True)
     if git(repo, 'status', '--porcelain=v1', '-uall'):
         raise OwnershipError('Canonical checkout is dirty during reconciliation')
     if git(repo, 'rev-parse', 'HEAD') != base:
@@ -659,6 +745,8 @@ def abandon_incomplete(contract, run):
         if pending.is_symlink():
             raise OwnershipError('Pending marker symlink refused')
         marker = _read_json(pending, 'pending owner marker')
+        if marker.get('version')==2:
+            return _reconcile_locked(contract,expected_run=run)
         identity = _validate_pending(contract, marker, run)
         _, job, root, run_dir, base, worker, phase, started = identity
         if phase not in {'prepared', 'executing'}:
@@ -759,8 +847,8 @@ def _descendant_record(process):
     return record
 
 
-def cleanup_native_descendants(descendants=None):
-    """Reap inert zombies; kill and report every genuinely live descendant."""
+def cleanup_native_descendants(descendants=None, *, defer_to_scope=False):
+    """Reap zombies; V2 observes live leftovers for wrapper freeze/kill."""
     import psutil
 
     processes = list(descendants if descendants is not None
@@ -781,6 +869,11 @@ def cleanup_native_descendants(descendants=None):
         except psutil.Error:
             # Unknown liveness is not permission to publish.
             live.append(process)
+    if defer_to_scope:
+        survivors=[_descendant_record(process) for process in live]
+        return {"observed":observed,"live_count":len(live),
+                "survivor_count":len(survivors),"survivors":survivors,
+                "deferred_to_scope":True}
     for process in reversed(live):
         with contextlib.suppress(psutil.NoSuchProcess):
             process.kill()
@@ -814,6 +907,14 @@ def _native_worker(payload, receipt):
     # This is scoped to the dedicated native worker, never the gateway process.
     if sys.platform != 'linux' or ctypes.CDLL(None, use_errno=True).prctl(36, 1, 0, 0, 0):
         raise OwnershipError('Managed lifecycle requires Linux child subreaper support')
+    pending = Path(receipt).parent.parent.parent / 'pending-owner.json'
+    marker = _read_json(pending, 'pending owner marker') if pending.exists() else None
+    launch = None
+    if marker and marker.get('version') == 2:
+        intent = dict(marker['containment'], booking=own_booking(marker['containment']))
+        launch = intent['booking']
+        _marker_phase(pending, marker, marker['phase'], containment=intent,
+                      pid=launch['pid'], pid_created=launch['start_time'])
     from cron.scheduler import run_job
     job = json.loads(Path(payload).read_text(encoding='utf-8'))
     success, document, response, error = False, "", "", None
@@ -827,8 +928,11 @@ def _native_worker(payload, receipt):
             run_traceback = exc.__traceback__
     finally:
         kernel_cleanup = _shutdown_native_kernels()
+        from vault_run_browser import shutdown_browsers
+        browser_cleanup = shutdown_browsers(marker['containment']) if launch else {'ok':True,'daemons':[], 'extra_tabs':'unverified'}
         try:
-            cleanup = cleanup_native_descendants()
+            cleanup = (cleanup_native_descendants(defer_to_scope=True)
+                       if launch else cleanup_native_descendants())
         except Exception as exc:
             cleanup = {"observed": [], "live_count": None,
                        "survivor_count": None, "survivors": [],
@@ -838,14 +942,20 @@ def _native_worker(payload, receipt):
     if run_exception is not None:
         error = f"Native run raised {type(run_exception).__name__}"
     elif (any(value != "ok" for value in kernel_cleanup.values())
-          or cleanup.get("cleanup_error") or cleanup["survivor_count"]):
+          or browser_cleanup.get('ok') is not True
+          or cleanup.get("cleanup_error")
+          or (cleanup["survivor_count"] and not cleanup.get('deferred_to_scope'))):
         success, error = False, 'Unable to stop all native job descendants'
     elif cleanup["live_count"]:
-        success, error = False, 'Native job left background descendants; stopped before publication'
+        success = False
+        error = ('Native job left background descendants; scope teardown required'
+                 if cleanup.get('deferred_to_scope') else
+                 'Native job left background descendants; stopped before publication')
     _atomic_write_json(Path(receipt), dict(success=success, document=document,
                                           response=response, error=error,
                                           kernel_cleanup=kernel_cleanup,
-                                          descendant_cleanup=cleanup))
+                                          descendant_cleanup=cleanup,
+                                          **({'version':2,'launch':launch,'resource_cleanup':{'browser':browser_cleanup}} if launch else {})))
     if run_exception is not None:
         raise run_exception.with_traceback(run_traceback)
     return 0 if success else 1
@@ -853,35 +963,36 @@ def _native_worker(payload, receipt):
 
 def native_execute(job, root, run_dir):
     payload, receipt = run_dir / 'job.json', run_dir / 'result.json'
-    payload.write_text(json.dumps(job))
-    env = dict(os.environ, HERMES_VAULT_ROOT=str(root))
-    # Source checkout explicitly configured at deployment; no provider changes.
-    source = load_contract()['hermes_source']
-    env['PYTHONPATH'] = str(source) + os.pathsep + env.get('PYTHONPATH', '')
-    with (run_dir / 'native.log').open('w') as output:
-        proc = subprocess.Popen([sys.executable, __file__, '--native', str(payload), str(receipt)],
-                                cwd=root, env=env, stdout=output, stderr=subprocess.STDOUT,
-                                start_new_session=True)
+    _atomic_write_json(payload,job)
+    pending=run_dir.parent.parent/'pending-owner.json'
+    marker=_read_json(pending,'pending owner marker')
+    intent=marker['containment']
+    env=dict(os.environ,HERMES_VAULT_ROOT=str(root))
+    source=load_contract()['hermes_source']
+    env['PYTHONPATH']=str(source)+os.pathsep+env.get('PYTHONPATH','')
+    runtime=Path(env['XDG_RUNTIME_DIR'])/'vr'/marker['run'][:12]
+    _assert_no_symlink_components(runtime,Path(env['XDG_RUNTIME_DIR']))
+    runtime.mkdir(parents=True,mode=0o700,exist_ok=False)
+    logs=run_dir/'bh'; logs.mkdir(mode=0o700)
+    env.update(BH_RUNTIME_DIR=str(runtime),BH_RUNTIME_DIR_SHARED='1',
+               BH_TMP_DIR=str(logs),BH_TMP_DIR_SHARED='1',BU_NAME='_default')
+    argv=launch_argv(intent,[sys.executable,__file__,'--native',str(payload),str(receipt)],
+                     min(job.get('ownership_timeout',600)+30,
+                         job['_script_deadline']-time.monotonic()-120))
+    with (run_dir/'native.log').open('w') as output:
+        proc=subprocess.Popen(argv,cwd=root,env=env,stdout=output,stderr=subprocess.STDOUT)
         try:
-            import psutil
-            pending = run_dir.parent.parent / 'pending-owner.json'
-            marker = _read_json(pending, 'pending owner marker')
-            _marker_phase(pending, marker, marker['phase'], pid=proc.pid,
-                          pid_created=psutil.Process(proc.pid).create_time())
-            proc.wait(timeout=job.get('ownership_timeout', 600))
-        except BaseException:
-            import psutil
-            children = psutil.Process(proc.pid).children(recursive=True)
-            for child in children:
-                with contextlib.suppress(psutil.NoSuchProcess):
-                    child.kill()
-            with contextlib.suppress(ProcessLookupError):
-                os.killpg(proc.pid, signal.SIGKILL)
-            proc.wait()
-            raise
+            proc.wait(timeout=job.get('ownership_timeout',600)+30)
+        finally:
+            marker=_read_json(pending,'pending owner marker')
+            proof=_close_run_scope(marker['containment'],marker['run'],run_dir)
+            _marker_phase(pending,marker,marker['phase'],containment_proof=proof)
+            proc.wait(timeout=5)
+    if proof.get('unknown'):
+        raise OwnershipError('Unknown processes in frozen run scope; stopped without publication')
     if not receipt.exists():
         raise OwnershipError('Native job exited without a completion receipt')
-    result = json.loads(receipt.read_text())
+    result=_validate_receipt(run_dir,legacy=False)
     if proc.returncode or not result['success']:
         raise OwnershipError(result.get('error') or 'Native job failed')
     return result['response']
@@ -908,7 +1019,40 @@ class AgentDeclaredFailure(Exception):
     """Semantic job failure after validated work has been preserved/published."""
 
 
+def _dispatch_outcome(contract,job_id,status,**fields):
+    directory=Path(contract['state_dir'])/'dispatch-outcomes'
+    directory.mkdir(parents=True,exist_ok=True)
+    _atomic_write_json(directory/(job_id+'.json'),dict(version=1,job=job_id,status=status,
+        executed=status=='executed',at=datetime.now(timezone.utc).isoformat(),**fields))
+    paths=sorted(directory.glob('*.json'),key=lambda p:p.stat().st_mtime)
+    for path in paths[:-256]: path.unlink()
+
+
 def execute_job(contract, job, *, executor=native_execute):
+    require_owner(contract)
+    # Standalone deployed scripts start outside the source checkout. Bootstrap
+    # only the explicitly validated contract source before resolving its timeout.
+    source=str(Path(contract['hermes_source']))
+    if source not in sys.path: sys.path.insert(0,source)
+    from cron.scheduler_script import _get_script_timeout
+    from vault_ownership_common import OwnershipBusy
+    timeout=float(job.get('ownership_timeout',600))
+    wait=float(contract.get('owner_lock_wait_seconds',300))
+    outer=_get_script_timeout()
+    if timeout<=0 or wait<0 or wait+timeout+30+120>outer-60:
+        raise OwnershipError('Owner execution budget exceeds outer script deadline')
+    routed=dict(job,_script_deadline=time.monotonic()+outer-60)
+    try:
+        result=_execute_job_budgeted(contract,routed,executor=executor)
+    except OwnershipBusy:
+        if not re.fullmatch(r'[A-Za-z0-9_-]+',job['id']): raise
+        _dispatch_outcome(contract,job['id'],'deferred',reason='owner-busy')
+        return {'status':'deferred','executed':False,'reason':'owner-busy','wakeAgent':False}
+    _dispatch_outcome(contract,job['id'],'executed')
+    return result
+
+
+def _execute_job_budgeted(contract, job, *, executor=native_execute):
     require_owner(contract)
     validate_allowed_paths(job.get('allowed_paths'))
     job_id = job['id']
@@ -916,12 +1060,15 @@ def execute_job(contract, job, *, executor=native_execute):
         raise OwnershipError('Invalid job identifier')
     state, repo = Path(contract['state_dir']), Path(contract['repo_path'])
     require_writable_canonical(repo)
+    native = executor is native_execute
+    if native: manager_ready()
     with owner_lock(contract, wait_seconds=contract.get('owner_lock_wait_seconds', 300)):
         pending = state / 'pending-owner.json'
         if pending.is_symlink():
             raise OwnershipError(f'Active pending-owner marker symlink refused: {pending}')
         if pending.exists():
-            _reconcile_locked(contract)
+            from vault_incident_alerts import reconcile_for_writer
+            reconcile_for_writer(contract)
         if git(repo, 'status', '--porcelain'):
             raise OwnershipError('Canonical checkout is dirty; refusing to sweep unrelated work')
         branch, remote = contract['branch'], contract['remote']
@@ -935,7 +1082,7 @@ def execute_job(contract, job, *, executor=native_execute):
         run_dir.mkdir(parents=True)
         root.parent.mkdir(parents=True, exist_ok=True)
         marker = {
-            'version': 1,
+            'version': 2 if native else 1,
             'kind': 'owner-job',
             'job': job_id,
             'run': run_id,
@@ -953,7 +1100,8 @@ def execute_job(contract, job, *, executor=native_execute):
         }
         _atomic_write_json(pending, marker)
         git(repo, 'worktree', 'add', '--detach', str(root), base)
-        marker = _marker_phase(pending, marker, 'executing')
+        fields = {'containment':scope_intent(run_id,run_dir)} if native else {}
+        marker = _marker_phase(pending, marker, 'executing', **fields)
         routed = dict(job, workdir=str(root))
         # Native job fields (models, tools, skills, prompts, gate, context) survive.
         routed['prompt'] = (job.get('prompt') or '') + (
@@ -965,6 +1113,10 @@ def execute_job(contract, job, *, executor=native_execute):
             if git(repo, 'status', '--porcelain') or git(repo, 'rev-parse', 'HEAD') != base:
                 raise OwnershipError('Canonical checkout changed during managed execution; refusing publication')
             marker = _read_json(pending, 'pending owner marker')
+            if native:
+                proof = _close_run_scope(marker['containment'],run_id,run_dir)
+                marker = _marker_phase(pending,marker,marker['phase'],containment_proof=proof)
+                _v2_publication_gate(marker,run_dir,proof)
             marker = _marker_phase(pending, marker, 'validating')
             if git(root, 'rev-parse', 'HEAD') != base:
                 raise OwnershipError('Managed agent changed HEAD; preserve for recovery')
@@ -1033,13 +1185,19 @@ def main():
     matches = [job for job in jobs if job['id'] == job_id]
     if len(matches) != 1:
         raise OwnershipError('Original managed job missing or ambiguous')
-    print(execute_job(contract, matches[0]), end='')
+    response=execute_job(contract,matches[0])
+    print(json.dumps(response) if isinstance(response,dict) else response,end='')
     return 0
 
 
 if __name__ == '__main__':
+    from vault_incident_alerts import RepeatedIncident
     try:
         raise SystemExit(main())
+    except RepeatedIncident as exc:
+        print(json.dumps({'status':'blocked','run':exc.run,'executed':False,'wakeAgent':False,
+                          'alert':'duplicate-suppressed','reason':exc.reason}))
+        raise SystemExit(0)
     except AgentDeclaredFailure as exc:
         print(str(exc), file=sys.stderr)
         raise SystemExit(1)
