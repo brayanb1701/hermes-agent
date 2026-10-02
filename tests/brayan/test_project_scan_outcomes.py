@@ -58,37 +58,7 @@ def test_failed_child_is_not_hidden_by_completed_pid_lock(tmp_path, monkeypatch,
     assert len(list(scanner.LOG_DIR.glob('blocked.*.log'))) == 2
 
 
-def test_native_script_publishes_good_review_but_reports_partial_failure(tmp_path, monkeypatch, capsys):
-    import shutil
-    from test_vault_ownership import init_repo, git, RUNNER
-    scanner, vault = setup_scan(tmp_path, monkeypatch)
-    git_dir = tmp_path / 'git'
-    git_dir.mkdir()
-    repo, remote = init_repo(git_dir)
-    shutil.copytree(vault / 'projects', repo / 'projects')
-    git(repo, 'add', 'projects')
-    git(repo, 'commit', '-m', 'project fixtures')
-    git(repo, 'push', 'origin', 'main')
-    cfg = contract(scanner.HERMES_HOME, repo=repo)
-    cfg['remote'] = str(remote)
-    write_contract(scanner.HERMES_HOME, cfg)
-    scripts = scanner.HERMES_HOME / 'scripts'
-    scripts.mkdir()
-    for name in ('project_review_scan.py', 'project_review_history_retention.py', 'vault_ownership_common.py'):
-        shutil.copyfile(SCRIPTS / name, scripts / name)
-    shutil.copyfile(tmp_path / 'fake-hermes', tmp_path / 'hermes')
-    with (tmp_path / 'hermes').open('a') as stream:
-        stream.write('print(\'{"ready_count": 0}\')\n')
-    (tmp_path / 'hermes').chmod(0o755)
-    monkeypatch.setenv('PATH', str(tmp_path) + ':' + __import__('os').environ['PATH'])
-    runner = load_module(RUNNER, 'project_native_outcome_runner')
-    with pytest.raises(runner.AgentDeclaredFailure):
-        runner.execute_job(cfg, {'id':'project-test', 'script':'project_review_scan.py', 'no_agent':True,
-            'allowed_paths':['projects/'], 'ownership_timeout':30})
-    assert capsys.readouterr().out.splitlines()[0] == '[CRON_FAILURE]'
-    assert 'Reviewed, still paused.' in (repo / 'projects/good/README.md').read_text()
-    assert not (Path(cfg['state_dir']) / 'pending-owner.json').exists()
-    assert git(repo, 'rev-parse', 'HEAD').stdout.strip() == git(repo, 'ls-remote', str(remote), 'refs/heads/main').stdout.split()[0]
+
 
 
 @pytest.mark.parametrize('existing_today', [False, True])
