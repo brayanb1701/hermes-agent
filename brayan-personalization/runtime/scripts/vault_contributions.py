@@ -1272,16 +1272,17 @@ def process_pending_reviews(contract, *, runner=_run, limit=2):
     marker_path = _path(contract, "state_dir") / "pending-owner.json"
     if marker_path.exists() or marker_path.is_symlink():
         # Resolve under the same writer lock; never reacquire it from inside a writer.
-        from vault_ownership import _reconcile_locked
+        from vault_incident_alerts import reconcile_for_writer, RepeatedIncident
         try:
             with owner_lock(contract):
                 if marker_path.is_symlink():
                     raise ReviewError("pending owner marker symlink refused")
                 if marker_path.exists():
                     marker = _read_json(marker_path, label="pending owner marker")
-                    if marker.get("kind") != "owner-job" or marker.get("phase") not in {"publishing", "integrating"}:
-                        raise ReviewError("unfinished owner writer requires recorded-intent recovery")
-                    _reconcile_locked(contract)
+                    reconcile_for_writer(contract)
+        except RepeatedIncident as exc:
+            return {'processed':[],'wakeAgent':False,'status':'blocked','run':exc.run,
+                    'alert':'duplicate-suppressed','reason':exc.reason}
         except _common_module().OwnershipBusy:
             return {"processed": [], "wakeAgent": False, "status": "writer-busy"}
     pending = list_pending_reviews(contract, runner=runner)

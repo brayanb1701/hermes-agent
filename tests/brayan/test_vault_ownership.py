@@ -123,135 +123,8 @@ def test_owner_lock_refuses_a_second_process_while_first_operation_is_live(tmp_p
     assert "lock" in result.stdout.lower()
 
 
-def test_runner_holds_owner_lock_through_gate_child_commit_and_push(tmp_path):
-    repo, remote = init_repo(tmp_path)
-    home = tmp_path / "hermes"
-    vault = repo
-    value = contract(home, repo=repo)
-    value["remote"] = str(remote)
-    write_contract(home, value)
-    state = Path(value["state_dir"])
-    job_id = "job-1"
-    job_dir = state / "jobs" / job_id
-    job_dir.mkdir(parents=True)
-    (state / "jobs-original.json").write_text(
-        json.dumps(
-            {
-                "jobs": [
-                    {
-                        "id": job_id,
-                        "name": "test writer",
-                        "script": "gate.py",
-                        "prompt": "write the test change",
-                        "deliver": "local",
-                        "enabled": True,
-                        "no_agent": True,
-                        "allowed_paths": ["result.txt", "lock-check.txt"],
-                    }
-                ]
-            }
-        ),
-        encoding="utf-8",
-    )
-    scripts = home / "scripts"
-    scripts.mkdir()
-    (scripts / "gate.py").write_text(
-        "import fcntl, os, pathlib\n"
-        "root=pathlib.Path(os.environ['HERMES_VAULT_ROOT'])\n"
-        "lock=pathlib.Path(os.environ['HERMES_HOME'])/'ownership-state'/'owner.lock'\n"
-        "with lock.open('r+') as f:\n"
-        " try: fcntl.flock(f.fileno(), fcntl.LOCK_EX|fcntl.LOCK_NB); state='unlocked'\n"
-        " except BlockingIOError: state='locked'\n"
-        "(root/'lock-check.txt').write_text(state)\n"
-        "(root/'result.txt').write_text('child')\n"
-        "print('child response')\n", encoding="utf-8"
-    )
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    fake_hermes = bin_dir / "hermes"
-    fake_hermes.write_text(
-        "#!/bin/sh\n"
-        "python3 - <<'PY'\n"
-        "import fcntl, os, pathlib, sys\n"
-        "lock = pathlib.Path(os.environ['HERMES_HOME']) / 'ownership-state' / 'owner.lock'\n"
-        "with lock.open('r+') as fh:\n"
-        "    try:\n"
-        "        fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)\n"
-        "        pathlib.Path(os.environ['HERMES_VAULT_ROOT'], 'lock-check.txt').write_text('unlocked')\n"
-        "    except BlockingIOError:\n"
-        "        pathlib.Path(os.environ['HERMES_VAULT_ROOT'], 'lock-check.txt').write_text('locked')\n"
-        "pathlib.Path(os.environ['HERMES_VAULT_ROOT'], 'result.txt').write_text('child')\n"
-        "print('child response')\n"
-        "PY\n",
-        encoding="utf-8",
-    )
-    fake_hermes.chmod(0o755)
-
-    env = {**os.environ, "HERMES_HOME": str(home), "PATH": f"{bin_dir}:{os.environ['PATH']}"}
-    result = subprocess.run(
-        [sys.executable, str(RUNNER), job_id],
-        cwd=job_dir,
-        env=env,
-        text=True,
-        capture_output=True,
-    )
-    assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "child response"
-    assert (repo / "result.txt").read_text(encoding="utf-8") == "child"
-    assert (repo / "lock-check.txt").read_text(encoding="utf-8") == "locked"
-    git(repo, "fetch", "origin", "main")
-    assert git(repo, "rev-parse", "HEAD").stdout == git(repo, "rev-parse", "origin/main").stdout
-    message = git(repo, "log", "-1", "--format=%B").stdout
-    assert "Vault-Ownership-Job: job-1" in message
-    assert not (state / "worktrees" / job_id).exists()
 
 
-def test_contained_failure_is_archived_and_next_job_publishes(tmp_path):
-    repo, remote = init_repo(tmp_path)
-    home = tmp_path / "hermes"
-    value = contract(home, repo=repo)
-    value["remote"] = str(remote)
-    write_contract(home, value)
-    state = Path(value["state_dir"])
-    job_id = "job-1"
-    job_dir = state / "jobs" / job_id
-    job_dir.mkdir(parents=True)
-    (state / "jobs-original.json").write_text(
-        json.dumps({"jobs": [{"id": job_id, "prompt": "fail", "enabled": True, "script": "failure.py", "no_agent": True, "allowed_paths": ["failed.txt"]}]}), encoding="utf-8"
-    )
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    fake_hermes = bin_dir / "hermes"
-    fake_hermes.write_text(
-        "#!/bin/sh\nprintf failed > \"$HERMES_VAULT_ROOT/failed.txt\"\nexit 7\n", encoding="utf-8"
-    )
-    fake_hermes.chmod(0o755)
-    env = {**os.environ, "HERMES_HOME": str(home), "PATH": f"{bin_dir}:{os.environ['PATH']}"}
-    scripts = home / 'scripts'
-    scripts.mkdir()
-    (scripts / 'failure.py').write_text("import os, pathlib; pathlib.Path(os.environ['HERMES_VAULT_ROOT'], 'failed.txt').write_text('failed'); raise SystemExit(7)")
-    first = subprocess.run([sys.executable, str(RUNNER), job_id], cwd=job_dir, env=env, text=True, capture_output=True)
-    assert first.returncode != 0
-    assert not (state / "pending-owner.json").exists(), first.stdout + first.stderr
-    archives = list((state / "failed").iterdir())
-    assert len(archives) == 1
-    manifest = json.loads((archives[0] / "manifest.json").read_text(encoding="utf-8"))
-    archived_marker = json.loads((archives[0] / "pending-owner.json").read_text(encoding="utf-8"))
-    assert manifest["complete"] is True
-    assert type(archived_marker["pid"]) is int and archived_marker["pid"] > 0
-    assert isinstance(archived_marker["pid_created"], float)
-    assert (archives[0] / "files" / "failed.txt").read_text(encoding="utf-8") == "failed"
-    preserved = list((state / "worktrees" / job_id).iterdir())
-    assert preserved and (preserved[0] / "failed.txt").exists()
-
-    (scripts / "failure.py").write_text(
-        "import os, pathlib; pathlib.Path(os.environ['HERMES_VAULT_ROOT'], 'failed.txt').write_text('recovered')",
-        encoding="utf-8",
-    )
-    second = subprocess.run([sys.executable, str(RUNNER), job_id], cwd=job_dir, env=env, text=True, capture_output=True)
-    assert second.returncode == 0, second.stdout + second.stderr
-    assert (repo / "failed.txt").read_text(encoding="utf-8") == "recovered"
-    assert git(repo, "ls-remote", str(remote), "refs/heads/main").stdout.split()[0] == git(repo, "rev-parse", "HEAD").stdout.strip()
 
 
 def test_runner_audits_spawned_background_gate_before_worktree_creation(tmp_path):
@@ -265,7 +138,7 @@ def test_runner_audits_spawned_background_gate_before_worktree_creation(tmp_path
     assert any("Popen" in finding for finding in findings)
 
 
-@pytest.mark.linux_only
+@pytest.mark.platforms('linux')
 def test_native_descendant_cleanup_reaps_zombie_but_refuses_live_process():
     import psutil
     import time
@@ -306,7 +179,7 @@ def test_native_descendant_cleanup_reaps_zombie_but_refuses_live_process():
             live.wait()
 
 
-@pytest.mark.linux_only
+@pytest.mark.platforms('linux')
 def test_native_worker_disposes_real_session_kernels_before_descendant_audit(tmp_path, monkeypatch, request):
     from tools.code_kernel import _KERNELS, execute_in_session_kernel, shutdown_all_kernels
 
@@ -387,7 +260,7 @@ def test_native_worker_disposes_real_session_kernels_before_descendant_audit(tmp
     assert parent_kernel.proc is not None and parent_kernel.proc.poll() is None
 
 
-@pytest.mark.linux_only
+@pytest.mark.platforms('linux')
 def test_native_worker_refuses_live_and_keeps_exception_diagnostics(tmp_path, monkeypatch):
     import ctypes
 

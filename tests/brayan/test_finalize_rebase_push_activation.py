@@ -23,8 +23,11 @@ def load_finalizer():
     return module
 
 
-def test_candidate_repo_accepts_only_live_or_ci_worktree():
+def test_candidate_repo_accepts_only_live_or_ci_worktree(tmp_path, monkeypatch):
     finalizer = load_finalizer()
+    # Resolve only fixture paths, never production Hermes/worktree metadata.
+    monkeypatch.setattr(finalizer, 'LIVE_REPO', tmp_path/'live')
+    monkeypatch.setattr(finalizer, 'WORKTREE', tmp_path/'ci-worktree')
 
     assert finalizer.resolve_candidate_repo(str(finalizer.LIVE_REPO)) == finalizer.LIVE_REPO
     assert finalizer.resolve_candidate_repo(str(finalizer.WORKTREE)) == finalizer.WORKTREE

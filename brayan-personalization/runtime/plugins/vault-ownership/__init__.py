@@ -55,7 +55,7 @@ async def _owned_io(fn, *args):
 
 
 def _begin(contract, event, session_key):
-    from vault_ownership import git, require_writable_canonical
+    from vault_ownership import git, require_writable_canonical, _atomic_write_json, _reconcile_locked
     state, root = Path(contract['state_dir']), Path(contract['repo_path'])
     if Path(contract['vault_path']).resolve() != root.resolve():
         raise ValueError('Native owner vault must be its canonical checkout')
@@ -63,7 +63,8 @@ def _begin(contract, event, session_key):
     _recover_terminals(state)
     pending = state / 'pending-owner.json'
     if pending.exists():
-        raise ValueError('Previously preserved owner work requires recovery')
+        from vault_incident_alerts import reconcile_for_writer
+        reconcile_for_writer(contract)
     if git(root, 'status', '--porcelain'):
         raise ValueError('Canonical checkout is dirty; preserved without sweeping')
     git(root, 'fetch', '--no-tags', contract['remote'], contract['branch'])
@@ -71,30 +72,41 @@ def _begin(contract, event, session_key):
     if git(root, 'rev-parse', 'HEAD') != base:
         raise ValueError('Canonical head differs from published main')
     intent = dict(id=uuid.uuid4().hex, session_key=session_key,
-                  message_id=str(event.message_id), base=base, kind='native-intake')
-    pending.write_text(json.dumps(intent))
+                  message_id=str(event.message_id), base=base, kind='native-intake',
+                  version=2, phase='editing', terminal_id=uuid.uuid4().hex, terminal_units=[])
+    _atomic_write_json(pending,intent)
     return intent
 
 
 def _finish(contract, intent):
-    from vault_ownership import git, validate_diff, publish
+    from vault_ownership import git, validate_diff, publish, _read_json, _marker_phase, _fsync_directory
+    from vault_intake_recovery import terminal_units_empty
+    pending=Path(contract['state_dir'])/'pending-owner.json'
+    intent=_read_json(pending,'native intake journal')
+    terminal_units_empty(intent)
     root = Path(contract['repo_path'])
     if git(root, 'rev-parse', 'HEAD') != intent['base']:
         raise ValueError('Native agent changed Git HEAD; preserve for independent recovery')
     names = validate_diff(root, contract['intake_allowed_paths'])
     if names:
+        intent=_marker_phase(pending,intent,'committed')
         git(root, 'commit', '-m', 'Native notes intake\n\n'
             f"Source-Host: {contract['hostname']}\nSession: {intent['id']}\n"
             f"Capture-ID: {intent['message_id']}\nBase-SHA: {intent['base']}")
         publish(root, contract, intent['base'])
-    (Path(contract['state_dir']) / 'pending-owner.json').unlink()
+        _marker_phase(pending,intent,'published')
+    pending.unlink(); _fsync_directory(pending.parent)
 
 
 def _clear_clean_failure(contract, intent):
-    from vault_ownership import git
+    from vault_ownership import git, _read_json, _reconcile_locked
+    pending=Path(contract['state_dir'])/'pending-owner.json'
+    if not pending.exists(): return
+    current=_read_json(pending,'native intake journal')
+    if current.get('id')!=intent['id']: raise ValueError('Intake journal identity changed')
     root = Path(contract['repo_path'])
     if git(root, 'rev-parse', 'HEAD') == intent['base'] and not git(root, 'status', '--porcelain'):
-        (Path(contract['state_dir']) / 'pending-owner.json').unlink(missing_ok=True)
+        _reconcile_locked(contract,expected_run=intent['id'])
 
 
 def _scope_state(unit):
@@ -186,7 +198,11 @@ def _terminal_directive(holder, args):
         holder['directory'].mkdir(parents=True, exist_ok=True)
         holder['gate'].touch(exist_ok=True)
         holder['open'].touch(exist_ok=True)
-        holder['receipt'].write_text(json.dumps({'units':holder['units']}))
+        from vault_ownership import _atomic_write_json, _read_json
+        _atomic_write_json(holder['receipt'],{'units':holder['units']})
+        marker=_read_json(holder['pending'],'native intake journal')
+        if marker['terminal_id']!=holder['id']: raise ValueError('Intake terminal identity changed')
+        _atomic_write_json(holder['pending'],dict(marker,terminal_units=list(holder['units'])))
     bounded = shlex.join(['systemd-run', '--user', '--scope', '--quiet', '--collect',
                          f'--unit={unit}', f'--property=RuntimeMaxSec={timeout + 15:g}',
                          '--property=TimeoutStopSec=5', '--', '/bin/bash', '-c', command])
@@ -238,6 +254,9 @@ async def turn_scope(event, source, session_key, gateway, **kwargs):
         def begin_owned():
             nonlocal intent
             intent = _begin(contract, event, session_key)
+            directory=state/'terminal-scopes'/intent['terminal_id']
+            holder.update(id=intent['terminal_id'],directory=directory,gate=directory/'launch.lock',
+                          open=directory/'open',receipt=directory/'units.json',pending=state/'pending-owner.json')
         await _owned_io(begin_owned)
         holder['active'] = True
         token = _holder.set(holder)
@@ -297,6 +316,10 @@ def _pin(contract, session_id):
 
 
 def guard_tool(tool_name, args, session_id=None, **kwargs):
+    if tool_name=='browser_exec' and os.environ.get('BU_NAME')=='_default' and os.environ.get('BH_RUNTIME_DIR_SHARED')=='1':
+        if args.get('session')=='default':
+            return {'action':'modify','args':dict(args,session='')}
+        return None
     holder = _holder.get()
     if holder is not None:
         if not holder['active']:
