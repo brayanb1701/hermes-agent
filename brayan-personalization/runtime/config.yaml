@@ -719,3 +719,7 @@ bot_peers:
 # fallback_model:
 #   provider: openrouter
 #   model: anthropic/claude-sonnet-4
+telemetry:
+  shared_metrics:
+    enabled: false
+    send: false
