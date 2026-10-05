@@ -6,6 +6,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+# Bootstrap at collection, after conftest isolates HERMES_HOME and before
+# per-test filesystem guards; this file must also pass in its own process.
+import gateway.run  # noqa: F401
+
 
 @pytest.mark.asyncio
 async def test_scope_precedes_native_body_and_finalization_failure_is_visible(monkeypatch):
