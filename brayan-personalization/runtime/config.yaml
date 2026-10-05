@@ -660,7 +660,16 @@ image_gen:
 known_plugin_toolsets:
   cli:
     - a2a
+    - homeassistant
     - spotify
+  telegram:
+    - homeassistant
+  whatsapp:
+    - homeassistant
+  acp:
+    - homeassistant
+  webhook:
+    - homeassistant
 known_builtin_toolsets:
   cli:
     - browser
@@ -723,3 +732,5 @@ telemetry:
   shared_metrics:
     enabled: false
     send: false
+_left_core_scoped:
+  - homeassistant
