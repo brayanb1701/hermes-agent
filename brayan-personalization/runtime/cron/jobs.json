@@ -145,7 +145,11 @@
         "personal-vault-ops",
         "decision-reminders-agent"
       ],
-      "state": "paused"
+      "state": "paused",
+      "last_failure": {
+        "at": "2026-10-03T14:47:46.170960-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Git operation failed: fetch: ssh: Could not resolve hostname github.com: Temporary failure in name resolution\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists."
+      }
     },
     {
       "allowed_paths": [
@@ -178,7 +182,11 @@
         "personal-vault-ops",
         "opportunity-preparation-agent"
       ],
-      "state": "paused"
+      "state": "paused",
+      "last_failure": {
+        "at": "2026-10-03T14:47:45.076299-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Git operation failed: fetch: ssh: Could not resolve hostname github.com: Temporary failure in name resolution\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists."
+      }
     },
     {
       "base_url": null,
@@ -292,7 +300,11 @@
         "opportunity-closing-agent"
       ],
       "state": "paused",
-      "workdir": null
+      "workdir": null,
+      "last_failure": {
+        "at": "2026-10-03T14:47:45.022299-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Git operation failed: fetch: ssh: Could not resolve hostname github.com: Temporary failure in name resolution\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists."
+      }
     },
     {
       "allowed_paths": [
@@ -334,7 +346,11 @@
         "personal-project-management"
       ],
       "state": "paused",
-      "workdir": null
+      "workdir": null,
+      "last_failure": {
+        "at": "2026-10-03T14:47:46.930651-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Git operation failed: fetch: ssh: Could not resolve hostname github.com: Temporary failure in name resolution\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists."
+      }
     },
     {
       "id": "23993d912402",
@@ -370,7 +386,11 @@
       "deliver": "local",
       "enabled_toolsets": null,
       "workdir": null,
-      "failure_deliver": "telegram"
+      "failure_deliver": "telegram",
+      "last_failure": {
+        "at": "2026-10-03T14:47:40.412112-05:00",
+        "detail": "Script exited with code 1\nstdout:\n{\"command\": \"tick\", \"error\": \"command failed (1): gh pr: error connecting to api.github.com\\ncheck your internet connection or https://githubstatus.com\"}"
+      }
     }
   ]
 }
