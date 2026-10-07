@@ -36,6 +36,9 @@ def cron_env(tmp_path, monkeypatch):
     (hermes_home / "cron" / "output").mkdir()
     (hermes_home / "scripts").mkdir()
     monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+    # This fixture models a source install, not a sealed payload beside the CI worktree.
+    monkeypatch.setenv("HERMES_RUNTIME_DIR", str(hermes_home / "tools"))
+    monkeypatch.setattr("pm.environments._payload_manifest", lambda root: None)
 
     # Clear cached module-level paths
     import cron.jobs as jobs_mod
