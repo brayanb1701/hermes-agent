@@ -728,5 +728,6 @@ telemetry:
   shared_metrics:
     enabled: false
     send: false
+    offer_version: 2
 _left_core_scoped:
   - homeassistant
