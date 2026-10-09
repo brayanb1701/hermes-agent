@@ -731,3 +731,6 @@ telemetry:
     offer_version: 2
 _left_core_scoped:
   - homeassistant
+computer_use:
+  # cua-driver X11 cursor overlay freezes GNOME on this machine (trycua/cua#3236)
+  no_overlay: true
