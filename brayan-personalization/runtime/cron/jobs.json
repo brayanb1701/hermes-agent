@@ -32,7 +32,11 @@
         "personal-vault-ops",
         "daily-review-agent"
       ],
-      "state": "paused"
+      "state": "paused",
+      "last_failure": {
+        "at": "2026-10-11T09:56:44.932428-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
+      }
     },
     {
       "allowed_paths": [
@@ -64,7 +68,11 @@
         "personal-vault-ops",
         "topic-recommendations-agent"
       ],
-      "state": "paused"
+      "state": "paused",
+      "last_failure": {
+        "at": "2026-10-11T09:56:43.815313-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
+      }
     },
     {
       "allowed_paths": [
@@ -113,7 +121,11 @@
         "personal-vault-ops",
         "inbox-triage-agent"
       ],
-      "state": "paused"
+      "state": "paused",
+      "last_failure": {
+        "at": "2026-10-11T09:56:48.731956-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
+      }
     },
     {
       "allowed_paths": [
@@ -147,8 +159,8 @@
       ],
       "state": "paused",
       "last_failure": {
-        "at": "2026-10-03T14:47:46.170960-05:00",
-        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Git operation failed: fetch: ssh: Could not resolve hostname github.com: Temporary failure in name resolution\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists."
+        "at": "2026-10-11T09:56:48.194812-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
     {
@@ -184,8 +196,8 @@
       ],
       "state": "paused",
       "last_failure": {
-        "at": "2026-10-03T14:47:45.076299-05:00",
-        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Git operation failed: fetch: ssh: Could not resolve hostname github.com: Temporary failure in name resolution\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists."
+        "at": "2026-10-11T09:56:43.844114-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
     {
@@ -302,8 +314,8 @@
       "state": "paused",
       "workdir": null,
       "last_failure": {
-        "at": "2026-10-03T14:47:45.022299-05:00",
-        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Git operation failed: fetch: ssh: Could not resolve hostname github.com: Temporary failure in name resolution\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists."
+        "at": "2026-10-11T09:56:46.112238-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
     {
@@ -348,8 +360,8 @@
       "state": "paused",
       "workdir": null,
       "last_failure": {
-        "at": "2026-10-03T14:47:46.930651-05:00",
-        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Git operation failed: fetch: ssh: Could not resolve hostname github.com: Temporary failure in name resolution\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists."
+        "at": "2026-10-11T09:56:47.191905-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
     {
