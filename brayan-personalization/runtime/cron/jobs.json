@@ -34,7 +34,7 @@
       ],
       "state": "paused",
       "last_failure": {
-        "at": "2026-10-11T09:56:44.932428-05:00",
+        "at": "2026-10-13T09:00:46.682211-05:00",
         "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
@@ -70,7 +70,7 @@
       ],
       "state": "paused",
       "last_failure": {
-        "at": "2026-10-11T09:56:43.815313-05:00",
+        "at": "2026-10-12T19:00:45.377078-05:00",
         "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
@@ -123,7 +123,7 @@
       ],
       "state": "paused",
       "last_failure": {
-        "at": "2026-10-11T09:56:48.731956-05:00",
+        "at": "2026-10-12T18:00:46.351470-05:00",
         "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
@@ -159,7 +159,7 @@
       ],
       "state": "paused",
       "last_failure": {
-        "at": "2026-10-11T09:56:48.194812-05:00",
+        "at": "2026-10-12T17:00:43.956214-05:00",
         "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
@@ -196,7 +196,7 @@
       ],
       "state": "paused",
       "last_failure": {
-        "at": "2026-10-11T09:56:43.844114-05:00",
+        "at": "2026-10-12T11:00:46.361726-05:00",
         "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
@@ -270,7 +270,11 @@
         "personal-vault-ops",
         "vault-structure-auditor-agent"
       ],
-      "state": "paused"
+      "state": "paused",
+      "last_failure": {
+        "at": "2026-10-11T10:00:41.809898-05:00",
+        "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
+      }
     },
     {
       "allowed_paths": [
@@ -314,7 +318,7 @@
       "state": "paused",
       "workdir": null,
       "last_failure": {
-        "at": "2026-10-11T09:56:46.112238-05:00",
+        "at": "2026-10-12T11:30:46.437119-05:00",
         "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
@@ -360,7 +364,7 @@
       "state": "paused",
       "workdir": null,
       "last_failure": {
-        "at": "2026-10-11T09:56:47.191905-05:00",
+        "at": "2026-10-12T11:45:46.374179-05:00",
         "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
