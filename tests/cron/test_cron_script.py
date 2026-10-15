@@ -509,6 +509,10 @@ class TestScriptWakeGate:
                 raise AssertionError("AIAgent should not be instantiated when ready_count is 0")
 
         monkeypatch.setattr("run_agent.AIAgent", ExplodingAgent)
+        # Exercise the owner-side gate, not the canonical gateway launch transport.
+        monkeypatch.setattr("gateway.session_cron.current_execution", lambda: (
+            "test-profile", "test-cron-session", "skip-ready-zero", None,
+        ))
         success, output, final_response, error = run_job({
             "id": "skip-ready-zero",
             "name": "skip-ready-zero",
