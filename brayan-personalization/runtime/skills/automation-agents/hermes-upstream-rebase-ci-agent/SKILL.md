@@ -95,6 +95,8 @@ Do not bypass finalizer refusals. The finalizer intentionally hard-codes repo, b
 
 ## Known conflict patterns
 
+- When upstream moves `_hmwa_resolve_session` from `gateway/run_turn.py` into `gateway/run_turn_prepare.py`, keep the upstream deletion and port only the Anything Inbox fresh-session branch into the new method, after strict-session pin validation. Do not resurrect the removed preparation/hygiene methods in `run_turn.py`. Verify ordinary capture reset and strict pinned-event preservation with behavioral tests. If the wake-gate unit test starts launching a canonical gateway after an owner-authority refactor, bind its `gateway.session_cron.current_execution` test seam to the matching job/execution tuple; preserve the production canonical-owner routing instead of bypassing it.
+
 - When upstream retires legacy updater/banner tests in favor of `hermes_cli/source_check.py`, preserve deletions of tests targeting removed seams; retain configured-branch behavior in the current banner and validate `test_source_check.py` plus `test_update_branch_config.py`.
 - Run process bootstrap imports at test collection, after conftest isolates HERMES_HOME but before per-test filesystem guards. Do not preload entry-point modules through PYTEST_PLUGINS in production-home environments: logging can bind live files. If PM's versionless Python alias trips the guard, permit only metadata for the running interpreter's discovered lexical alias, retaining state read/write protection, and add a reproducing test.
 - Exclude the skills `.locks/` directory from personalization snapshots; locks are process state, not behavior assets. Verify with a copy-tree regression rather than publishing transient lock files.
