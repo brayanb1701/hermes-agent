@@ -372,7 +372,7 @@ async def test_burst_of_merged_voice_notes_transcribes_each_clip_once():
         if burst:  # the next note of the burst arrives while this clip is being transcribed
             merge_pending_message_event(pending, "k", _voice_event(source, [burst.pop(0)]))
         await asyncio.sleep(0)
-        return f"<{Path(path).name}>", f"<{Path(path).name}>"
+        return f"<{Path(path).name}>", f"<{Path(path).name}>", {"provider": "test"}
 
     runner._transcribe_one_clip = fake_clip
     _, transcripts = await runner._transcribe_pending_audio_event_once(event)
