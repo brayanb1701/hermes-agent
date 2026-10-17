@@ -34,7 +34,7 @@
       ],
       "state": "paused",
       "last_failure": {
-        "at": "2026-10-16T13:53:43.793869-05:00",
+        "at": "2026-10-17T10:31:41.692567-05:00",
         "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
@@ -70,7 +70,7 @@
       ],
       "state": "paused",
       "last_failure": {
-        "at": "2026-10-15T19:00:41.228243-05:00",
+        "at": "2026-10-16T19:00:55.019602-05:00",
         "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
@@ -123,7 +123,7 @@
       ],
       "state": "paused",
       "last_failure": {
-        "at": "2026-10-16T13:53:43.656671-05:00",
+        "at": "2026-10-17T10:31:42.767602-05:00",
         "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
@@ -159,7 +159,7 @@
       ],
       "state": "paused",
       "last_failure": {
-        "at": "2026-10-16T13:53:51.609320-05:00",
+        "at": "2026-10-16T17:00:52.531824-05:00",
         "detail": "Script exited with code 1\nstderr:\nOwnership operation refused: Canonical checkout is dirty; refusing to sweep unrelated work"
       }
     },
@@ -234,7 +234,14 @@
         "personal-vault-ops",
         "hermes-upstream-rebase-ci-agent"
       ],
-      "state": "scheduled"
+      "state": "scheduled",
+      "last_failure": {
+        "at": "2026-10-16T13:56:36.629009-05:00",
+        "detail": "Restart-safe cron worker exited with status 1 after adopting this execution, without writing a durable terminal state; whether side effects ran is unknown."
+      },
+      "canonical_completions": [
+        "a06f11a754044896a03a5bc150793a45"
+      ]
     },
     {
       "allowed_paths": [
